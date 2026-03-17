@@ -1,7 +1,7 @@
 ---
 id: FEAT-007
 title: Role assignment system, seed data roles, and account invite flow
-status: pending
+status: completed
 priority: high
 created: 2026-03-17
 assignee: unassigned
