@@ -4,7 +4,8 @@
       "Bash(cd:*)",
       "Bash(npm run:*)",
       "Bash(git add:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }
