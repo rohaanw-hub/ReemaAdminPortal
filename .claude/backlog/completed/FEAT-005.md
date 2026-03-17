@@ -1,7 +1,7 @@
 ---
 id: FEAT-005
 title: In-app notifications and alerts for all roles
-status: pending
+status: completed
 priority: medium
 created: 2026-03-17
 assignee: unassigned
