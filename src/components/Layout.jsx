@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Bell, ChevronRight, ChevronDown } from "lucide-react";
 import { useApp } from "../../AppContext";
 import { getInitials, getAvatarBg, getAvatarText } from "../../helpers";
+import SearchBar from "./SearchBar";
 import eyeLevelLogo from "../assets/EyeLevelLogo.png";
 
 const ROLE_LABEL = { admin: "Admin", teacher: "Teacher", parent: "Parent" };
@@ -480,17 +481,22 @@ export default function Layout() {
       </aside>
 
       <div style={{ marginLeft: 220, flex: 1, background: "#f5f4f0" }}>
-        {/* Slim topbar — profile avatar only */}
+        {/* Slim topbar — search + profile avatar */}
         <div
           style={{
             background: "#fff",
             borderBottom: "1px solid #eee",
             padding: "10px 24px",
             display: "flex",
-            justifyContent: "flex-end",
             alignItems: "center",
+            gap: 16,
           }}
         >
+          {/* Left spacer to balance avatar on right */}
+          <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+            <SearchBar />
+          </div>
+
           {currentUser && (
             <div ref={profileRef} style={{ position: "relative" }}>
               {/* Avatar button */}
