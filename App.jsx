@@ -10,7 +10,8 @@ import StudentProfile from './src/pages/StudentProfile'
 import Schedule from './src/pages/Schedule'
 import ClockIn from './src/pages/ClockIn'
 import Payroll from './src/pages/Payroll'
-import Reports from './src/pages/Reports'
+import AttendanceReport from './src/pages/reports/AttendanceReport'
+import PayrollReport from './src/pages/reports/PayrollReport'
 import ParentPortal from './src/pages/ParentPortal'
 
 // Redirects unauthenticated users to /login
@@ -59,7 +60,11 @@ export default function App() {
           <Route element={<RoleGuard allow={['admin']} />}>
             <Route path="employees" element={<Employees />} />
             <Route path="payroll" element={<Payroll />} />
-            <Route path="reports" element={<Reports />} />
+            <Route path="reports">
+              <Route index element={<Navigate to="/reports/attendance" replace />} />
+              <Route path="attendance" element={<AttendanceReport />} />
+              <Route path="payroll" element={<PayrollReport />} />
+            </Route>
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

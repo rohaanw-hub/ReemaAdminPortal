@@ -1,6 +1,6 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { Bell } from "lucide-react";
+import { Bell, ChevronRight, ChevronDown } from "lucide-react";
 import { useApp } from "../../AppContext";
 import eyeLevelLogo from "../assets/EyeLevelLogo.png";
 
@@ -13,7 +13,11 @@ const ADMIN_NAV = [
   { to: "/schedule", label: "Schedule" },
   { to: "/clock-in", label: "Clock In/Out" },
   { to: "/payroll", label: "Payroll" },
-  { to: "/reports", label: "Reports" },
+];
+
+const REPORTS_NAV = [
+  { to: "/reports/attendance", label: "Attendance" },
+  { to: "/reports/payroll", label: "Payroll" },
 ];
 
 function teacherNav(profileId) {
@@ -39,8 +43,12 @@ function formatNotifTime(ts) {
 export default function Layout() {
   const { currentUser, logout, notifications, markAllRead } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
   const [notifOpen, setNotifOpen] = useState(false);
   const panelRef = useRef(null);
+  const [reportsOpen, setReportsOpen] = useState(
+    location.pathname.startsWith("/reports"),
+  );
 
   // Close panel on outside click
   useEffect(() => {
@@ -115,7 +123,7 @@ export default function Layout() {
           </div>
         </div>
 
-        <nav style={{ flex: 1, padding: 12 }}>
+        <nav style={{ flex: 1, padding: 12, overflowY: "auto" }}>
           {navItems.map((n) => (
             <NavLink
               key={n.to}
@@ -138,6 +146,74 @@ export default function Layout() {
               {n.label}
             </NavLink>
           ))}
+
+          {/* Reports dropdown — admin only */}
+          {currentUser?.role === "admin" && (
+            <div style={{ marginTop: 2 }}>
+              <button
+                onClick={() => setReportsOpen((v) => !v)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  marginBottom: 2,
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  background: location.pathname.startsWith("/reports")
+                    ? "#FFF0F2"
+                    : "transparent",
+                  color: location.pathname.startsWith("/reports")
+                    ? "#E31837"
+                    : "#555",
+                  fontWeight: location.pathname.startsWith("/reports")
+                    ? 600
+                    : 400,
+                  borderLeft: location.pathname.startsWith("/reports")
+                    ? "3px solid #E31837"
+                    : "3px solid transparent",
+                  textAlign: "left",
+                }}
+              >
+                Reports
+                {reportsOpen ? (
+                  <ChevronDown size={14} />
+                ) : (
+                  <ChevronRight size={14} />
+                )}
+              </button>
+
+              {reportsOpen && (
+                <div style={{ marginBottom: 4 }}>
+                  {REPORTS_NAV.map((n) => (
+                    <NavLink
+                      key={n.to}
+                      to={n.to}
+                      style={({ isActive }) => ({
+                        display: "block",
+                        padding: "7px 12px 7px 28px",
+                        borderRadius: 8,
+                        marginBottom: 2,
+                        textDecoration: "none",
+                        fontSize: 13,
+                        background: isActive ? "#FFF0F2" : "transparent",
+                        color: isActive ? "#E31837" : "#6b7280",
+                        fontWeight: isActive ? 600 : 400,
+                        borderLeft: isActive
+                          ? "3px solid #E31837"
+                          : "3px solid transparent",
+                      })}
+                    >
+                      {n.label}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </nav>
 
         <div style={{ padding: "12px 16px", borderTop: "1px solid #E5E7EB" }}>

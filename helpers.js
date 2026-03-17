@@ -95,6 +95,15 @@ export const SUBJECT_COLORS = {
   'Test Prep': { bg: '#fce7f3', color: '#9d174d' },
 }
 
+// ─── Report Utilities ─────────────────────────────────────────────────────────
+export const formatCurrency = (amount) =>
+  '$' + Number(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+export const calculateHours = (sessions, employeeId) =>
+  sessions
+    .filter((s) => s.employeeId === employeeId)
+    .reduce((acc, s) => acc + s.duration / 60, 0)
+
 // ─── CSV Export ───────────────────────────────────────────────────────────────
 export function exportToCSV(rows, filename) {
   if (!rows.length) return

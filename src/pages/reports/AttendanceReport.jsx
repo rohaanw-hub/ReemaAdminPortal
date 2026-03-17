@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { useApp } from "../../AppContext";
-import { DAYS, exportToCSV } from "../../helpers";
+import { useApp } from "../../../AppContext";
+import { DAYS, exportToCSV } from "../../../helpers";
 
 const STATUS_OPTIONS = ["all", "scheduled", "attended", "cancelled"];
 
@@ -10,7 +10,7 @@ const STATUS_BADGE = {
   cancelled: "badge-red",
 };
 
-export default function Reports() {
+export default function AttendanceReport() {
   const { sessions, employees, students } = useApp();
 
   const [filterStudent, setFilterStudent] = useState("");
@@ -38,22 +38,23 @@ export default function Reports() {
   function studentName(id) {
     return students.find((s) => s.id === id)?.name ?? "—";
   }
-  function employeeName(id) {
+  function teacherName(id) {
     if (!id) return "Unassigned";
     return employees.find((e) => e.id === id)?.name ?? "—";
   }
 
   function handleExport() {
+    const today = new Date().toISOString().slice(0, 10);
     const rows = filtered.map((s) => ({
       Day: s.day,
       Time: s.time,
       Student: studentName(s.studentId),
-      Teacher: employeeName(s.employeeId),
+      Teacher: teacherName(s.employeeId),
       Subject: s.subject,
       Status: s.status,
       Duration: `${s.duration} min`,
     }));
-    exportToCSV(rows, "sessions-report.csv");
+    exportToCSV(rows, `attendance-report-${today}.csv`);
   }
 
   function clearFilters() {
@@ -70,9 +71,9 @@ export default function Reports() {
     <div>
       <div className="page-header" style={{ marginBottom: 20 }}>
         <div>
-          <h1 className="page-title">Reports</h1>
+          <h1 className="page-title">Attendance Report</h1>
           <p style={{ margin: 0, fontSize: 13, color: "#64748b" }}>
-            Attendance &amp; Sessions
+            Session attendance by student, teacher, day, and status
           </p>
         </div>
         <button
@@ -86,11 +87,8 @@ export default function Reports() {
 
       {/* Filters */}
       <div
+        className="card"
         style={{
-          background: "#fff",
-          border: "1px solid #e2e8f0",
-          borderRadius: 10,
-          padding: "16px 20px",
           marginBottom: 20,
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
@@ -99,17 +97,7 @@ export default function Reports() {
         }}
       >
         <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#64748b",
-              display: "block",
-              marginBottom: 5,
-            }}
-          >
-            Student
-          </label>
+          <label style={labelStyle}>Student</label>
           <select
             className="form-select"
             value={filterStudent}
@@ -125,17 +113,7 @@ export default function Reports() {
         </div>
 
         <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#64748b",
-              display: "block",
-              marginBottom: 5,
-            }}
-          >
-            Teacher
-          </label>
+          <label style={labelStyle}>Teacher</label>
           <select
             className="form-select"
             value={filterEmployee}
@@ -151,17 +129,7 @@ export default function Reports() {
         </div>
 
         <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#64748b",
-              display: "block",
-              marginBottom: 5,
-            }}
-          >
-            Day
-          </label>
+          <label style={labelStyle}>Day</label>
           <select
             className="form-select"
             value={filterDay}
@@ -177,17 +145,7 @@ export default function Reports() {
         </div>
 
         <div>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: "#64748b",
-              display: "block",
-              marginBottom: 5,
-            }}
-          >
-            Status
-          </label>
+          <label style={labelStyle}>Status</label>
           <select
             className="form-select"
             value={filterStatus}
@@ -299,7 +257,7 @@ export default function Reports() {
                         fontStyle: s.employeeId ? "normal" : "italic",
                       }}
                     >
-                      {employeeName(s.employeeId)}
+                      {teacherName(s.employeeId)}
                     </td>
                     <td>{s.subject}</td>
                     <td>
@@ -320,3 +278,11 @@ export default function Reports() {
     </div>
   );
 }
+
+const labelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#64748b",
+  display: "block",
+  marginBottom: 5,
+};
