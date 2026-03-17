@@ -94,3 +94,20 @@ export const SUBJECT_COLORS = {
   'SAT Prep': { bg: '#fef3c7', color: '#92400e' },
   'Test Prep': { bg: '#fce7f3', color: '#9d174d' },
 }
+
+// ─── CSV Export ───────────────────────────────────────────────────────────────
+export function exportToCSV(rows, filename) {
+  if (!rows.length) return
+  const headers = Object.keys(rows[0])
+  const csv = [
+    headers.join(','),
+    ...rows.map((r) => headers.map((h) => JSON.stringify(r[h] ?? '')).join(',')),
+  ].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}

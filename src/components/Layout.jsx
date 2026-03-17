@@ -13,6 +13,7 @@ const ADMIN_NAV = [
   { to: "/schedule", label: "Schedule" },
   { to: "/clock-in", label: "Clock In/Out" },
   { to: "/payroll", label: "Payroll" },
+  { to: "/reports", label: "Reports" },
 ];
 
 function teacherNav(profileId) {
