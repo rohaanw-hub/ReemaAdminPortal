@@ -1,7 +1,7 @@
 ---
 id: FEAT-008
 title: Add Reema Mehdi as seeded admin employee profile and update login credential
-status: pending
+status: completed
 priority: high
 created: 2026-03-17
 assignee: unassigned
