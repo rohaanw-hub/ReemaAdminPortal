@@ -1,20 +1,31 @@
-import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useApp } from '../../AppContext'
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useApp } from "../../AppContext";
 import {
-  getInitials, getAvatarBg, getAvatarText, formatDate,
-  LEVEL_BADGE_CLASS, LEVEL_PROGRESS, DAYS, SUBJECTS, GRADES, LEVELS,
-} from '../../helpers'
-import { ChevronLeft } from 'lucide-react'
+  getInitials,
+  getAvatarBg,
+  getAvatarText,
+  formatDate,
+  LEVEL_BADGE_CLASS,
+  LEVEL_PROGRESS,
+  DAYS,
+  SUBJECTS,
+  GRADES,
+  LEVELS,
+} from "../../helpers";
+import { ChevronLeft } from "lucide-react";
 
 function EditModal({ student, onClose, onSave }) {
   const initSchedule = () => {
-    const s = {}
+    const s = {};
     DAYS.forEach((d) => {
-      s[d] = { enabled: !!(student.schedule[d]?.length), time: student.schedule[d]?.[0] || '' }
-    })
-    return s
-  }
+      s[d] = {
+        enabled: !!student.schedule[d]?.length,
+        time: student.schedule[d]?.[0] || "",
+      };
+    });
+    return s;
+  };
 
   const [form, setForm] = useState({
     name: student.name,
@@ -27,55 +38,75 @@ function EditModal({ student, onClose, onSave }) {
     parentName: student.parentName,
     parentPhone: student.parentPhone,
     parentEmail: student.parentEmail,
-    parentName2: student.parentName2 || '',
-    parentPhone2: student.parentPhone2 || '',
-    notes: student.notes || '',
-  })
+    parentName2: student.parentName2 || "",
+    parentPhone2: student.parentPhone2 || "",
+    notes: student.notes || "",
+  });
 
-  const set = (field, val) => setForm((f) => ({ ...f, [field]: val }))
+  const set = (field, val) => setForm((f) => ({ ...f, [field]: val }));
 
   const toggleSubject = (s) =>
-    set('subjects', form.subjects.includes(s) ? form.subjects.filter((x) => x !== s) : [...form.subjects, s])
+    set(
+      "subjects",
+      form.subjects.includes(s)
+        ? form.subjects.filter((x) => x !== s)
+        : [...form.subjects, s],
+    );
 
   const toggleDay = (day) =>
     setForm((f) => ({
       ...f,
-      schedule: { ...f.schedule, [day]: { ...f.schedule[day], enabled: !f.schedule[day].enabled } },
-    }))
+      schedule: {
+        ...f.schedule,
+        [day]: { ...f.schedule[day], enabled: !f.schedule[day].enabled },
+      },
+    }));
 
   const setDayTime = (day, val) =>
     setForm((f) => ({
       ...f,
       schedule: { ...f.schedule, [day]: { ...f.schedule[day], time: val } },
-    }))
+    }));
 
   const handleSave = () => {
-    const schedule = {}
+    const schedule = {};
     DAYS.forEach((d) => {
       if (form.schedule[d].enabled && form.schedule[d].time) {
-        schedule[d] = [form.schedule[d].time]
+        schedule[d] = [form.schedule[d].time];
       }
-    })
-    onSave({ ...form, schedule })
-  }
+    });
+    onSave({ ...form, schedule });
+  };
 
   return (
     <div className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
           <span className="modal-title">Edit Student</span>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">Name</label>
-            <input className="form-input" value={form.name} onChange={(e) => set('name', e.target.value)} />
+            <input
+              className="form-input"
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
           </div>
           <div className="form-group">
             <label className="form-label">Grade</label>
-            <select className="form-select" value={form.grade} onChange={(e) => set('grade', e.target.value)}>
-              {GRADES.map((g) => <option key={g}>{g}</option>)}
+            <select
+              className="form-select"
+              value={form.grade}
+              onChange={(e) => set("grade", e.target.value)}
+            >
+              {GRADES.map((g) => (
+                <option key={g}>{g}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -84,21 +115,39 @@ function EditModal({ student, onClose, onSave }) {
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">Reading</label>
-            <select className="form-select" value={form.reading} onChange={(e) => set('reading', e.target.value)}>
-              {LEVELS.map((l) => <option key={l}>{l}</option>)}
+            <select
+              className="form-select"
+              value={form.reading}
+              onChange={(e) => set("reading", e.target.value)}
+            >
+              {LEVELS.map((l) => (
+                <option key={l}>{l}</option>
+              ))}
             </select>
           </div>
           <div className="form-group">
             <label className="form-label">Writing</label>
-            <select className="form-select" value={form.writing} onChange={(e) => set('writing', e.target.value)}>
-              {LEVELS.map((l) => <option key={l}>{l}</option>)}
+            <select
+              className="form-select"
+              value={form.writing}
+              onChange={(e) => set("writing", e.target.value)}
+            >
+              {LEVELS.map((l) => (
+                <option key={l}>{l}</option>
+              ))}
             </select>
           </div>
         </div>
         <div className="form-group">
           <label className="form-label">Math</label>
-          <select className="form-select" value={form.math} onChange={(e) => set('math', e.target.value)}>
-            {LEVELS.map((l) => <option key={l}>{l}</option>)}
+          <select
+            className="form-select"
+            value={form.math}
+            onChange={(e) => set("math", e.target.value)}
+          >
+            {LEVELS.map((l) => (
+              <option key={l}>{l}</option>
+            ))}
           </select>
         </div>
 
@@ -106,8 +155,15 @@ function EditModal({ student, onClose, onSave }) {
           <label className="form-label">Subjects Needed</label>
           <div className="checkbox-group">
             {SUBJECTS.map((s) => (
-              <label key={s} className={`checkbox-chip${form.subjects.includes(s) ? ' selected' : ''}`}>
-                <input type="checkbox" checked={form.subjects.includes(s)} onChange={() => toggleSubject(s)} />
+              <label
+                key={s}
+                className={`checkbox-chip${form.subjects.includes(s) ? " selected" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={form.subjects.includes(s)}
+                  onChange={() => toggleSubject(s)}
+                />
                 {s}
               </label>
             ))}
@@ -116,9 +172,24 @@ function EditModal({ student, onClose, onSave }) {
 
         <div className="form-section">Schedule</div>
         {DAYS.map((day) => (
-          <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <label className={`checkbox-chip${form.schedule[day].enabled ? ' selected' : ''}`} style={{ minWidth: 52 }}>
-              <input type="checkbox" checked={form.schedule[day].enabled} onChange={() => toggleDay(day)} />
+          <div
+            key={day}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 8,
+            }}
+          >
+            <label
+              className={`checkbox-chip${form.schedule[day].enabled ? " selected" : ""}`}
+              style={{ minWidth: 52 }}
+            >
+              <input
+                type="checkbox"
+                checked={form.schedule[day].enabled}
+                onChange={() => toggleDay(day)}
+              />
               {day}
             </label>
             {form.schedule[day].enabled && (
@@ -136,108 +207,203 @@ function EditModal({ student, onClose, onSave }) {
         <div className="form-section">Parent / Guardian</div>
         <div className="form-group">
           <label className="form-label">Primary Name</label>
-          <input className="form-input" value={form.parentName} onChange={(e) => set('parentName', e.target.value)} />
+          <input
+            className="form-input"
+            value={form.parentName}
+            onChange={(e) => set("parentName", e.target.value)}
+          />
         </div>
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">Phone</label>
-            <input className="form-input" value={form.parentPhone} onChange={(e) => set('parentPhone', e.target.value)} />
+            <input
+              className="form-input"
+              value={form.parentPhone}
+              onChange={(e) => set("parentPhone", e.target.value)}
+            />
           </div>
           <div className="form-group">
             <label className="form-label">Email</label>
-            <input className="form-input" value={form.parentEmail} onChange={(e) => set('parentEmail', e.target.value)} />
+            <input
+              className="form-input"
+              value={form.parentEmail}
+              onChange={(e) => set("parentEmail", e.target.value)}
+            />
           </div>
         </div>
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">Secondary Name (optional)</label>
-            <input className="form-input" value={form.parentName2} onChange={(e) => set('parentName2', e.target.value)} />
+            <input
+              className="form-input"
+              value={form.parentName2}
+              onChange={(e) => set("parentName2", e.target.value)}
+            />
           </div>
           <div className="form-group">
             <label className="form-label">Secondary Phone</label>
-            <input className="form-input" value={form.parentPhone2} onChange={(e) => set('parentPhone2', e.target.value)} />
+            <input
+              className="form-input"
+              value={form.parentPhone2}
+              onChange={(e) => set("parentPhone2", e.target.value)}
+            />
           </div>
         </div>
 
         <div className="form-group">
           <label className="form-label">Notes</label>
-          <textarea className="form-textarea" value={form.notes} onChange={(e) => set('notes', e.target.value)} />
+          <textarea
+            className="form-textarea"
+            value={form.notes}
+            onChange={(e) => set("notes", e.target.value)}
+          />
         </div>
 
         <div className="modal-footer">
-          <button className="btn btn-outline" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave}>Save Changes</button>
+          <button className="btn btn-outline" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            Save Changes
+          </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function StudentProfile() {
-  const { id } = useParams()
-  const { students, setStudents, sessions, employees } = useApp()
-  const navigate = useNavigate()
-  const [tab, setTab] = useState('overview')
-  const [showEdit, setShowEdit] = useState(false)
+  const { id } = useParams();
+  const { students, setStudents, sessions, employees } = useApp();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState("overview");
+  const [showEdit, setShowEdit] = useState(false);
 
-  const student = students.find((s) => s.id === Number(id))
-  if (!student) return <div className="card">Student not found.</div>
+  const student = students.find((s) => s.id === Number(id));
+  if (!student) return <div className="card">Student not found.</div>;
 
-  const stuSessions = sessions.filter((s) => s.studentId === student.id)
+  const stuSessions = sessions.filter((s) => s.studentId === student.id);
 
   const handleSaveEdit = (updated) => {
-    setStudents((prev) => prev.map((s) => (s.id === student.id ? { ...s, ...updated } : s)))
-    setShowEdit(false)
-  }
+    setStudents((prev) =>
+      prev.map((s) => (s.id === student.id ? { ...s, ...updated } : s)),
+    );
+    setShowEdit(false);
+  };
 
   return (
     <div>
-      <div className="back-link" onClick={() => navigate('/students')}>
+      <div className="back-link" onClick={() => navigate("/students")}>
         <ChevronLeft size={16} /> Back to Students
       </div>
 
       {/* Header */}
-      <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20 }}>
+      <div
+        className="card"
+        style={{
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          gap: 20,
+        }}
+      >
         <div
           className="avatar"
-          style={{ width: 64, height: 64, fontSize: 22, background: getAvatarBg(student.name), color: getAvatarText(student.name) }}
+          style={{
+            width: 64,
+            height: 64,
+            fontSize: 22,
+            background: getAvatarBg(student.name),
+            color: getAvatarText(student.name),
+          }}
         >
           {getInitials(student.name)}
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 20 }}>{student.name}</div>
-          <div className="text-sm" style={{ fontSize: 13, marginTop: 2 }}>Grade {student.grade} · Enrolled {formatDate(student.enrollDate)}</div>
-          <div style={{ marginTop: 6, display: 'flex', gap: 10, alignItems: 'center' }}>
-            <span style={{ fontWeight: 700, fontSize: 14, color: student.attendance >= 90 ? '#16a34a' : student.attendance >= 75 ? '#d97706' : '#dc2626' }}>
+          <div className="text-sm" style={{ fontSize: 13, marginTop: 2 }}>
+            Grade {student.grade} · Enrolled {formatDate(student.enrollDate)}
+          </div>
+          <div
+            style={{
+              marginTop: 6,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
+            <span
+              style={{
+                fontWeight: 700,
+                fontSize: 14,
+                color:
+                  student.attendance >= 90
+                    ? "#16a34a"
+                    : student.attendance >= 75
+                      ? "#d97706"
+                      : "#dc2626",
+              }}
+            >
               {student.attendance}% attendance
             </span>
             <span className="text-sm">· {student.sessions} sessions</span>
           </div>
         </div>
-        <button className="btn btn-outline btn-sm" onClick={() => setShowEdit(true)}>Edit</button>
+        <button
+          className="btn btn-outline btn-sm"
+          onClick={() => setShowEdit(true)}
+        >
+          Edit
+        </button>
       </div>
 
       {/* Tabs */}
       <div className="tabs">
-        {['overview', 'academic', 'schedule', 'family'].map((t) => (
-          <button key={t} className={`tab${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>
-            {t === 'academic' ? 'Academic Progress' : t.charAt(0).toUpperCase() + t.slice(1)}
+        {["overview", "academic", "schedule", "family"].map((t) => (
+          <button
+            key={t}
+            className={`tab${tab === t ? " active" : ""}`}
+            onClick={() => setTab(t)}
+          >
+            {t === "academic"
+              ? "Academic Progress"
+              : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
 
       {/* Overview Tab */}
-      {tab === 'overview' && (
+      {tab === "overview" && (
         <div className="profile-grid">
           <div className="card">
             <div className="section-title">Student Info</div>
-            <div className="detail-row"><div className="detail-label">Grade</div><div className="detail-value">{student.grade}</div></div>
-            <div className="detail-row"><div className="detail-label">Subjects</div><div className="detail-value">{student.subjects.join(', ')}</div></div>
-            <div className="detail-row"><div className="detail-label">Attendance</div><div className="detail-value">{student.attendance}%</div></div>
-            <div className="detail-row"><div className="detail-label">Sessions Completed</div><div className="detail-value">{student.sessions}</div></div>
-            <div className="detail-row"><div className="detail-label">Enrolled</div><div className="detail-value">{formatDate(student.enrollDate)}</div></div>
+            <div className="detail-row">
+              <div className="detail-label">Grade</div>
+              <div className="detail-value">{student.grade}</div>
+            </div>
+            <div className="detail-row">
+              <div className="detail-label">Subjects</div>
+              <div className="detail-value">{student.subjects.join(", ")}</div>
+            </div>
+            <div className="detail-row">
+              <div className="detail-label">Attendance</div>
+              <div className="detail-value">{student.attendance}%</div>
+            </div>
+            <div className="detail-row">
+              <div className="detail-label">Sessions Completed</div>
+              <div className="detail-value">{student.sessions}</div>
+            </div>
+            <div className="detail-row">
+              <div className="detail-label">Enrolled</div>
+              <div className="detail-value">
+                {formatDate(student.enrollDate)}
+              </div>
+            </div>
             {student.notes && (
-              <div className="detail-row"><div className="detail-label">Notes</div><div className="detail-value">{student.notes}</div></div>
+              <div className="detail-row">
+                <div className="detail-label">Notes</div>
+                <div className="detail-value">{student.notes}</div>
+              </div>
             )}
           </div>
 
@@ -249,24 +415,32 @@ export default function StudentProfile() {
               <div className="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>Day</th><th>Time</th><th>Tutor</th><th>Subject</th><th>Status</th></tr>
+                    <tr>
+                      <th>Day</th>
+                      <th>Time</th>
+                      <th>Tutor</th>
+                      <th>Subject</th>
+                      <th>Status</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {stuSessions.map((s) => {
-                      const emp = employees.find((x) => x.id === s.employeeId)
+                      const emp = employees.find((x) => x.id === s.employeeId);
                       return (
                         <tr key={s.id}>
                           <td>{s.day}</td>
                           <td>{s.time}</td>
-                          <td>{emp?.name ?? 'Unassigned'}</td>
+                          <td>{emp?.name ?? "Unassigned"}</td>
                           <td>{s.subject}</td>
                           <td>
-                            <span className={`badge ${s.status === 'cancelled' ? 'badge-red' : 'badge-green'}`}>
+                            <span
+                              className={`badge ${s.status === "cancelled" ? "badge-red" : "badge-green"}`}
+                            >
                               {s.status}
                             </span>
                           </td>
                         </tr>
-                      )
+                      );
                     })}
                   </tbody>
                 </table>
@@ -277,41 +451,79 @@ export default function StudentProfile() {
       )}
 
       {/* Academic Progress Tab */}
-      {tab === 'academic' && (
+      {tab === "academic" && (
         <div className="card">
           <div className="section-title">Academic Progress</div>
           {[
-            { label: 'Reading', value: student.reading },
-            { label: 'Writing', value: student.writing },
-            { label: 'Math', value: student.math },
+            { label: "Reading", value: student.reading },
+            { label: "Writing", value: student.writing },
+            { label: "Math", value: student.math },
           ].map(({ label, value }) => (
             <div key={label} style={{ marginBottom: 20 }}>
-              <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
-                <span style={{ width: 64, fontSize: 14, color: '#475569', fontWeight: 600 }}>{label}</span>
-                <span className={`badge ${LEVEL_BADGE_CLASS[value] ?? 'badge-gray'}`}>{value}</span>
+              <div
+                className="flex items-center gap-2"
+                style={{ marginBottom: 8 }}
+              >
+                <span
+                  style={{
+                    width: 64,
+                    fontSize: 14,
+                    color: "#475569",
+                    fontWeight: 600,
+                  }}
+                >
+                  {label}
+                </span>
+                <span
+                  className={`badge ${LEVEL_BADGE_CLASS[value] ?? "badge-gray"}`}
+                >
+                  {value}
+                </span>
               </div>
               <div className="progress-bar" style={{ height: 10 }}>
                 <div
                   className="progress-fill"
                   style={{
                     width: `${LEVEL_PROGRESS[value] ?? 0}%`,
-                    background: value === 'Advanced' ? '#E31837' : value === 'Above Grade' ? '#16a34a' : value === 'At Grade' ? '#d97706' : '#dc2626',
+                    background:
+                      value === "Advanced"
+                        ? "#E31837"
+                        : value === "Above Grade"
+                          ? "#16a34a"
+                          : value === "At Grade"
+                            ? "#d97706"
+                            : "#dc2626",
                   }}
                 />
               </div>
               <div className="text-sm" style={{ marginTop: 4 }}>
-                {value === 'Advanced' && 'Performing above expectations — excellent work!'}
-                {value === 'Above Grade' && 'Performing above grade level — keep it up.'}
-                {value === 'At Grade' && 'On track with grade-level expectations.'}
-                {value === 'Below Grade' && 'Needs additional support to reach grade level.'}
+                {value === "Advanced" &&
+                  "Performing above expectations — excellent work!"}
+                {value === "Above Grade" &&
+                  "Performing above grade level — keep it up."}
+                {value === "At Grade" &&
+                  "On track with grade-level expectations."}
+                {value === "Below Grade" &&
+                  "Needs additional support to reach grade level."}
               </div>
             </div>
           ))}
 
           <div style={{ marginTop: 24 }}>
             <div className="section-title">Attendance</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span style={{ fontSize: 32, fontWeight: 700, color: student.attendance >= 90 ? '#16a34a' : student.attendance >= 75 ? '#d97706' : '#dc2626' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <span
+                style={{
+                  fontSize: 32,
+                  fontWeight: 700,
+                  color:
+                    student.attendance >= 90
+                      ? "#16a34a"
+                      : student.attendance >= 75
+                        ? "#d97706"
+                        : "#dc2626",
+                }}
+              >
                 {student.attendance}%
               </span>
               <div style={{ flex: 1 }}>
@@ -320,11 +532,18 @@ export default function StudentProfile() {
                     className="progress-fill"
                     style={{
                       width: `${student.attendance}%`,
-                      background: student.attendance >= 90 ? '#16a34a' : student.attendance >= 75 ? '#d97706' : '#dc2626',
+                      background:
+                        student.attendance >= 90
+                          ? "#16a34a"
+                          : student.attendance >= 75
+                            ? "#d97706"
+                            : "#dc2626",
                     }}
                   />
                 </div>
-                <div className="text-sm" style={{ marginTop: 4 }}>{student.sessions} total sessions attended</div>
+                <div className="text-sm" style={{ marginTop: 4 }}>
+                  {student.sessions} total sessions attended
+                </div>
               </div>
             </div>
           </div>
@@ -332,7 +551,7 @@ export default function StudentProfile() {
       )}
 
       {/* Schedule Tab */}
-      {tab === 'schedule' && (
+      {tab === "schedule" && (
         <div className="card">
           <div className="section-title">Weekly Schedule</div>
           <div className="schedule-grid">
@@ -340,9 +559,15 @@ export default function StudentProfile() {
               <div key={day} className="day-col">
                 <div className="day-label">{day}</div>
                 {(student.schedule[day] || []).map((slot) => (
-                  <div key={slot} className="session-block">{slot}</div>
+                  <div key={slot} className="session-block">
+                    {slot}
+                  </div>
                 ))}
-                {!student.schedule[day] && <div className="text-sm" style={{ textAlign: 'center' }}>—</div>}
+                {!student.schedule[day] && (
+                  <div className="text-sm" style={{ textAlign: "center" }}>
+                    —
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -355,24 +580,32 @@ export default function StudentProfile() {
               <div className="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>Day</th><th>Time</th><th>Tutor</th><th>Subject</th><th>Status</th></tr>
+                    <tr>
+                      <th>Day</th>
+                      <th>Time</th>
+                      <th>Tutor</th>
+                      <th>Subject</th>
+                      <th>Status</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {stuSessions.map((s) => {
-                      const emp = employees.find((x) => x.id === s.employeeId)
+                      const emp = employees.find((x) => x.id === s.employeeId);
                       return (
                         <tr key={s.id}>
                           <td>{s.day}</td>
                           <td>{s.time}</td>
-                          <td>{emp?.name ?? 'Unassigned'}</td>
+                          <td>{emp?.name ?? "Unassigned"}</td>
                           <td>{s.subject}</td>
                           <td>
-                            <span className={`badge ${s.status === 'cancelled' ? 'badge-red' : 'badge-green'}`}>
+                            <span
+                              className={`badge ${s.status === "cancelled" ? "badge-red" : "badge-green"}`}
+                            >
                               {s.status}
                             </span>
                           </td>
                         </tr>
-                      )
+                      );
                     })}
                   </tbody>
                 </table>
@@ -383,20 +616,35 @@ export default function StudentProfile() {
       )}
 
       {/* Family Tab */}
-      {tab === 'family' && (
+      {tab === "family" && (
         <div className="profile-grid">
           <div className="card">
             <div className="section-title">Primary Guardian</div>
-            <div className="detail-row"><div className="detail-label">Name</div><div className="detail-value">{student.parentName}</div></div>
-            <div className="detail-row"><div className="detail-label">Phone</div><div className="detail-value">{student.parentPhone}</div></div>
-            <div className="detail-row"><div className="detail-label">Email</div><div className="detail-value">{student.parentEmail}</div></div>
+            <div className="detail-row">
+              <div className="detail-label">Name</div>
+              <div className="detail-value">{student.parentName}</div>
+            </div>
+            <div className="detail-row">
+              <div className="detail-label">Phone</div>
+              <div className="detail-value">{student.parentPhone}</div>
+            </div>
+            <div className="detail-row">
+              <div className="detail-label">Email</div>
+              <div className="detail-value">{student.parentEmail}</div>
+            </div>
           </div>
 
           {student.parentName2 ? (
             <div className="card">
               <div className="section-title">Secondary Guardian</div>
-              <div className="detail-row"><div className="detail-label">Name</div><div className="detail-value">{student.parentName2}</div></div>
-              <div className="detail-row"><div className="detail-label">Phone</div><div className="detail-value">{student.parentPhone2}</div></div>
+              <div className="detail-row">
+                <div className="detail-label">Name</div>
+                <div className="detail-value">{student.parentName2}</div>
+              </div>
+              <div className="detail-row">
+                <div className="detail-label">Phone</div>
+                <div className="detail-value">{student.parentPhone2}</div>
+              </div>
             </div>
           ) : (
             <div className="card">
@@ -407,7 +655,13 @@ export default function StudentProfile() {
         </div>
       )}
 
-      {showEdit && <EditModal student={student} onClose={() => setShowEdit(false)} onSave={handleSaveEdit} />}
+      {showEdit && (
+        <EditModal
+          student={student}
+          onClose={() => setShowEdit(false)}
+          onSave={handleSaveEdit}
+        />
+      )}
     </div>
-  )
+  );
 }

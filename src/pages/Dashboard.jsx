@@ -1,24 +1,54 @@
-import { useApp } from '../../AppContext'
-import { getInitials, getAvatarBg, getAvatarText, calcReliability, reliabilityColor, LEVEL_BADGE_CLASS } from '../../helpers'
+import { useApp } from "../../AppContext";
+import {
+  getInitials,
+  getAvatarBg,
+  getAvatarText,
+  calcReliability,
+  reliabilityColor,
+  LEVEL_BADGE_CLASS,
+} from "../../helpers";
 
-const TODAY = 'Mon'
+const TODAY = "Mon";
 
 export default function Dashboard() {
-  const { employees, students, sessions, notifications, dismissNotification } = useApp()
+  const { employees, students, sessions, notifications, dismissNotification } =
+    useApp();
 
-  const activeEmployees = employees.filter((e) => e.status === 'active').length
-  const enrolledStudents = students.filter((s) => s.status === 'active').length
-  const todaySessions = sessions.filter((s) => s.day === TODAY)
+  const activeEmployees = employees.filter((e) => e.status === "active").length;
+  const enrolledStudents = students.filter((s) => s.status === "active").length;
+  const todaySessions = sessions.filter((s) => s.day === TODAY);
   const avgAttendance = students.length
-    ? Math.round(students.reduce((sum, s) => sum + s.attendance, 0) / students.length)
-    : 0
+    ? Math.round(
+        students.reduce((sum, s) => sum + s.attendance, 0) / students.length,
+      )
+    : 0;
 
   const stats = [
-    { label: 'Active Employees', value: activeEmployees, color: '#E31837', sub: 'on staff' },
-    { label: 'Enrolled Students', value: enrolledStudents, color: '#16a34a', sub: 'active' },
-    { label: 'Sessions Today', value: todaySessions.length, color: '#d97706', sub: 'Monday' },
-    { label: 'Avg Attendance', value: `${avgAttendance}%`, color: '#7c3aed', sub: 'all students' },
-  ]
+    {
+      label: "Active Employees",
+      value: activeEmployees,
+      color: "#E31837",
+      sub: "on staff",
+    },
+    {
+      label: "Enrolled Students",
+      value: enrolledStudents,
+      color: "#16a34a",
+      sub: "active",
+    },
+    {
+      label: "Sessions Today",
+      value: todaySessions.length,
+      color: "#d97706",
+      sub: "Monday",
+    },
+    {
+      label: "Avg Attendance",
+      value: `${avgAttendance}%`,
+      color: "#7c3aed",
+      sub: "all students",
+    },
+  ];
 
   return (
     <div>
@@ -34,7 +64,14 @@ export default function Dashboard() {
               <span style={{ flex: 1 }}>{n.msg}</span>
               <button
                 onClick={() => dismissNotification(n.id)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: 'inherit', opacity: 0.6 }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 18,
+                  color: "inherit",
+                  opacity: 0.6,
+                }}
               >
                 ×
               </button>
@@ -48,13 +85,24 @@ export default function Dashboard() {
         {stats.map((s) => (
           <div key={s.label} className="stat-card">
             <div className="stat-label">{s.label}</div>
-            <div className="stat-value" style={{ color: s.color }}>{s.value}</div>
-            <div className="text-sm" style={{ marginTop: 4 }}>{s.sub}</div>
+            <div className="stat-value" style={{ color: s.color }}>
+              {s.value}
+            </div>
+            <div className="text-sm" style={{ marginTop: 4 }}>
+              {s.sub}
+            </div>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 20,
+          marginBottom: 20,
+        }}
+      >
         {/* Today's Schedule */}
         <div className="card">
           <div className="section-title">Today's Schedule — Monday</div>
@@ -62,47 +110,49 @@ export default function Dashboard() {
             <p className="text-sm">No sessions scheduled for today.</p>
           ) : (
             todaySessions.map((s) => {
-              const student = students.find((x) => x.id === s.studentId)
-              const emp = employees.find((x) => x.id === s.employeeId)
+              const student = students.find((x) => x.id === s.studentId);
+              const emp = employees.find((x) => x.id === s.employeeId);
               return (
                 <div
                   key={s.id}
                   style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
+                    display: "flex",
+                    alignItems: "flex-start",
                     gap: 12,
-                    padding: '10px 0',
-                    borderBottom: '1px solid #f1f5f9',
+                    padding: "10px 0",
+                    borderBottom: "1px solid #f1f5f9",
                   }}
                 >
                   <div
                     style={{
-                      background: '#f1f5f9',
+                      background: "#f1f5f9",
                       borderRadius: 6,
-                      padding: '4px 8px',
+                      padding: "4px 8px",
                       fontSize: 11,
                       fontWeight: 700,
-                      color: '#475569',
+                      color: "#475569",
                       minWidth: 44,
-                      textAlign: 'center',
+                      textAlign: "center",
                       flexShrink: 0,
                     }}
                   >
                     {s.time}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13 }}>{student?.name ?? '—'}</div>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>
+                      {student?.name ?? "—"}
+                    </div>
                     <div className="text-sm">
-                      {emp ? emp.name : 'Tutor: Unassigned'} · {s.subject}
+                      {emp ? emp.name : "Tutor: Unassigned"} · {s.subject}
                     </div>
                   </div>
-                  {s.status === 'cancelled' ? (
+                  {s.status === "cancelled" ? (
                     <span className="badge badge-red">Cancelled</span>
                   ) : (
                     <span className="badge badge-blue">Scheduled</span>
                   )}
                 </div>
-              )
+              );
             })
           )}
         </div>
@@ -111,36 +161,50 @@ export default function Dashboard() {
         <div className="card">
           <div className="section-title">Employee Status Today</div>
           {employees.map((emp) => {
-            const rel = calcReliability(emp.callouts, emp.totalShifts)
-            const todaySlots = emp.schedule[TODAY] || []
+            const rel = calcReliability(emp.callouts, emp.totalShifts);
+            const todaySlots = emp.schedule[TODAY] || [];
             return (
               <div
                 key={emp.id}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 10,
-                  padding: '9px 0',
-                  borderBottom: '1px solid #f1f5f9',
+                  padding: "9px 0",
+                  borderBottom: "1px solid #f1f5f9",
                 }}
               >
                 <div
                   className="avatar"
-                  style={{ background: getAvatarBg(emp.name), color: getAvatarText(emp.name) }}
+                  style={{
+                    background: getAvatarBg(emp.name),
+                    color: getAvatarText(emp.name),
+                  }}
                 >
                   {getInitials(emp.name)}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: 13 }}>{emp.name}</div>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>
+                    {emp.name}
+                  </div>
                   <div className="text-sm">
-                    {emp.role} · {todaySlots.length > 0 ? todaySlots.join(', ') : 'Not scheduled today'}
+                    {emp.role} ·{" "}
+                    {todaySlots.length > 0
+                      ? todaySlots.join(", ")
+                      : "Not scheduled today"}
                   </div>
                 </div>
-                <span style={{ color: reliabilityColor(rel), fontWeight: 700, fontSize: 13 }}>
+                <span
+                  style={{
+                    color: reliabilityColor(rel),
+                    fontWeight: 700,
+                    fontSize: 13,
+                  }}
+                >
                   {rel}%
                 </span>
               </div>
-            )
+            );
           })}
         </div>
       </div>
@@ -167,7 +231,10 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2">
                       <div
                         className="avatar"
-                        style={{ background: getAvatarBg(s.name), color: getAvatarText(s.name) }}
+                        style={{
+                          background: getAvatarBg(s.name),
+                          color: getAvatarText(s.name),
+                        }}
                       >
                         {getInitials(s.name)}
                       </div>
@@ -175,18 +242,43 @@ export default function Dashboard() {
                     </div>
                   </td>
                   <td>{s.grade}</td>
-                  <td><span className={`badge ${LEVEL_BADGE_CLASS[s.reading] ?? 'badge-gray'}`}>{s.reading}</span></td>
-                  <td><span className={`badge ${LEVEL_BADGE_CLASS[s.writing] ?? 'badge-gray'}`}>{s.writing}</span></td>
-                  <td><span className={`badge ${LEVEL_BADGE_CLASS[s.math] ?? 'badge-gray'}`}>{s.math}</span></td>
+                  <td>
+                    <span
+                      className={`badge ${LEVEL_BADGE_CLASS[s.reading] ?? "badge-gray"}`}
+                    >
+                      {s.reading}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${LEVEL_BADGE_CLASS[s.writing] ?? "badge-gray"}`}
+                    >
+                      {s.writing}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${LEVEL_BADGE_CLASS[s.math] ?? "badge-gray"}`}
+                    >
+                      {s.math}
+                    </span>
+                  </td>
                   <td>
                     <div className="att-bar-wrap">
-                      <span style={{ fontSize: 12, minWidth: 36 }}>{s.attendance}%</span>
+                      <span style={{ fontSize: 12, minWidth: 36 }}>
+                        {s.attendance}%
+                      </span>
                       <div className="att-bar">
                         <div
                           className="att-bar-fill"
                           style={{
                             width: `${s.attendance}%`,
-                            background: s.attendance >= 90 ? '#16a34a' : s.attendance >= 75 ? '#d97706' : '#dc2626',
+                            background:
+                              s.attendance >= 90
+                                ? "#16a34a"
+                                : s.attendance >= 75
+                                  ? "#d97706"
+                                  : "#dc2626",
                           }}
                         />
                       </div>
@@ -199,5 +291,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

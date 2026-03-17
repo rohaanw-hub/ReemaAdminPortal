@@ -1,117 +1,243 @@
-import { useApp } from '../../AppContext'
-import { getInitials, getAvatarBg, getAvatarText, DAYS, ALL_TIME_SLOTS, WEEKDAY_SLOTS, SAT_SLOTS, SUBJECT_COLORS } from '../../helpers'
+import { useApp } from "../../AppContext";
+import {
+  getInitials,
+  getAvatarBg,
+  getAvatarText,
+  DAYS,
+  ALL_TIME_SLOTS,
+  WEEKDAY_SLOTS,
+  SAT_SLOTS,
+  SUBJECT_COLORS,
+} from "../../helpers";
 
 // Academic level colours — inline since LEVEL_BADGE_CLASS uses CSS class names not inline styles
 const LEVEL_COLORS = {
-  Advanced:       { bg: '#dcfce7', color: '#166534' },
-  'Above Grade':  { bg: '#d1fae5', color: '#065f46' },
-  'At Grade':     { bg: '#f1f5f9', color: '#475569' },
-  'Below Grade':  { bg: '#fef3c7', color: '#92400e' },
-}
+  Advanced: { bg: "#dcfce7", color: "#166534" },
+  "Above Grade": { bg: "#d1fae5", color: "#065f46" },
+  "At Grade": { bg: "#f1f5f9", color: "#475569" },
+  "Below Grade": { bg: "#fef3c7", color: "#92400e" },
+};
 
 function LevelPill({ label, value }) {
-  const { bg, color } = LEVEL_COLORS[value] ?? { bg: '#f1f5f9', color: '#475569' }
+  const { bg, color } = LEVEL_COLORS[value] ?? {
+    bg: "#f1f5f9",
+    color: "#475569",
+  };
   return (
-    <div style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          fontSize: 11,
+          color: "#94a3b8",
+          marginBottom: 4,
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        }}
+      >
         {label}
       </div>
-      <span style={{
-        display: 'inline-block', padding: '3px 10px', borderRadius: 999,
-        fontSize: 12, fontWeight: 600, background: bg, color,
-      }}>
+      <span
+        style={{
+          display: "inline-block",
+          padding: "3px 10px",
+          borderRadius: 999,
+          fontSize: 12,
+          fontWeight: 600,
+          background: bg,
+          color,
+        }}
+      >
         {value}
       </span>
     </div>
-  )
+  );
 }
 
 export default function ParentPortal() {
-  const { currentUser, students, sessions, employees } = useApp()
+  const { currentUser, students, sessions, employees } = useApp();
 
   // Resolve child from profileId (set by resolveLogin when parent logs in)
-  const child = students.find((s) => s.id === currentUser?.profileId)
+  const child = students.find((s) => s.id === currentUser?.profileId);
 
   if (!child) {
     return (
-      <div className="card" style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>
+      <div
+        className="card"
+        style={{ textAlign: "center", padding: 40, color: "#94a3b8" }}
+      >
         No student record linked to this account.
       </div>
-    )
+    );
   }
 
-  const childSessions = sessions.filter((s) => s.studentId === child.id)
-  const upcoming = childSessions.filter((s) => s.status !== 'cancelled')
-  const cancelled = childSessions.filter((s) => s.status === 'cancelled').length
+  const childSessions = sessions.filter((s) => s.studentId === child.id);
+  const upcoming = childSessions.filter((s) => s.status !== "cancelled");
+  const cancelled = childSessions.filter(
+    (s) => s.status === "cancelled",
+  ).length;
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto' }}>
-
+    <div style={{ maxWidth: 860, margin: "0 auto" }}>
       {/* ── Child header card ─────────────────────────────────────────────── */}
-      <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+      <div
+        className="card"
+        style={{
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          gap: 20,
+          flexWrap: "wrap",
+        }}
+      >
         <div
           className="avatar"
-          style={{ width: 64, height: 64, fontSize: 22, flexShrink: 0, background: getAvatarBg(child.name), color: getAvatarText(child.name) }}
+          style={{
+            width: 64,
+            height: 64,
+            fontSize: 22,
+            flexShrink: 0,
+            background: getAvatarBg(child.name),
+            color: getAvatarText(child.name),
+          }}
         >
           {getInitials(child.name)}
         </div>
         <div style={{ flex: 1, minWidth: 160 }}>
-          <div style={{ fontWeight: 700, fontSize: 20, color: '#0f172a' }}>{child.name}</div>
-          <div className="text-sm" style={{ marginTop: 2 }}>Grade {child.grade} · Enrolled {child.enrollDate}</div>
+          <div style={{ fontWeight: 700, fontSize: 20, color: "#0f172a" }}>
+            {child.name}
+          </div>
+          <div className="text-sm" style={{ marginTop: 2 }}>
+            Grade {child.grade} · Enrolled {child.enrollDate}
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
           <LevelPill label="Reading" value={child.reading} />
           <LevelPill label="Writing" value={child.writing} />
-          <LevelPill label="Math"    value={child.math}    />
+          <LevelPill label="Math" value={child.math} />
         </div>
       </div>
 
       {/* ── Stats row ─────────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 16,
+          marginBottom: 20,
+        }}
+      >
         {[
-          { label: 'Attendance',       value: `${child.attendance}%`,    sub: 'of sessions attended' },
-          { label: 'Total Sessions',   value: child.sessions,            sub: 'all time'             },
-          { label: 'Upcoming',         value: upcoming.length,           sub: 'this week'            },
+          {
+            label: "Attendance",
+            value: `${child.attendance}%`,
+            sub: "of sessions attended",
+          },
+          { label: "Total Sessions", value: child.sessions, sub: "all time" },
+          { label: "Upcoming", value: upcoming.length, sub: "this week" },
         ].map((s) => (
-          <div key={s.label} className="card" style={{ textAlign: 'center', padding: '20px 16px' }}>
-            <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+          <div
+            key={s.label}
+            className="card"
+            style={{ textAlign: "center", padding: "20px 16px" }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                color: "#94a3b8",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                marginBottom: 6,
+              }}
+            >
               {s.label}
             </div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: '#0f172a', lineHeight: 1.1 }}>{s.value}</div>
-            <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>{s.sub}</div>
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 700,
+                color: "#0f172a",
+                lineHeight: 1.1,
+              }}
+            >
+              {s.value}
+            </div>
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>
+              {s.sub}
+            </div>
           </div>
         ))}
       </div>
 
       {/* ── Attendance progress bar ───────────────────────────────────────── */}
       <div className="card" style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <span style={{ fontWeight: 600, fontSize: 14, color: '#0f172a' }}>Attendance</span>
-          <span style={{
-            fontWeight: 700, fontSize: 14,
-            color: child.attendance >= 90 ? '#16a34a' : child.attendance >= 75 ? '#d97706' : '#dc2626',
-          }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          <span style={{ fontWeight: 600, fontSize: 14, color: "#0f172a" }}>
+            Attendance
+          </span>
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: 14,
+              color:
+                child.attendance >= 90
+                  ? "#16a34a"
+                  : child.attendance >= 75
+                    ? "#d97706"
+                    : "#dc2626",
+            }}
+          >
             {child.attendance}%
           </span>
         </div>
-        <div style={{ background: '#f1f5f9', borderRadius: 999, height: 10, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', borderRadius: 999,
-            width: `${child.attendance}%`,
-            background: child.attendance >= 90 ? '#16a34a' : child.attendance >= 75 ? '#d97706' : '#dc2626',
-            transition: 'width 0.4s ease',
-          }} />
+        <div
+          style={{
+            background: "#f1f5f9",
+            borderRadius: 999,
+            height: 10,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              borderRadius: 999,
+              width: `${child.attendance}%`,
+              background:
+                child.attendance >= 90
+                  ? "#16a34a"
+                  : child.attendance >= 75
+                    ? "#d97706"
+                    : "#dc2626",
+              transition: "width 0.4s ease",
+            }}
+          />
         </div>
         {cancelled > 0 && (
-          <div className="text-sm" style={{ marginTop: 8, color: '#94a3b8' }}>
-            {cancelled} session{cancelled > 1 ? 's' : ''} cancelled this period
+          <div className="text-sm" style={{ marginTop: 8, color: "#94a3b8" }}>
+            {cancelled} session{cancelled > 1 ? "s" : ""} cancelled this period
           </div>
         )}
       </div>
 
       {/* ── Upcoming sessions table ───────────────────────────────────────── */}
       <div className="card" style={{ marginBottom: 20 }}>
-        <div style={{ fontWeight: 600, fontSize: 15, color: '#0f172a', marginBottom: 16 }}>Upcoming Sessions</div>
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: 15,
+            color: "#0f172a",
+            marginBottom: 16,
+          }}
+        >
+          Upcoming Sessions
+        </div>
         {upcoming.length === 0 ? (
           <p className="text-sm">No upcoming sessions scheduled.</p>
         ) : (
@@ -128,26 +254,46 @@ export default function ParentPortal() {
               <tbody>
                 {upcoming
                   .slice()
-                  .sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || ALL_TIME_SLOTS.indexOf(a.time) - ALL_TIME_SLOTS.indexOf(b.time))
+                  .sort(
+                    (a, b) =>
+                      DAYS.indexOf(a.day) - DAYS.indexOf(b.day) ||
+                      ALL_TIME_SLOTS.indexOf(a.time) -
+                        ALL_TIME_SLOTS.indexOf(b.time),
+                  )
                   .map((s) => {
-                    const tutor = employees.find((e) => e.id === s.employeeId)
-                    const colors = SUBJECT_COLORS[s.subject] ?? { bg: '#f1f5f9', color: '#475569' }
+                    const tutor = employees.find((e) => e.id === s.employeeId);
+                    const colors = SUBJECT_COLORS[s.subject] ?? {
+                      bg: "#f1f5f9",
+                      color: "#475569",
+                    };
                     return (
                       <tr key={s.id}>
                         <td style={{ fontWeight: 500 }}>{s.day}</td>
                         <td>{s.time}</td>
                         <td>
-                          <span style={{
-                            display: 'inline-block', padding: '2px 8px', borderRadius: 999,
-                            fontSize: 12, fontWeight: 600,
-                            background: colors.bg, color: colors.color,
-                          }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "2px 8px",
+                              borderRadius: 999,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              background: colors.bg,
+                              color: colors.color,
+                            }}
+                          >
                             {s.subject}
                           </span>
                         </td>
-                        <td>{tutor ? tutor.name : <span style={{ color: '#94a3b8' }}>Unassigned</span>}</td>
+                        <td>
+                          {tutor ? (
+                            tutor.name
+                          ) : (
+                            <span style={{ color: "#94a3b8" }}>Unassigned</span>
+                          )}
+                        </td>
                       </tr>
-                    )
+                    );
                   })}
               </tbody>
             </table>
@@ -157,69 +303,103 @@ export default function ParentPortal() {
 
       {/* ── Weekly schedule grid ──────────────────────────────────────────── */}
       <div className="card">
-        <div style={{ fontWeight: 600, fontSize: 15, color: '#0f172a', marginBottom: 16 }}>Weekly Schedule</div>
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: 15,
+            color: "#0f172a",
+            marginBottom: 16,
+          }}
+        >
+          Weekly Schedule
+        </div>
         <div className="week-grid-wrap">
           <table className="week-grid">
             <thead>
               <tr>
                 <th>Time</th>
-                {DAYS.map((d) => <th key={d}>{d}</th>)}
+                {DAYS.map((d) => (
+                  <th key={d}>{d}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {ALL_TIME_SLOTS.map((time) => {
                 // Only render rows that have at least one session for this child
                 const rowHasSessions = DAYS.some((day) => {
-                  const isSat = day === 'Sat'
-                  const isUnavail = (isSat && WEEKDAY_SLOTS.includes(time)) || (!isSat && SAT_SLOTS.includes(time))
-                  if (isUnavail) return false
-                  return upcoming.some((s) => s.day === day && s.time === time)
-                })
-                if (!rowHasSessions) return null
+                  const isSat = day === "Sat";
+                  const isUnavail =
+                    (isSat && WEEKDAY_SLOTS.includes(time)) ||
+                    (!isSat && SAT_SLOTS.includes(time));
+                  if (isUnavail) return false;
+                  return upcoming.some((s) => s.day === day && s.time === time);
+                });
+                if (!rowHasSessions) return null;
 
                 return (
                   <tr key={time}>
                     <td>{time}</td>
                     {DAYS.map((day) => {
-                      const isSat = day === 'Sat'
-                      const isUnavail = (isSat && WEEKDAY_SLOTS.includes(time)) || (!isSat && SAT_SLOTS.includes(time))
-                      if (isUnavail) return <td key={day} className="grid-cell-unavail" />
+                      const isSat = day === "Sat";
+                      const isUnavail =
+                        (isSat && WEEKDAY_SLOTS.includes(time)) ||
+                        (!isSat && SAT_SLOTS.includes(time));
+                      if (isUnavail)
+                        return <td key={day} className="grid-cell-unavail" />;
 
-                      const cellSessions = upcoming.filter((s) => s.day === day && s.time === time)
+                      const cellSessions = upcoming.filter(
+                        (s) => s.day === day && s.time === time,
+                      );
                       return (
-                        <td key={day} style={{ position: 'relative', verticalAlign: 'top' }}>
+                        <td
+                          key={day}
+                          style={{ position: "relative", verticalAlign: "top" }}
+                        >
                           {cellSessions.map((s) => {
-                            const tutor = employees.find((e) => e.id === s.employeeId)
-                            const colors = SUBJECT_COLORS[s.subject] ?? { bg: '#f1f5f9', color: '#475569' }
+                            const tutor = employees.find(
+                              (e) => e.id === s.employeeId,
+                            );
+                            const colors = SUBJECT_COLORS[s.subject] ?? {
+                              bg: "#f1f5f9",
+                              color: "#475569",
+                            };
                             return (
                               <div
                                 key={s.id}
                                 style={{
-                                  background: colors.bg, color: colors.color,
-                                  borderRadius: 6, padding: '5px 8px', marginBottom: 4,
-                                  fontSize: 12, fontWeight: 500,
+                                  background: colors.bg,
+                                  color: colors.color,
+                                  borderRadius: 6,
+                                  padding: "5px 8px",
+                                  marginBottom: 4,
+                                  fontSize: 12,
+                                  fontWeight: 500,
                                 }}
                               >
-                                <div style={{ fontWeight: 600 }}>{s.subject}</div>
+                                <div style={{ fontWeight: 600 }}>
+                                  {s.subject}
+                                </div>
                                 <div style={{ fontSize: 11, opacity: 0.85 }}>
-                                  {tutor ? tutor.name.split(' ')[0] : 'TBD'}
+                                  {tutor ? tutor.name.split(" ")[0] : "TBD"}
                                 </div>
                               </div>
-                            )
+                            );
                           })}
                         </td>
-                      )
+                      );
                     })}
                   </tr>
-                )
+                );
               })}
             </tbody>
           </table>
         </div>
         {upcoming.length === 0 && (
-          <p className="text-sm" style={{ marginTop: 8 }}>No sessions to display.</p>
+          <p className="text-sm" style={{ marginTop: 8 }}>
+            No sessions to display.
+          </p>
         )}
       </div>
     </div>
-  )
+  );
 }

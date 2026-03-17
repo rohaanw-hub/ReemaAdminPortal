@@ -1,17 +1,23 @@
-import { useApp } from '../../AppContext'
-import { getInitials, getAvatarBg, getAvatarText, calcHours, formatDate } from '../../helpers'
+import { useApp } from "../../AppContext";
+import {
+  getInitials,
+  getAvatarBg,
+  getAvatarText,
+  calcHours,
+  formatDate,
+} from "../../helpers";
 
 export default function Payroll() {
-  const { employees } = useApp()
+  const { employees } = useApp();
 
   const rows = employees.map((e) => {
-    const hours = calcHours(e.clockIns)
-    const gross = hours * e.hourlyRate
-    return { ...e, hours, gross }
-  })
+    const hours = calcHours(e.clockIns);
+    const gross = hours * e.hourlyRate;
+    return { ...e, hours, gross };
+  });
 
-  const totalGross = rows.reduce((acc, r) => acc + r.gross, 0)
-  const totalHours = rows.reduce((acc, r) => acc + r.hours, 0)
+  const totalGross = rows.reduce((acc, r) => acc + r.gross, 0);
+  const totalHours = rows.reduce((acc, r) => acc + r.hours, 0);
 
   return (
     <div>
@@ -57,7 +63,10 @@ export default function Payroll() {
                     <div className="flex items-center gap-2">
                       <div
                         className="avatar"
-                        style={{ background: getAvatarBg(e.name), color: getAvatarText(e.name) }}
+                        style={{
+                          background: getAvatarBg(e.name),
+                          color: getAvatarText(e.name),
+                        }}
                       >
                         {getInitials(e.name)}
                       </div>
@@ -75,5 +84,5 @@ export default function Payroll() {
         </div>
       </div>
     </div>
-  )
+  );
 }

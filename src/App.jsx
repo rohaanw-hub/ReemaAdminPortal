@@ -1,13 +1,13 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Layout from './components/Layout'
-import Dashboard from './pages/Dashboard'
-import Employees from './pages/Employees'
-import EmployeeProfile from './pages/EmployeeProfile'
-import Students from './pages/Students'
-import StudentProfile from './pages/StudentProfile'
-import Schedule from './pages/Schedule'
-import ClockIn from './pages/ClockIn'
-import Payroll from './pages/Payroll'
+import { Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Employees from "./pages/Employees";
+import EmployeeProfile from "./pages/EmployeeProfile";
+import Students from "./pages/Students";
+import StudentProfile from "./pages/StudentProfile";
+import Schedule from "./pages/Schedule";
+import ClockIn from "./pages/ClockIn";
+import Payroll from "./pages/Payroll";
 
 export default function App() {
   return (
@@ -25,5 +25,5 @@ export default function App() {
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>
-  )
+  );
 }
