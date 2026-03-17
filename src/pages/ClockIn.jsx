@@ -24,7 +24,7 @@ export default function ClockIn() {
       ),
     );
     const emp = employees.find((e) => e.id === id);
-    addNotification("info", `${emp.name} clocked in`);
+    addNotification("info", `${emp.name} clocked in`, "admin");
   };
 
   const clockOut = (id) => {
@@ -40,7 +40,7 @@ export default function ClockIn() {
       }),
     );
     const emp = employees.find((e) => e.id === id);
-    addNotification("info", `${emp.name} clocked out`);
+    addNotification("info", `${emp.name} clocked out`, "admin");
   };
 
   return (

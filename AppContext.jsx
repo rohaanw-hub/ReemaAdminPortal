@@ -366,30 +366,53 @@ export function AppProvider({ children }) {
   const [students, setStudents] = useState(SEED_STUDENTS)
   const [sessions, setSessions] = useState(SEED_SESSIONS)
   const [currentUser, setCurrentUser] = useState(null)
+  // Notification shape: { id, type, msg, scope, timestamp, read }
+  // scope: 'admin' | 'teacher:{empId}' | 'parent:{studentId}'
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'warning', msg: 'Jaylen Williams — Tue/Thu 5PM sessions need tutor assignment' },
-    { id: 2, type: 'warning', msg: 'Lily Nguyen — Wed 3PM Reading session needs tutor assignment' },
-    { id: 3, type: 'info', msg: '4 sessions scheduled for today (Monday)' },
+    { id: 1, type: 'warning', msg: 'Jaylen Williams — Tue/Thu 5PM sessions need tutor assignment', scope: 'admin', timestamp: '2026-03-17T08:00:00.000Z', read: false },
+    { id: 2, type: 'warning', msg: 'Lily Nguyen — Wed 3PM Reading session needs tutor assignment', scope: 'admin', timestamp: '2026-03-17T08:01:00.000Z', read: false },
+    { id: 3, type: 'info',    msg: '4 sessions scheduled for today (Monday)', scope: 'admin', timestamp: '2026-03-17T08:02:00.000Z', read: false },
   ])
   // weeklyConflicts: { [employeeId]: [{ id, day, startTime, endTime, reason }] }
   const [weeklyConflicts, setWeeklyConflicts] = useState({})
 
-  const login = (email, password) => {
-    const result = resolveLogin(email, password, employees, students)
-    if (result.ok) setCurrentUser(result.user)
-    return result
-  }
-
-  const logout = () => setCurrentUser(null)
-
-  const addNotification = (type, msg) => {
-    const id = Date.now()
-    setNotifications((n) => [{ id, type, msg }, ...n.slice(0, 4)])
+  const addNotification = (type, msg, scope = 'admin') => {
+    const id = Date.now() + Math.random()
+    setNotifications((n) => [{ id, type, msg, scope, timestamp: new Date().toISOString(), read: false }, ...n])
   }
 
   const dismissNotification = (id) => {
     setNotifications((n) => n.filter((x) => x.id !== id))
   }
+
+  const markAllRead = () => {
+    setNotifications((n) => n.map((x) => ({ ...x, read: true })))
+  }
+
+  const login = (email, password) => {
+    const result = resolveLogin(email, password, employees, students)
+    if (result.ok) {
+      setCurrentUser(result.user)
+      // Fire a session reminder for teachers on login (demo mock)
+      if (result.user.role === 'teacher') {
+        const DAYS_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        const mySessions = sessions
+          .filter((s) => s.employeeId === result.user.profileId && s.status !== 'cancelled')
+          .sort((a, b) => DAYS_ORDER.indexOf(a.day) - DAYS_ORDER.indexOf(b.day))
+        if (mySessions.length > 0) {
+          const next = mySessions[0]
+          const id = Date.now() + Math.random()
+          setNotifications((n) => [
+            { id, type: 'info', msg: `Reminder: your next session is ${next.day} at ${next.time} (${next.subject}).`, scope: `teacher:${result.user.profileId}`, timestamp: new Date().toISOString(), read: false },
+            ...n,
+          ])
+        }
+      }
+    }
+    return result
+  }
+
+  const logout = () => setCurrentUser(null)
 
   // Returns true if email is already used by any employee or student parentEmail,
   // optionally excluding a specific record (for edit flows).
@@ -409,7 +432,7 @@ export function AppProvider({ children }) {
   // Mock invite — logs to console and fires an admin notification.
   const sendInvite = (name, email, accountRole) => {
     console.log(`Invite sent to ${email} for role ${accountRole}`)
-    addNotification('info', `Invite sent to ${name} (${email})`)
+    addNotification('info', `Invite sent to ${name} (${email})`, 'admin')
   }
 
   const addWeeklyConflict = (empId, conflict) => {
@@ -438,7 +461,7 @@ export function AppProvider({ children }) {
         students, setStudents,
         sessions, setSessions,
         currentUser, login, logout,
-        notifications, addNotification, dismissNotification,
+        notifications, addNotification, dismissNotification, markAllRead,
         weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, clearWeeklyConflicts,
         isEmailTaken, sendInvite,
       }}

@@ -1,4 +1,6 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Bell } from "lucide-react";
 import { useApp } from "../../AppContext";
 import eyeLevelLogo from "../assets/EyeLevelLogo.png";
 
@@ -22,9 +24,43 @@ function teacherNav(profileId) {
   ];
 }
 
+function formatNotifTime(ts) {
+  const d = new Date(ts);
+  const today = new Date();
+  const isToday = d.toDateString() === today.toDateString();
+  return isToday
+    ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : d.toLocaleDateString([], { month: "short", day: "numeric" }) +
+        " · " +
+        d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function Layout() {
-  const { currentUser, logout } = useApp();
+  const { currentUser, logout, notifications, markAllRead } = useApp();
   const navigate = useNavigate();
+  const [notifOpen, setNotifOpen] = useState(false);
+  const panelRef = useRef(null);
+
+  // Close panel on outside click
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handler = (e) => {
+      if (panelRef.current && !panelRef.current.contains(e.target))
+        setNotifOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [notifOpen]);
+
+  // Filter notifications to what this user can see
+  const myNotifs = notifications.filter((n) => {
+    if (!currentUser) return false;
+    if (currentUser.role === "admin") return n.scope === "admin";
+    if (currentUser.role === "teacher")
+      return n.scope === `teacher:${currentUser.profileId}`;
+    return false;
+  });
+  const unreadCount = myNotifs.filter((n) => !n.read).length;
 
   const handleLogout = () => {
     logout();
@@ -165,19 +201,165 @@ export default function Layout() {
             Eye Level — Missouri City
           </span>
           {currentUser && (
-            <span
-              style={{
-                fontSize: 12,
-                color: "#94a3b8",
-                fontWeight: 500,
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-                borderRadius: 999,
-                padding: "3px 10px",
-              }}
-            >
-              Logged in as {ROLE_LABEL[currentUser.role] ?? currentUser.role}
-            </span>
+            <div ref={panelRef} style={{ position: "relative" }}>
+              {/* Bell button */}
+              <button
+                onClick={() => setNotifOpen((v) => !v)}
+                style={{
+                  position: "relative",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "4px 6px",
+                  borderRadius: 8,
+                  color: notifOpen ? "#E31837" : "#64748b",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                aria-label="Notifications"
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      background: "#E31837",
+                      color: "#fff",
+                      borderRadius: 999,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      minWidth: 16,
+                      height: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 3px",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification panel */}
+              {notifOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    width: 340,
+                    background: "#fff",
+                    borderRadius: 12,
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+                    border: "1px solid #e2e8f0",
+                    zIndex: 1000,
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "12px 16px",
+                      borderBottom: "1px solid #f1f5f9",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        fontSize: 14,
+                        color: "#0f172a",
+                      }}
+                    >
+                      Notifications
+                    </span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: 12,
+                          color: "#E31837",
+                          fontWeight: 500,
+                        }}
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ maxHeight: 360, overflowY: "auto" }}>
+                    {myNotifs.length === 0 ? (
+                      <div
+                        style={{
+                          padding: "24px 16px",
+                          textAlign: "center",
+                          color: "#94a3b8",
+                          fontSize: 13,
+                        }}
+                      >
+                        No notifications
+                      </div>
+                    ) : (
+                      myNotifs.map((n) => (
+                        <div
+                          key={n.id}
+                          style={{
+                            padding: "10px 16px",
+                            borderBottom: "1px solid #f8fafc",
+                            background: n.read ? "#fff" : "#fdf8f8",
+                            display: "flex",
+                            gap: 10,
+                            alignItems: "flex-start",
+                          }}
+                        >
+                          {!n.read && (
+                            <div
+                              style={{
+                                width: 7,
+                                height: 7,
+                                borderRadius: 999,
+                                background: "#E31837",
+                                flexShrink: 0,
+                                marginTop: 5,
+                              }}
+                            />
+                          )}
+                          <div
+                            style={{ flex: 1, paddingLeft: n.read ? 17 : 0 }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 13,
+                                color: "#0f172a",
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              {n.msg}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 11,
+                                color: "#94a3b8",
+                                marginTop: 3,
+                              }}
+                            >
+                              {formatNotifTime(n.timestamp)}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </header>
         <main style={{ padding: 24 }}>
