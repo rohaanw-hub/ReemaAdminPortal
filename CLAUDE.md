@@ -35,6 +35,10 @@ All pages import from these root-level files using relative paths from src/pages
 Never use the @ alias (@/AppContext, @/helpers) — it works in Vite config but
 breaks the established import pattern used across every page.
 
+main.jsx in src/ imports from '../App' (root) — NOT from './App'. There is also
+a src/App.jsx file but it is a legacy duplicate. Always write routing changes to
+App.jsx at the project root only.
+
 ### State management
 
 All mutable state lives in AppContext.jsx (root) and is accessed via the useApp()
