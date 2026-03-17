@@ -51,10 +51,12 @@ export default function App() {
           <Route path="schedule" element={<Schedule />} />
           <Route path="clock-in" element={<ClockIn />} />
 
+          {/* Admin + teacher: individual profile (teachers access their own via My Profile) */}
+          <Route path="employees/:id" element={<EmployeeProfile />} />
+
           {/* Admin-only routes */}
           <Route element={<RoleGuard allow={['admin']} />}>
             <Route path="employees" element={<Employees />} />
-            <Route path="employees/:id" element={<EmployeeProfile />} />
             <Route path="payroll" element={<Payroll />} />
           </Route>
 
