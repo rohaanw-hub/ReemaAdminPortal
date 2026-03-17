@@ -1,7 +1,7 @@
 ---
 id: FEAT-011
 title: Profile dropdown in topbar and photo upload for all user profiles
-status: pending
+status: completed
 priority: medium
 created: 2026-03-17
 assignee: unassigned
