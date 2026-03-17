@@ -1,7 +1,7 @@
 ---
 id: FEAT-010
 title: Remove duplicate header branding and clean up layout topbar
-status: pending
+status: completed
 priority: medium
 created: 2026-03-17
 assignee: unassigned
