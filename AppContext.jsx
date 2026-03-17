@@ -28,6 +28,7 @@ const SEED_EMPLOYEES = [
     callouts: 1,
     totalShifts: 48,
     clockIns: [],
+    photo: null,
     notes: 'Excellent with high school students',
   },
   {
@@ -52,6 +53,7 @@ const SEED_EMPLOYEES = [
     callouts: 0,
     totalShifts: 52,
     clockIns: [],
+    photo: null,
     notes: 'Great with elementary students',
   },
   {
@@ -76,6 +78,7 @@ const SEED_EMPLOYEES = [
     callouts: 3,
     totalShifts: 30,
     clockIns: [],
+    photo: null,
     notes: 'College student — schedule may shift each semester',
   },
   {
@@ -99,6 +102,7 @@ const SEED_EMPLOYEES = [
     callouts: 0,
     totalShifts: 20,
     clockIns: [],
+    photo: null,
     notes: 'Strong in reading comprehension',
   },
   {
@@ -123,6 +127,7 @@ const SEED_EMPLOYEES = [
     callouts: 1,
     totalShifts: 35,
     clockIns: [],
+    photo: null,
     notes: 'Excellent SAT results with students',
   },
   {
@@ -146,6 +151,7 @@ const SEED_EMPLOYEES = [
     callouts: 2,
     totalShifts: 25,
     clockIns: [],
+    photo: null,
     notes: 'Great rapport with younger students',
   },
   {
@@ -165,6 +171,7 @@ const SEED_EMPLOYEES = [
     callouts: 0,
     totalShifts: 0,
     clockIns: [],
+    photo: null,
     notes: 'Owner and administrator of Reema Tutoring Center.',
   },
 ]
@@ -189,6 +196,7 @@ const SEED_STUDENTS = [
     status: 'active',
     attendance: 92,
     sessions: 24,
+    photo: null,
   },
   {
     id: 2,
@@ -209,6 +217,7 @@ const SEED_STUDENTS = [
     status: 'active',
     attendance: 78,
     sessions: 31,
+    photo: null,
   },
   {
     id: 3,
@@ -229,6 +238,7 @@ const SEED_STUDENTS = [
     status: 'active',
     attendance: 95,
     sessions: 18,
+    photo: null,
   },
   {
     id: 4,
@@ -249,6 +259,7 @@ const SEED_STUDENTS = [
     status: 'active',
     attendance: 88,
     sessions: 22,
+    photo: null,
   },
   {
     id: 5,
@@ -269,6 +280,7 @@ const SEED_STUDENTS = [
     status: 'active',
     attendance: 97,
     sessions: 15,
+    photo: null,
   },
   {
     id: 6,
@@ -289,6 +301,7 @@ const SEED_STUDENTS = [
     status: 'active',
     attendance: 85,
     sessions: 28,
+    photo: null,
   },
   {
     id: 7,
@@ -309,6 +322,7 @@ const SEED_STUDENTS = [
     status: 'active',
     attendance: 91,
     sessions: 35,
+    photo: null,
   },
   {
     id: 8,
@@ -329,6 +343,7 @@ const SEED_STUDENTS = [
     status: 'active',
     attendance: 82,
     sessions: 19,
+    photo: null,
   },
 ]
 

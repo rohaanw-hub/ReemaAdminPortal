@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { useApp } from "../../AppContext";
+import { getInitials, getAvatarBg, getAvatarText } from "../../helpers";
 import eyeLevelLogo from "../assets/EyeLevelLogo.png";
 
 function formatNotifTime(ts) {
@@ -20,6 +21,8 @@ export default function ParentLayout() {
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
   const panelRef = useRef(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   useEffect(() => {
     if (!notifOpen) return;
@@ -30,6 +33,16 @@ export default function ParentLayout() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [notifOpen]);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target))
+        setProfileOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [profileOpen]);
 
   const myNotifs = notifications.filter((n) =>
     currentUser ? n.scope === `parent:${currentUser.profileId}` : false,
@@ -323,6 +336,159 @@ export default function ParentLayout() {
       </aside>
 
       <div style={{ marginLeft: 220, flex: 1, background: "#f5f4f0" }}>
+        {/* Slim topbar — profile avatar only */}
+        <div
+          style={{
+            background: "#fff",
+            borderBottom: "1px solid #eee",
+            padding: "10px 24px",
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          {currentUser && (
+            <div ref={profileRef} style={{ position: "relative" }}>
+              <button
+                onClick={() => setProfileOpen((v) => !v)}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  border: profileOpen
+                    ? "2px solid #E31837"
+                    : "2px solid transparent",
+                  cursor: "pointer",
+                  padding: 0,
+                  background: getAvatarBg(currentUser.name),
+                  color: getAvatarText(currentUser.name),
+                  fontSize: 13,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                aria-label="Profile menu"
+              >
+                {getInitials(currentUser.name)}
+              </button>
+
+              {profileOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    width: 220,
+                    background: "#fff",
+                    borderRadius: 12,
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+                    border: "1px solid #e2e8f0",
+                    zIndex: 1000,
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 8,
+                      borderBottom: "1px solid #f1f5f9",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: "50%",
+                        background: getAvatarBg(currentUser.name),
+                        color: getAvatarText(currentUser.name),
+                        fontSize: 18,
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {getInitials(currentUser.name)}
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 14,
+                          color: "#0f172a",
+                        }}
+                      >
+                        {currentUser.name}
+                      </div>
+                      <span
+                        className="badge badge-red"
+                        style={{ marginTop: 4, fontSize: 11 }}
+                      >
+                        Parent
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ padding: "8px 0" }}>
+                    <NavLink
+                      to="/parent"
+                      onClick={() => setProfileOpen(false)}
+                      style={{
+                        display: "block",
+                        padding: "8px 16px",
+                        fontSize: 13,
+                        color: "#334155",
+                        textDecoration: "none",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#f8fafc")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "transparent")
+                      }
+                    >
+                      Go to my profile
+                    </NavLink>
+                    <div
+                      style={{
+                        height: 1,
+                        background: "#f1f5f9",
+                        margin: "4px 0",
+                      }}
+                    />
+                    <button
+                      onClick={handleLogout}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        padding: "8px 16px",
+                        fontSize: 13,
+                        color: "#E31837",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        fontWeight: 500,
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#FFF0F2")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "transparent")
+                      }
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <main style={{ padding: 24 }}>
           <Outlet />
         </main>

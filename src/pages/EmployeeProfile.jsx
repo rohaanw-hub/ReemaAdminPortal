@@ -286,6 +286,7 @@ export default function EmployeeProfile() {
   const isTeacher = currentUser?.role === "teacher";
   const [tab, setTab] = useState("overview");
   const [showEdit, setShowEdit] = useState(false);
+  const [photoError, setPhotoError] = useState("");
   const [showAddConflict, setShowAddConflict] = useState(false);
   const blankConflict = {
     day: "Mon",
@@ -344,6 +345,33 @@ export default function EmployeeProfile() {
     addNotification("warning", `${emp.name} logged a callout`, "admin");
   };
 
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      setPhotoError("Only JPG, PNG, or WEBP files are allowed.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setPhotoError("File must be under 2MB.");
+      return;
+    }
+    setPhotoError("");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setEmployees((prev) =>
+        prev.map((x) =>
+          x.id === emp.id ? { ...x, photo: ev.target.result } : x,
+        ),
+      );
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const canUploadPhoto =
+    isAdmin || (isTeacher && emp.id === currentUser?.profileId);
+
   return (
     <div>
       {!isTeacher && (
@@ -363,16 +391,60 @@ export default function EmployeeProfile() {
         }}
       >
         <div
-          className="avatar"
           style={{
-            width: 64,
-            height: 64,
-            fontSize: 22,
-            background: getAvatarBg(emp.name),
-            color: getAvatarText(emp.name),
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          {getInitials(emp.name)}
+          <div
+            className="avatar"
+            style={{
+              width: 64,
+              height: 64,
+              fontSize: 22,
+              background: emp.photo ? "transparent" : getAvatarBg(emp.name),
+              color: getAvatarText(emp.name),
+              overflow: "hidden",
+              padding: 0,
+            }}
+          >
+            {emp.photo ? (
+              <img
+                src={emp.photo}
+                alt={emp.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              getInitials(emp.name)
+            )}
+          </div>
+          {canUploadPhoto && (
+            <div>
+              <label
+                style={{
+                  fontSize: 11,
+                  color: "#E31837",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                {emp.photo ? "Change photo" : "Upload photo"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{ display: "none" }}
+                  onChange={handlePhotoUpload}
+                />
+              </label>
+              {photoError && (
+                <div style={{ fontSize: 11, color: "#dc2626", marginTop: 2 }}>
+                  {photoError}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 20 }}>{emp.name}</div>
