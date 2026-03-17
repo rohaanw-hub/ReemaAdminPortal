@@ -1,13 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Layout from './src/components/Layout'
-import Dashboard from './src/pages/Dashboard'
-import Employees from './src/pages/Employees'
-import EmployeeProfile from './src/pages/EmployeeProfile'
-import Students from './src/pages/Students'
-import StudentProfile from './src/pages/StudentProfile'
-import Schedule from './src/pages/Schedule'
-import ClockIn from './src/pages/ClockIn'
-import Payroll from './src/pages/Payroll'
+import Layout from './components/Layout'
+import Dashboard from './pages/Dashboard'
+import Employees from './pages/Employees'
+import EmployeeProfile from './pages/EmployeeProfile'
+import Students from './pages/Students'
+import StudentProfile from './pages/StudentProfile'
+import Schedule from './pages/Schedule'
+import ClockIn from './pages/ClockIn'
+import Payroll from './pages/Payroll'
 
 export default function App() {
   return (

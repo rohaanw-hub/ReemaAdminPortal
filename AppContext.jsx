@@ -10,7 +10,13 @@ const SEED_EMPLOYEES = [
     phone: '(713) 555-0101',
     grade: "Bachelor's",
     subjects: ['Math', 'Science'],
-    schedule: { Mon: ['3PM-6PM'], Tue: ['4PM-7PM'], Wed: ['3PM-6PM'], Thu: ['4PM-7PM'], Fri: ['3PM-6PM'] },
+    schedule: {
+      Mon: ['3PM-7PM'],
+      Tue: ['3PM-7PM'],
+      Wed: ['3PM-7PM'],
+      Thu: ['3PM-7PM'],
+      Fri: ['3PM-7PM'],
+    },
     conflicts: 'Unavailable Sunday mornings',
     hireDate: '2023-01-15',
     hourlyRate: 18,
@@ -28,7 +34,12 @@ const SEED_EMPLOYEES = [
     phone: '(713) 555-0102',
     grade: "Master's",
     subjects: ['Reading', 'Writing'],
-    schedule: { Mon: ['2PM-5PM'], Tue: ['2PM-5PM'], Thu: ['2PM-5PM'], Sat: ['9AM-1PM'] },
+    schedule: {
+      Mon: ['2PM-5PM'],
+      Tue: ['2PM-5PM'],
+      Thu: ['2PM-5PM'],
+      Sat: ['9AM-1PM'],
+    },
     conflicts: 'No Wednesdays',
     hireDate: '2022-09-01',
     hourlyRate: 20,
@@ -46,7 +57,12 @@ const SEED_EMPLOYEES = [
     phone: '(713) 555-0103',
     grade: 'College Junior',
     subjects: ['Math', 'SAT Prep'],
-    schedule: { Tue: ['5PM-8PM'], Wed: ['5PM-8PM'], Fri: ['4PM-7PM'], Sat: ['10AM-2PM'] },
+    schedule: {
+      Tue: ['5PM-8PM'],
+      Wed: ['5PM-8PM'],
+      Fri: ['5PM-8PM'],
+      Sat: ['10AM-2PM'],
+    },
     conflicts: 'Tue/Thu class conflicts 3-5PM',
     hireDate: '2024-02-20',
     hourlyRate: 15,
@@ -55,6 +71,73 @@ const SEED_EMPLOYEES = [
     totalShifts: 30,
     clockIns: [],
     notes: 'College student — schedule may shift each semester',
+  },
+  {
+    id: 4,
+    name: 'Aisha Thompson',
+    role: 'Tutor',
+    email: 'aisha@reema.com',
+    phone: '(713) 555-0104',
+    grade: "Bachelor's",
+    subjects: ['Reading', 'Writing', 'Science'],
+    schedule: {
+      Mon: ['4PM-7PM'],
+      Wed: ['4PM-7PM'],
+      Fri: ['4PM-7PM'],
+    },
+    conflicts: 'No Tuesdays or Thursdays',
+    hireDate: '2024-05-10',
+    hourlyRate: 16,
+    status: 'active',
+    callouts: 0,
+    totalShifts: 20,
+    clockIns: [],
+    notes: 'Strong in reading comprehension',
+  },
+  {
+    id: 5,
+    name: 'Kevin Park',
+    role: 'SAT Specialist',
+    email: 'kevin@reema.com',
+    phone: '(713) 555-0105',
+    grade: "Master's",
+    subjects: ['SAT Prep', 'Math'],
+    schedule: {
+      Mon: ['5PM-8PM'],
+      Tue: ['5PM-8PM'],
+      Wed: ['5PM-8PM'],
+      Thu: ['5PM-8PM'],
+    },
+    conflicts: 'No Fridays or Saturdays',
+    hireDate: '2023-08-01',
+    hourlyRate: 22,
+    status: 'active',
+    callouts: 1,
+    totalShifts: 35,
+    clockIns: [],
+    notes: 'Excellent SAT results with students',
+  },
+  {
+    id: 6,
+    name: 'Brianna Scott',
+    role: 'Tutor',
+    email: 'brianna@reema.com',
+    phone: '(713) 555-0106',
+    grade: 'College Senior',
+    subjects: ['Reading', 'Writing'],
+    schedule: {
+      Tue: ['10AM-2PM'],
+      Thu: ['10AM-2PM'],
+      Sat: ['10AM-2PM'],
+    },
+    conflicts: 'Class schedule Mon/Wed/Fri',
+    hireDate: '2024-09-01',
+    hourlyRate: 15,
+    status: 'active',
+    callouts: 2,
+    totalShifts: 25,
+    clockIns: [],
+    notes: 'Great rapport with younger students',
   },
 ]
 
@@ -92,7 +175,7 @@ const SEED_STUDENTS = [
     writing: 'Below Grade',
     math: 'At Grade',
     subjects: ['Reading', 'Writing'],
-    schedule: { Tue: ['5PM-6PM'], Thu: ['5PM-6PM'] },
+    schedule: { Tue: ['5PM-6PM'], Thu: ['5PM-6PM'], Sat: ['10AM-11AM'] },
     notes: 'Working on reading fluency and comprehension',
     enrollDate: '2023-11-05',
     status: 'active',
@@ -119,16 +202,134 @@ const SEED_STUDENTS = [
     attendance: 95,
     sessions: 18,
   },
+  {
+    id: 4,
+    name: 'Amir Hassan',
+    grade: '5th',
+    parentName: 'Fatima Hassan',
+    parentPhone: '(713) 555-0206',
+    parentEmail: 'fatima.h@email.com',
+    parentName2: '',
+    parentPhone2: '',
+    reading: 'At Grade',
+    writing: 'Below Grade',
+    math: 'Above Grade',
+    subjects: ['Writing', 'Math'],
+    schedule: { Tue: ['4PM-5PM'], Thu: ['4PM-5PM'], Sat: ['10AM-11AM'] },
+    notes: 'Strong math, needs writing structure help',
+    enrollDate: '2024-02-15',
+    status: 'active',
+    attendance: 88,
+    sessions: 22,
+  },
+  {
+    id: 5,
+    name: 'Lily Nguyen',
+    grade: '3rd',
+    parentName: 'Hank Nguyen',
+    parentPhone: '(713) 555-0207',
+    parentEmail: 'hank.n@email.com',
+    parentName2: 'Susan Nguyen',
+    parentPhone2: '(713) 555-0208',
+    reading: 'Advanced',
+    writing: 'Above Grade',
+    math: 'At Grade',
+    subjects: ['Reading', 'Math'],
+    schedule: { Mon: ['3PM-4PM'], Wed: ['3PM-4PM'] },
+    notes: 'Advanced reader; building math confidence',
+    enrollDate: '2024-04-01',
+    status: 'active',
+    attendance: 97,
+    sessions: 15,
+  },
+  {
+    id: 6,
+    name: 'Devon Brooks',
+    grade: '9th',
+    parentName: 'Marcus Brooks',
+    parentPhone: '(713) 555-0209',
+    parentEmail: 'marcus.b@email.com',
+    parentName2: '',
+    parentPhone2: '',
+    reading: 'At Grade',
+    writing: 'At Grade',
+    math: 'Below Grade',
+    subjects: ['Math', 'SAT Prep'],
+    schedule: { Wed: ['5PM-6PM'], Fri: ['5PM-6PM'] },
+    notes: 'Preparing for SAT; algebra struggles',
+    enrollDate: '2024-01-20',
+    status: 'active',
+    attendance: 85,
+    sessions: 28,
+  },
+  {
+    id: 7,
+    name: 'Zoe Kim',
+    grade: '6th',
+    parentName: 'James Kim',
+    parentPhone: '(713) 555-0210',
+    parentEmail: 'james.k@email.com',
+    parentName2: 'Angela Kim',
+    parentPhone2: '(713) 555-0211',
+    reading: 'Above Grade',
+    writing: 'At Grade',
+    math: 'Above Grade',
+    subjects: ['Math', 'Reading'],
+    schedule: { Tue: ['3PM-4PM'], Thu: ['3PM-4PM'] },
+    notes: 'High achiever, benefits from enrichment',
+    enrollDate: '2023-10-15',
+    status: 'active',
+    attendance: 91,
+    sessions: 35,
+  },
+  {
+    id: 8,
+    name: 'Noah Patel',
+    grade: '8th',
+    parentName: 'Raj Patel',
+    parentPhone: '(713) 555-0212',
+    parentEmail: 'raj.p@email.com',
+    parentName2: '',
+    parentPhone2: '',
+    reading: 'Below Grade',
+    writing: 'Below Grade',
+    math: 'At Grade',
+    subjects: ['Reading', 'Writing'],
+    schedule: { Mon: ['5PM-6PM'], Fri: ['5PM-6PM'] },
+    notes: 'Needs intensive reading and writing support',
+    enrollDate: '2024-01-08',
+    status: 'active',
+    attendance: 82,
+    sessions: 19,
+  },
 ]
 
 const SEED_SESSIONS = [
-  { id: 1, day: 'Mon', time: '3PM', duration: 60, studentId: 3, employeeId: 1, subject: 'Math', status: 'scheduled' },
-  { id: 2, day: 'Mon', time: '4PM', duration: 60, studentId: 1, employeeId: 1, subject: 'Math', status: 'scheduled' },
-  { id: 3, day: 'Mon', time: '4PM', duration: 60, studentId: 1, employeeId: 2, subject: 'Reading', status: 'scheduled' },
-  { id: 4, day: 'Tue', time: '5PM', duration: 60, studentId: 2, employeeId: 3, subject: 'Reading', status: 'scheduled' },
-  { id: 5, day: 'Wed', time: '3PM', duration: 60, studentId: 3, employeeId: 1, subject: 'Math', status: 'scheduled' },
-  { id: 6, day: 'Wed', time: '4PM', duration: 60, studentId: 1, employeeId: 2, subject: 'Reading', status: 'scheduled' },
-  { id: 7, day: 'Thu', time: '5PM', duration: 60, studentId: 2, employeeId: 2, subject: 'Writing', status: 'scheduled' },
+  // Monday
+  { id: 1,  day: 'Mon', time: '3PM',  duration: 60, studentId: 5, employeeId: 2,    subject: 'Reading', status: 'scheduled' },
+  { id: 2,  day: 'Mon', time: '3PM',  duration: 60, studentId: 3, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 3,  day: 'Mon', time: '4PM',  duration: 60, studentId: 1, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 4,  day: 'Mon', time: '5PM',  duration: 60, studentId: 8, employeeId: 4,    subject: 'Reading', status: 'scheduled' },
+  // Tuesday
+  { id: 5,  day: 'Tue', time: '3PM',  duration: 60, studentId: 7, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 6,  day: 'Tue', time: '4PM',  duration: 60, studentId: 4, employeeId: 2,    subject: 'Writing', status: 'scheduled' },
+  { id: 7,  day: 'Tue', time: '5PM',  duration: 60, studentId: 2, employeeId: null, subject: 'Reading', status: 'scheduled' },
+  // Wednesday
+  { id: 8,  day: 'Wed', time: '3PM',  duration: 60, studentId: 3, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 9,  day: 'Wed', time: '3PM',  duration: 60, studentId: 5, employeeId: null, subject: 'Reading', status: 'scheduled' },
+  { id: 10, day: 'Wed', time: '4PM',  duration: 60, studentId: 1, employeeId: 4,    subject: 'Reading', status: 'scheduled' },
+  { id: 11, day: 'Wed', time: '5PM',  duration: 60, studentId: 6, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
+  // Thursday
+  { id: 12, day: 'Thu', time: '3PM',  duration: 60, studentId: 7, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 13, day: 'Thu', time: '4PM',  duration: 60, studentId: 4, employeeId: 2,    subject: 'Writing', status: 'scheduled' },
+  { id: 14, day: 'Thu', time: '5PM',  duration: 60, studentId: 2, employeeId: null, subject: 'Reading', status: 'scheduled' },
+  // Friday
+  { id: 15, day: 'Fri', time: '3PM',  duration: 60, studentId: 3, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 16, day: 'Fri', time: '5PM',  duration: 60, studentId: 6, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
+  { id: 17, day: 'Fri', time: '5PM',  duration: 60, studentId: 8, employeeId: 4,    subject: 'Reading', status: 'scheduled' },
+  // Saturday
+  { id: 18, day: 'Sat', time: '10AM', duration: 60, studentId: 2, employeeId: 6,    subject: 'Reading', status: 'scheduled' },
+  { id: 19, day: 'Sat', time: '10AM', duration: 60, studentId: 4, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
 ]
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -139,9 +340,12 @@ export function AppProvider({ children }) {
   const [students, setStudents] = useState(SEED_STUDENTS)
   const [sessions, setSessions] = useState(SEED_SESSIONS)
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'warning', msg: 'Diego Rivera called out — Tue 5PM session needs reassignment' },
-    { id: 2, type: 'info', msg: '3 sessions scheduled for today' },
+    { id: 1, type: 'warning', msg: 'Jaylen Williams — Tue/Thu 5PM sessions need tutor assignment' },
+    { id: 2, type: 'warning', msg: 'Lily Nguyen — Wed 3PM Reading session needs tutor assignment' },
+    { id: 3, type: 'info', msg: '4 sessions scheduled for today (Monday)' },
   ])
+  // weeklyConflicts: { [employeeId]: [{ id, day, startTime, endTime, reason }] }
+  const [weeklyConflicts, setWeeklyConflicts] = useState({})
 
   const addNotification = (type, msg) => {
     const id = Date.now()
@@ -152,6 +356,25 @@ export function AppProvider({ children }) {
     setNotifications((n) => n.filter((x) => x.id !== id))
   }
 
+  const addWeeklyConflict = (empId, conflict) => {
+    const id = Date.now() + Math.random()
+    setWeeklyConflicts((prev) => ({
+      ...prev,
+      [empId]: [...(prev[empId] || []), { ...conflict, id }],
+    }))
+  }
+
+  const removeWeeklyConflict = (empId, conflictId) => {
+    setWeeklyConflicts((prev) => ({
+      ...prev,
+      [empId]: (prev[empId] || []).filter((c) => c.id !== conflictId),
+    }))
+  }
+
+  const clearWeeklyConflicts = (empId) => {
+    setWeeklyConflicts((prev) => ({ ...prev, [empId]: [] }))
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -159,6 +382,7 @@ export function AppProvider({ children }) {
         students, setStudents,
         sessions, setSessions,
         notifications, addNotification, dismissNotification,
+        weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, clearWeeklyConflicts,
       }}
     >
       {children}

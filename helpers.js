@@ -2,8 +2,8 @@
 export const getInitials = (name = '') =>
   name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
 
-const AVATAR_BG = ['#dbeafe', '#dcfce7', '#fef3c7', '#fce7f3', '#ede9fe', '#e0f2fe']
-const AVATAR_TEXT = ['#1e40af', '#166534', '#92400e', '#9d174d', '#5b21b6', '#075985']
+const AVATAR_BG = ['#FFF0F2', '#dcfce7', '#fef3c7', '#fce7f3', '#ede9fe', '#e0f2fe']
+const AVATAR_TEXT = ['#B5112A', '#166534', '#92400e', '#9d174d', '#5b21b6', '#075985']
 
 export const getAvatarBg = (name = '') => AVATAR_BG[name.charCodeAt(0) % AVATAR_BG.length]
 export const getAvatarText = (name = '') => AVATAR_TEXT[name.charCodeAt(0) % AVATAR_TEXT.length]
@@ -17,6 +17,39 @@ export const todayLabel = () =>
 
 export const calcHours = (clockIns = []) =>
   clockIns.reduce((acc, c) => acc + (c.out ? (new Date(c.out) - new Date(c.in)) / 3_600_000 : 0), 0)
+
+// ─── Time Parsing ─────────────────────────────────────────────────────────────
+export function timeToMinutes(t) {
+  const m = String(t).match(/^(\d+)(AM|PM)$/)
+  if (!m) return -1
+  let h = parseInt(m[1])
+  const period = m[2]
+  if (period === 'PM' && h !== 12) h += 12
+  if (period === 'AM' && h === 12) h = 0
+  return h * 60
+}
+
+export function isTutorAvailableAt(emp, day, time) {
+  const slots = emp.schedule[day]
+  if (!slots || slots.length === 0) return false
+  const t = timeToMinutes(time)
+  return slots.some((slot) => {
+    const parts = slot.split('-')
+    if (parts.length < 2) return false
+    return t >= timeToMinutes(parts[0]) && t < timeToMinutes(parts[1])
+  })
+}
+
+// ─── Weekly Conflict Check ────────────────────────────────────────────────────
+export function hasWeeklyConflict(weeklyConflicts, empId, day, time) {
+  const conflicts = (weeklyConflicts || {})[empId] || []
+  return conflicts.some((c) => {
+    if (c.day !== day) return false
+    if (c.startTime === 'All Day') return true
+    const t = timeToMinutes(time)
+    return t >= timeToMinutes(c.startTime) && t < timeToMinutes(c.endTime)
+  })
+}
 
 // ─── Reliability ─────────────────────────────────────────────────────────────
 export const calcReliability = (callouts, totalShifts) =>
@@ -45,7 +78,19 @@ export const SUBJECTS = ['Reading', 'Writing', 'Math', 'Science', 'SAT Prep', 'T
 export const GRADES = ['K', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th']
 export const LEVELS = ['Below Grade', 'At Grade', 'Above Grade', 'Advanced']
 export const TIME_SLOTS = ['3PM', '4PM', '5PM', '6PM', '7PM']
+export const ALL_TIME_SLOTS = ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM']
+export const WEEKDAY_SLOTS = ['3PM', '4PM', '5PM', '6PM', '7PM']
+export const SAT_SLOTS = ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM']
 export const ED_LEVELS = [
   'High School', 'College Freshman', 'College Sophomore',
   'College Junior', 'College Senior', "Bachelor's", "Master's", 'Doctorate',
 ]
+
+export const SUBJECT_COLORS = {
+  Reading:   { bg: '#FFF0F2', color: '#B5112A' },
+  Writing:   { bg: '#ede9fe', color: '#5b21b6' },
+  Math:      { bg: '#dcfce7', color: '#166534' },
+  Science:   { bg: '#e0f2fe', color: '#075985' },
+  'SAT Prep': { bg: '#fef3c7', color: '#92400e' },
+  'Test Prep': { bg: '#fce7f3', color: '#9d174d' },
+}
