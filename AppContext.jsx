@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from 'react'
 
 // ─── Seed Data ────────────────────────────────────────────────────────────────
-const ADMIN_EMAIL = 'admin@reema.com'
+const ADMIN_EMAIL = 'mehdi.reema@gmail.com'
 const ADMIN_PASSWORD = 'reema123'
 
 const SEED_EMPLOYEES = [
@@ -147,6 +147,25 @@ const SEED_EMPLOYEES = [
     totalShifts: 25,
     clockIns: [],
     notes: 'Great rapport with younger students',
+  },
+  {
+    id: 7,
+    name: 'Reema Mehdi',
+    role: 'Administrator',
+    accountRole: 'admin',
+    email: 'mehdi.reema@gmail.com',
+    phone: '(555) 010-0001',
+    grade: "Master's",
+    subjects: ['Administration'],
+    schedule: {},
+    conflicts: '',
+    hireDate: '2024-01-01',
+    hourlyRate: 0,
+    status: 'active',
+    callouts: 0,
+    totalShifts: 0,
+    clockIns: [],
+    notes: 'Owner and administrator of Reema Tutoring Center.',
   },
 ]
 
@@ -346,7 +365,7 @@ function resolveLogin(email, password, employees, students) {
   const e = email.trim().toLowerCase()
   // Hardcoded admin account
   if (e === ADMIN_EMAIL && password === ADMIN_PASSWORD)
-    return { ok: true, user: { name: 'Admin', email: e, role: 'admin', profileId: null } }
+    return { ok: true, user: { name: 'Reema Mehdi', email: e, role: 'admin', profileId: 7 } }
   // Employee accounts — role resolved from accountRole field (supports promoted admins)
   const emp = employees.find((x) => x.email.toLowerCase() === e)
   if (emp && password.length > 0)

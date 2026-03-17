@@ -320,7 +320,7 @@ export default function EmployeeProfile() {
     return null;
   }
 
-  const isAdminAccount = emp.email.toLowerCase() === "admin@reema.com";
+  const isAdminAccount = emp.email.toLowerCase() === "mehdi.reema@gmail.com";
   const rel = calcReliability(emp.callouts, emp.totalShifts);
   const hours = calcHours(emp.clockIns);
   const empSessions = sessions.filter((s) => s.employeeId === emp.id);
