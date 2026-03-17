@@ -1,0 +1,150 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useApp } from '../../AppContext'
+
+export default function Login() {
+  const { login } = useApp()
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    setTimeout(() => {
+      const result = login(email, password)
+      setLoading(false)
+      if (!result.ok) {
+        setError('Invalid email or password. Please try again.')
+        return
+      }
+      if (result.user.role === 'parent') {
+        navigate('/parent', { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
+    }, 400)
+  }
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #fff 0%, #FFF0F2 60%, #fce7ea 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      padding: 24,
+    }}>
+      <div style={{
+        background: '#fff',
+        borderRadius: 16,
+        padding: '48px 48px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(227,24,55,0.08)',
+        border: '1px solid rgba(227,24,55,0.1)',
+        maxWidth: 420,
+        width: '100%',
+      }}>
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <svg width="160" height="48" viewBox="0 0 160 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="24" fill="#E31837"/>
+            <circle cx="24" cy="24" r="13" fill="white"/>
+            <circle cx="24" cy="24" r="7" fill="#E31837"/>
+            <text x="56" y="18" fontFamily="DM Sans, sans-serif" fontSize="17" fontWeight="700" fill="#E31837" letterSpacing="1">EYE</text>
+            <text x="56" y="36" fontFamily="DM Sans, sans-serif" fontSize="17" fontWeight="700" fill="#E31837" letterSpacing="1">LEVEL</text>
+            <line x1="56" y1="22" x2="152" y2="22" stroke="#E31837" strokeWidth="0.5" opacity="0.3"/>
+          </svg>
+          <div style={{ fontSize: 12, color: '#E31837', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 6, fontWeight: 500 }}>
+            Missouri City
+          </div>
+        </div>
+
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginBottom: 4, textAlign: 'center' }}>
+          Admin Portal
+        </h1>
+        <p style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', marginBottom: 28 }}>
+          Sign in to continue
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError('') }}
+              placeholder="you@reema.com"
+              required
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '10px 12px', borderRadius: 8, fontSize: 14,
+                border: `1px solid ${error ? '#E31837' : '#e2e8f0'}`,
+                outline: 'none', color: '#0f172a',
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setError('') }}
+              placeholder="••••••••"
+              required
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '10px 12px', borderRadius: 8, fontSize: 14,
+                border: `1px solid ${error ? '#E31837' : '#e2e8f0'}`,
+                outline: 'none', color: '#0f172a',
+              }}
+            />
+          </div>
+
+          {error && (
+            <div style={{
+              background: '#FFF0F2', border: '1px solid rgba(227,24,55,0.2)',
+              borderRadius: 8, padding: '10px 14px', marginBottom: 16,
+              fontSize: 13, color: '#E31837', display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="7" fill="#E31837"/><path d="M7 4v3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><circle cx="7" cy="10" r="0.75" fill="white"/></svg>
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%', padding: '11px 16px',
+              background: loading ? '#f1a0ab' : '#E31837',
+              color: '#fff', border: 'none', borderRadius: 8,
+              fontSize: 14, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            {loading ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
+
+        <div style={{
+          marginTop: 24, padding: '10px 14px',
+          background: '#f8fafc', borderRadius: 8,
+          fontSize: 11, color: '#94a3b8', textAlign: 'center',
+          lineHeight: 1.6,
+        }}>
+          Admin: admin@reema.com / reema123<br />
+          Teachers: use their email / any password
+        </div>
+      </div>
+    </div>
+  )
+}

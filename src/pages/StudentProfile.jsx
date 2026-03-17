@@ -175,7 +175,8 @@ function EditModal({ student, onClose, onSave }) {
 
 export default function StudentProfile() {
   const { id } = useParams()
-  const { students, setStudents, sessions, employees } = useApp()
+  const { students, setStudents, sessions, employees, currentUser } = useApp()
+  const isTeacher = currentUser?.role === 'teacher'
   const navigate = useNavigate()
   const [tab, setTab] = useState('overview')
   const [showEdit, setShowEdit] = useState(false)
@@ -214,7 +215,9 @@ export default function StudentProfile() {
             <span className="text-sm">· {student.sessions} sessions</span>
           </div>
         </div>
-        <button className="btn btn-outline btn-sm" onClick={() => setShowEdit(true)}>Edit</button>
+        {!isTeacher && (
+          <button className="btn btn-outline btn-sm" onClick={() => setShowEdit(true)}>Edit</button>
+        )}
       </div>
 
       {/* Tabs */}

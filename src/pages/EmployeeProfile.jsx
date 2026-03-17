@@ -9,7 +9,7 @@ import { ChevronLeft } from 'lucide-react'
 
 const ROLES = ['Lead Tutor', 'Reading Specialist', 'SAT Specialist', 'Tutor']
 
-function EditModal({ emp, onClose, onSave }) {
+function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
   const initSchedule = () => {
     const s = {}
     DAYS.forEach((d) => {
@@ -22,6 +22,7 @@ function EditModal({ emp, onClose, onSave }) {
     name: emp.name, role: emp.role, email: emp.email, phone: emp.phone,
     grade: emp.grade, subjects: [...emp.subjects], hourlyRate: emp.hourlyRate,
     conflicts: emp.conflicts || '', notes: emp.notes || '', schedule: initSchedule(),
+    accountRole: emp.accountRole ?? 'teacher',
   })
 
   const set = (field, val) => setForm((f) => ({ ...f, [field]: val }))
@@ -65,12 +66,35 @@ function EditModal({ emp, onClose, onSave }) {
             <input className="form-input" value={form.name} onChange={(e) => set('name', e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Role</label>
+            <label className="form-label">Position</label>
             <select className="form-select" value={form.role} onChange={(e) => set('role', e.target.value)}>
               {ROLES.map((r) => <option key={r}>{r}</option>)}
             </select>
           </div>
         </div>
+
+        {isAdmin && (
+          <div className="form-group">
+            <label className="form-label">Account Role</label>
+            {isAdminAccount ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="badge badge-red">Admin</span>
+                <span className="text-sm" style={{ color: '#94a3b8' }} title="Default admin account — role cannot be changed">
+                  Default admin account — role cannot be changed
+                </span>
+              </div>
+            ) : (
+              <select
+                className="form-select"
+                value={form.accountRole}
+                onChange={(e) => set('accountRole', e.target.value)}
+              >
+                <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
+              </select>
+            )}
+          </div>
+        )}
 
         <div className="form-row">
           <div className="form-group">
@@ -147,8 +171,10 @@ function EditModal({ emp, onClose, onSave }) {
 
 export default function EmployeeProfile() {
   const { id } = useParams()
-  const { employees, setEmployees, sessions, students, weeklyConflicts, addWeeklyConflict, removeWeeklyConflict } = useApp()
+  const { employees, setEmployees, sessions, students, weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, currentUser } = useApp()
   const navigate = useNavigate()
+  const isAdmin = currentUser?.role === 'admin'
+  const isTeacher = currentUser?.role === 'teacher'
   const [tab, setTab] = useState('overview')
   const [showEdit, setShowEdit] = useState(false)
   const [showAddConflict, setShowAddConflict] = useState(false)
@@ -172,6 +198,13 @@ export default function EmployeeProfile() {
   const emp = employees.find((e) => e.id === Number(id))
   if (!emp) return <div className="card">Employee not found.</div>
 
+  // Teachers can only view their own profile
+  if (isTeacher && Number(id) !== currentUser.profileId) {
+    navigate(`/employees/${currentUser.profileId}`, { replace: true })
+    return null
+  }
+
+  const isAdminAccount = emp.email.toLowerCase() === 'admin@reema.com'
   const rel = calcReliability(emp.callouts, emp.totalShifts)
   const hours = calcHours(emp.clockIns)
   const empSessions = sessions.filter((s) => s.employeeId === emp.id)
@@ -192,9 +225,11 @@ export default function EmployeeProfile() {
 
   return (
     <div>
-      <div className="back-link" onClick={() => navigate('/employees')}>
-        <ChevronLeft size={16} /> Back to Employees
-      </div>
+      {!isTeacher && (
+        <div className="back-link" onClick={() => navigate('/employees')}>
+          <ChevronLeft size={16} /> Back to Employees
+        </div>
+      )}
 
       {/* Header */}
       <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -206,7 +241,13 @@ export default function EmployeeProfile() {
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 20 }}>{emp.name}</div>
-          <div className="text-sm" style={{ fontSize: 13, marginTop: 2 }}>{emp.role} · {emp.grade}</div>
+          <div className="text-sm" style={{ fontSize: 13, marginTop: 2 }}>
+            {emp.role} · {emp.grade}
+            {' · '}
+            <span className={`badge ${emp.accountRole === 'admin' ? 'badge-red' : 'badge-gray'}`} style={{ fontSize: 11, verticalAlign: 'middle' }}>
+              {emp.accountRole === 'admin' ? 'Admin' : 'Teacher'}
+            </span>
+          </div>
           <div style={{ marginTop: 6, display: 'flex', gap: 10, alignItems: 'center' }}>
             <span style={{ color: reliabilityColor(rel), fontWeight: 700, fontSize: 14 }}>{rel}% reliable</span>
             <span className="text-sm">·</span>
@@ -215,10 +256,12 @@ export default function EmployeeProfile() {
             <span className="text-sm">${emp.hourlyRate}/hr</span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-warning btn-sm" onClick={logCallout}>Log Callout</button>
-          <button className="btn btn-outline btn-sm" onClick={() => setShowEdit(true)}>Edit</button>
-        </div>
+        {!isTeacher && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-warning btn-sm" onClick={logCallout}>Log Callout</button>
+            <button className="btn btn-outline btn-sm" onClick={() => setShowEdit(true)}>Edit</button>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -482,13 +525,23 @@ export default function EmployeeProfile() {
             {rel < 75 && 'Reliability needs attention — please review callout history.'}
           </div>
 
-          <div style={{ marginTop: 20 }}>
-            <button className="btn btn-warning" onClick={logCallout}>Log a Callout</button>
-          </div>
+          {!isTeacher && (
+            <div style={{ marginTop: 20 }}>
+              <button className="btn btn-warning" onClick={logCallout}>Log a Callout</button>
+            </div>
+          )}
         </div>
       )}
 
-      {showEdit && <EditModal emp={emp} onClose={() => setShowEdit(false)} onSave={handleSaveEdit} />}
+      {showEdit && (
+        <EditModal
+          emp={emp}
+          onClose={() => setShowEdit(false)}
+          onSave={handleSaveEdit}
+          isAdmin={isAdmin}
+          isAdminAccount={isAdminAccount}
+        />
+      )}
     </div>
   )
 }

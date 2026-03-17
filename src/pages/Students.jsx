@@ -18,10 +18,14 @@ function blankForm() {
   }
 }
 
-function AddStudentModal({ onClose, onSave }) {
+function AddStudentModal({ onClose, onSave, isEmailTaken }) {
   const [form, setForm] = useState(blankForm())
+  const [emailError, setEmailError] = useState('')
 
-  const set = (field, val) => setForm((f) => ({ ...f, [field]: val }))
+  const set = (field, val) => {
+    setForm((f) => ({ ...f, [field]: val }))
+    if (field === 'parentEmail') setEmailError('')
+  }
 
   const toggleSubject = (s) =>
     set('subjects', form.subjects.includes(s) ? form.subjects.filter((x) => x !== s) : [...form.subjects, s])
@@ -40,6 +44,14 @@ function AddStudentModal({ onClose, onSave }) {
 
   const handleSave = () => {
     if (!form.name.trim()) return alert('Name is required')
+    if (!form.parentEmail.trim()) {
+      setEmailError('Email is required to create a profile')
+      return
+    }
+    if (isEmailTaken(form.parentEmail)) {
+      setEmailError('This email is already associated with an account')
+      return
+    }
     const schedule = {}
     DAYS.forEach((d) => {
       if (form.schedule[d].enabled && form.schedule[d].time) {
@@ -134,8 +146,18 @@ function AddStudentModal({ onClose, onSave }) {
             <input className="form-input" value={form.parentPhone} onChange={(e) => set('parentPhone', e.target.value)} placeholder="(713) 555-0100" />
           </div>
           <div className="form-group">
-            <label className="form-label">Email</label>
-            <input className="form-input" type="email" value={form.parentEmail} onChange={(e) => set('parentEmail', e.target.value)} placeholder="jane@email.com" />
+            <label className="form-label">Email *</label>
+            <input
+              className="form-input"
+              type="email"
+              value={form.parentEmail}
+              onChange={(e) => set('parentEmail', e.target.value)}
+              placeholder="jane@email.com"
+              style={emailError ? { borderColor: '#E31837' } : {}}
+            />
+            {emailError && (
+              <div style={{ color: '#E31837', fontSize: 12, marginTop: 4 }}>{emailError}</div>
+            )}
           </div>
         </div>
 
@@ -166,7 +188,8 @@ function AddStudentModal({ onClose, onSave }) {
 }
 
 export default function Students() {
-  const { students, setStudents } = useApp()
+  const { students, setStudents, currentUser, isEmailTaken, sendInvite } = useApp()
+  const isTeacher = currentUser?.role === 'teacher'
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filterGrade, setFilterGrade] = useState('All')
@@ -185,6 +208,7 @@ export default function Students() {
   const handleAdd = (formData) => {
     const newId = Math.max(0, ...students.map((s) => s.id)) + 1
     setStudents((prev) => [...prev, { ...formData, id: newId }])
+    sendInvite(formData.parentName, formData.parentEmail, 'parent')
     setShowModal(false)
   }
 
@@ -192,7 +216,9 @@ export default function Students() {
     <div>
       <div className="page-header">
         <h1 className="page-title">Students</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Student</button>
+        {!isTeacher && (
+          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Student</button>
+        )}
       </div>
 
       <div className="search-row">
@@ -280,7 +306,7 @@ export default function Students() {
       </div>
 
       {showModal && (
-        <AddStudentModal onClose={() => setShowModal(false)} onSave={handleAdd} />
+        <AddStudentModal onClose={() => setShowModal(false)} onSave={handleAdd} isEmailTaken={isEmailTaken} />
       )}
     </div>
   )

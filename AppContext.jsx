@@ -1,11 +1,15 @@
 import { createContext, useContext, useState } from 'react'
 
 // ─── Seed Data ────────────────────────────────────────────────────────────────
+const ADMIN_EMAIL = 'admin@reema.com'
+const ADMIN_PASSWORD = 'reema123'
+
 const SEED_EMPLOYEES = [
   {
     id: 1,
     name: 'Marcus Johnson',
     role: 'Lead Tutor',
+    accountRole: 'teacher',
     email: 'marcus@reema.com',
     phone: '(713) 555-0101',
     grade: "Bachelor's",
@@ -30,6 +34,7 @@ const SEED_EMPLOYEES = [
     id: 2,
     name: 'Priya Sharma',
     role: 'Reading Specialist',
+    accountRole: 'teacher',
     email: 'priya@reema.com',
     phone: '(713) 555-0102',
     grade: "Master's",
@@ -53,6 +58,7 @@ const SEED_EMPLOYEES = [
     id: 3,
     name: 'Diego Rivera',
     role: 'Tutor',
+    accountRole: 'teacher',
     email: 'diego@reema.com',
     phone: '(713) 555-0103',
     grade: 'College Junior',
@@ -76,6 +82,7 @@ const SEED_EMPLOYEES = [
     id: 4,
     name: 'Aisha Thompson',
     role: 'Tutor',
+    accountRole: 'teacher',
     email: 'aisha@reema.com',
     phone: '(713) 555-0104',
     grade: "Bachelor's",
@@ -98,6 +105,7 @@ const SEED_EMPLOYEES = [
     id: 5,
     name: 'Kevin Park',
     role: 'SAT Specialist',
+    accountRole: 'teacher',
     email: 'kevin@reema.com',
     phone: '(713) 555-0105',
     grade: "Master's",
@@ -121,6 +129,7 @@ const SEED_EMPLOYEES = [
     id: 6,
     name: 'Brianna Scott',
     role: 'Tutor',
+    accountRole: 'teacher',
     email: 'brianna@reema.com',
     phone: '(713) 555-0106',
     grade: 'College Senior',
@@ -332,6 +341,23 @@ const SEED_SESSIONS = [
   { id: 19, day: 'Sat', time: '10AM', duration: 60, studentId: 4, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
 ]
 
+// ─── Auth helpers ─────────────────────────────────────────────────────────────
+function resolveLogin(email, password, employees, students) {
+  const e = email.trim().toLowerCase()
+  // Hardcoded admin account
+  if (e === ADMIN_EMAIL && password === ADMIN_PASSWORD)
+    return { ok: true, user: { name: 'Admin', email: e, role: 'admin', profileId: null } }
+  // Employee accounts — role resolved from accountRole field (supports promoted admins)
+  const emp = employees.find((x) => x.email.toLowerCase() === e)
+  if (emp && password.length > 0)
+    return { ok: true, user: { name: emp.name, email: e, role: emp.accountRole ?? 'teacher', profileId: emp.id } }
+  // Parent accounts — tied to student's parentEmail
+  const student = students.find((x) => x.parentEmail?.toLowerCase() === e)
+  if (student && password.length > 0)
+    return { ok: true, user: { name: student.parentName, email: e, role: 'parent', profileId: student.id } }
+  return { ok: false }
+}
+
 // ─── Context ──────────────────────────────────────────────────────────────────
 const AppContext = createContext(null)
 
@@ -346,6 +372,7 @@ export function AppProvider({ children }) {
   ])
   // weeklyConflicts: { [employeeId]: [{ id, day, startTime, endTime, reason }] }
   const [weeklyConflicts, setWeeklyConflicts] = useState({})
+  const [currentUser, setCurrentUser] = useState(null)
 
   const addNotification = (type, msg) => {
     const id = Date.now()
@@ -354,6 +381,35 @@ export function AppProvider({ children }) {
 
   const dismissNotification = (id) => {
     setNotifications((n) => n.filter((x) => x.id !== id))
+  }
+
+  const login = (email, password) => {
+    const result = resolveLogin(email, password, employees, students)
+    if (result.ok) setCurrentUser(result.user)
+    return result
+  }
+
+  const logout = () => setCurrentUser(null)
+
+  // Returns true if email is already used by any employee or student parentEmail,
+  // optionally excluding a specific record (for edit flows).
+  const isEmailTaken = (email, excludeId = null, excludeType = null) => {
+    const e = email.trim().toLowerCase()
+    if (e === ADMIN_EMAIL) return true
+    const takenByEmp = employees.some(
+      (x) => x.email.toLowerCase() === e && !(excludeType === 'employee' && x.id === excludeId)
+    )
+    if (takenByEmp) return true
+    const takenByParent = students.some(
+      (x) => x.parentEmail?.toLowerCase() === e && !(excludeType === 'student' && x.id === excludeId)
+    )
+    return takenByParent
+  }
+
+  // Mock invite — logs to console and fires an admin notification.
+  const sendInvite = (name, email, accountRole) => {
+    console.log(`Invite sent to ${email} for role ${accountRole}`)
+    addNotification('info', `Invite sent to ${name} (${email})`)
   }
 
   const addWeeklyConflict = (empId, conflict) => {
@@ -383,6 +439,8 @@ export function AppProvider({ children }) {
         sessions, setSessions,
         notifications, addNotification, dismissNotification,
         weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, clearWeeklyConflicts,
+        currentUser, login, logout,
+        isEmailTaken, sendInvite,
       }}
     >
       {children}

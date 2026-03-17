@@ -26,10 +26,14 @@ function CheckChip({ label, checked, onChange }) {
   )
 }
 
-function AddEmployeeModal({ onClose, onSave }) {
+function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
   const [form, setForm] = useState(blankForm())
+  const [emailError, setEmailError] = useState('')
 
-  const set = (field, val) => setForm((f) => ({ ...f, [field]: val }))
+  const set = (field, val) => {
+    setForm((f) => ({ ...f, [field]: val }))
+    if (field === 'email') setEmailError('')
+  }
 
   const toggleSubject = (s) =>
     set('subjects', form.subjects.includes(s) ? form.subjects.filter((x) => x !== s) : [...form.subjects, s])
@@ -48,13 +52,21 @@ function AddEmployeeModal({ onClose, onSave }) {
 
   const handleSave = () => {
     if (!form.name.trim()) return alert('Name is required')
+    if (!form.email.trim()) {
+      setEmailError('Email is required to create a profile')
+      return
+    }
+    if (isEmailTaken(form.email)) {
+      setEmailError('This email is already associated with an account')
+      return
+    }
     const schedule = {}
     DAYS.forEach((d) => {
       if (form.schedule[d].enabled && form.schedule[d].time) {
         schedule[d] = [form.schedule[d].time]
       }
     })
-    onSave({ ...form, schedule })
+    onSave({ ...form, schedule, accountRole: 'teacher' })
   }
 
   return (
@@ -80,8 +92,18 @@ function AddEmployeeModal({ onClose, onSave }) {
 
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">Email</label>
-            <input className="form-input" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="jane@reema.com" />
+            <label className="form-label">Email *</label>
+            <input
+              className="form-input"
+              type="email"
+              value={form.email}
+              onChange={(e) => set('email', e.target.value)}
+              placeholder="jane@reema.com"
+              style={emailError ? { borderColor: '#E31837' } : {}}
+            />
+            {emailError && (
+              <div style={{ color: '#E31837', fontSize: 12, marginTop: 4 }}>{emailError}</div>
+            )}
           </div>
           <div className="form-group">
             <label className="form-label">Phone</label>
@@ -150,7 +172,7 @@ function AddEmployeeModal({ onClose, onSave }) {
 }
 
 export default function Employees() {
-  const { employees, setEmployees } = useApp()
+  const { employees, setEmployees, isEmailTaken, sendInvite } = useApp()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filterRole, setFilterRole] = useState('All')
@@ -167,6 +189,7 @@ export default function Employees() {
   const handleAdd = (formData) => {
     const newId = Math.max(0, ...employees.map((e) => e.id)) + 1
     setEmployees((prev) => [...prev, { ...formData, id: newId }])
+    sendInvite(formData.name, formData.email, 'teacher')
     setShowModal(false)
   }
 
@@ -201,7 +224,8 @@ export default function Employees() {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Role</th>
+                <th>Position</th>
+                <th>Account</th>
                 <th>Subjects</th>
                 <th>Education</th>
                 <th>Rate</th>
@@ -230,6 +254,11 @@ export default function Employees() {
                       </div>
                     </td>
                     <td>{e.role}</td>
+                    <td>
+                      <span className={`badge ${e.accountRole === 'admin' ? 'badge-red' : 'badge-gray'}`}>
+                        {e.accountRole === 'admin' ? 'Admin' : 'Teacher'}
+                      </span>
+                    </td>
                     <td>{e.subjects.join(', ')}</td>
                     <td>{e.grade}</td>
                     <td>${e.hourlyRate}/hr</td>
@@ -245,7 +274,7 @@ export default function Employees() {
                 )
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={7} style={{ textAlign: 'center', color: '#94a3b8' }}>No employees found.</td></tr>
+                <tr><td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8' }}>No employees found.</td></tr>
               )}
             </tbody>
           </table>
@@ -253,7 +282,7 @@ export default function Employees() {
       </div>
 
       {showModal && (
-        <AddEmployeeModal onClose={() => setShowModal(false)} onSave={handleAdd} />
+        <AddEmployeeModal onClose={() => setShowModal(false)} onSave={handleAdd} isEmailTaken={isEmailTaken} />
       )}
     </div>
   )
