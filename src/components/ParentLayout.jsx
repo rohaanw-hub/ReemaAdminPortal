@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useApp } from "../../AppContext";
+import eyeLevelLogo from "../assets/EyeLevelLogo.png";
 
 export default function ParentLayout() {
   const { currentUser, logout } = useApp();
@@ -34,48 +35,11 @@ export default function ParentLayout() {
             borderBottom: "1px solid #E5E7EB",
           }}
         >
-          <svg
-            width="120"
-            height="36"
-            viewBox="0 0 120 36"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="18" cy="18" r="18" fill="#E31837" />
-            <circle cx="18" cy="18" r="10" fill="white" />
-            <circle cx="18" cy="18" r="5" fill="#E31837" />
-            <text
-              x="42"
-              y="13"
-              fontFamily="DM Sans, sans-serif"
-              fontSize="13"
-              fontWeight="700"
-              fill="#E31837"
-              letterSpacing="1"
-            >
-              EYE
-            </text>
-            <text
-              x="42"
-              y="27"
-              fontFamily="DM Sans, sans-serif"
-              fontSize="13"
-              fontWeight="700"
-              fill="#E31837"
-              letterSpacing="1"
-            >
-              LEVEL
-            </text>
-            <line
-              x1="42"
-              y1="17"
-              x2="112"
-              y2="17"
-              stroke="#E31837"
-              strokeWidth="0.5"
-              opacity="0.3"
-            />
-          </svg>
+          <img
+            src={eyeLevelLogo}
+            alt="Eye Level"
+            style={{ maxWidth: 140, height: "auto" }}
+          />
           <div
             style={{
               fontSize: 11,

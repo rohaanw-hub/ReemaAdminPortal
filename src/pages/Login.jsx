@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../AppContext";
+import eyeLevelLogo from "../assets/EyeLevelLogo.png";
 
 export default function Login() {
   const { login } = useApp();
@@ -54,48 +55,16 @@ export default function Login() {
         }}
       >
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <svg
-            width="160"
-            height="48"
-            viewBox="0 0 160 48"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="24" cy="24" r="24" fill="#E31837" />
-            <circle cx="24" cy="24" r="13" fill="white" />
-            <circle cx="24" cy="24" r="7" fill="#E31837" />
-            <text
-              x="56"
-              y="18"
-              fontFamily="DM Sans, sans-serif"
-              fontSize="17"
-              fontWeight="700"
-              fill="#E31837"
-              letterSpacing="1"
-            >
-              EYE
-            </text>
-            <text
-              x="56"
-              y="36"
-              fontFamily="DM Sans, sans-serif"
-              fontSize="17"
-              fontWeight="700"
-              fill="#E31837"
-              letterSpacing="1"
-            >
-              LEVEL
-            </text>
-            <line
-              x1="56"
-              y1="22"
-              x2="152"
-              y2="22"
-              stroke="#E31837"
-              strokeWidth="0.5"
-              opacity="0.3"
-            />
-          </svg>
+          <img
+            src={eyeLevelLogo}
+            alt="Eye Level"
+            style={{
+              maxWidth: 180,
+              height: "auto",
+              display: "block",
+              margin: "0 auto",
+            }}
+          />
           <div
             style={{
               fontSize: 12,
