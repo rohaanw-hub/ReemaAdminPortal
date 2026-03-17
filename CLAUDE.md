@@ -124,6 +124,16 @@ are stored as ranges: "3PM-7PM".
 Tickets live in .claude/backlog/pending/ as Markdown files.
 Agents should check this folder for assigned work before starting a session.
 
+## Agent behaviour
+
+Always proceed with fixes and implementations without asking for
+confirmation on individual steps. Only stop and wait for human approval
+at these two points:
+1. Before starting implementation of a new ticket (plan approval)
+2. Before any destructive action (deleting files, dropping data)
+For everything else — lint fixes, small bugs, pushing to GitHub,
+moving ticket files — just do it.
+
 ## Commit convention
 
 Conventional Commits: feat:, fix:, chore:,
