@@ -13,20 +13,19 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault()
     setError('')
-    if (!email.trim() || !password) {
-      setError('Please enter your email and password.')
-      return
-    }
     setLoading(true)
-    // Slight delay so the button state is visible — gives a more realistic feel
     setTimeout(() => {
       const result = login(email, password)
       setLoading(false)
       if (!result.ok) {
-        setError('Invalid email or password.')
+        setError('Invalid email or password. Please try again.')
         return
       }
-      navigate(result.user.role === 'parent' ? '/parent' : '/dashboard', { replace: true })
+      if (result.user.role === 'parent') {
+        navigate('/parent', { replace: true })
+      } else {
+        navigate('/dashboard', { replace: true })
+      }
     }, 400)
   }
 
@@ -40,178 +39,111 @@ export default function Login() {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       padding: 24,
     }}>
-      <div style={{ width: '100%', maxWidth: 420 }}>
-
+      <div style={{
+        background: '#fff',
+        borderRadius: 16,
+        padding: '48px 48px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(227,24,55,0.08)',
+        border: '1px solid rgba(227,24,55,0.1)',
+        maxWidth: 420,
+        width: '100%',
+      }}>
         {/* Logo */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 36 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <svg width="160" height="48" viewBox="0 0 160 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="24" cy="24" r="24" fill="#E31837"/>
             <circle cx="24" cy="24" r="13" fill="white"/>
             <circle cx="24" cy="24" r="7" fill="#E31837"/>
-            <text x="56" y="19" fontFamily="DM Sans, sans-serif" fontSize="17" fontWeight="700" fill="#E31837" letterSpacing="2">EYE</text>
-            <text x="56" y="37" fontFamily="DM Sans, sans-serif" fontSize="17" fontWeight="700" fill="#E31837" letterSpacing="2">LEVEL</text>
-            <line x1="56" y1="24" x2="152" y2="24" stroke="#E31837" strokeWidth="0.6" opacity="0.25"/>
+            <text x="56" y="18" fontFamily="DM Sans, sans-serif" fontSize="17" fontWeight="700" fill="#E31837" letterSpacing="1">EYE</text>
+            <text x="56" y="36" fontFamily="DM Sans, sans-serif" fontSize="17" fontWeight="700" fill="#E31837" letterSpacing="1">LEVEL</text>
+            <line x1="56" y1="22" x2="152" y2="22" stroke="#E31837" strokeWidth="0.5" opacity="0.3"/>
           </svg>
-          <div style={{
-            marginTop: 10,
-            fontSize: 12,
-            fontWeight: 600,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: '#E31837',
-          }}>
+          <div style={{ fontSize: 12, color: '#E31837', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 6, fontWeight: 500 }}>
             Missouri City
           </div>
         </div>
 
-        {/* Card */}
-        <div style={{
-          background: '#fff',
-          borderRadius: 16,
-          padding: '36px 40px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(227,24,55,0.08)',
-          border: '1px solid rgba(227,24,55,0.1)',
-        }}>
-          <h1 style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: '#0f172a',
-            marginBottom: 4,
-          }}>
-            Welcome back
-          </h1>
-          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 28 }}>
-            Sign in to the admin portal
-          </p>
-
-          <form onSubmit={handleSubmit} noValidate>
-            {/* Email */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{
-                display: 'block',
-                fontSize: 11,
-                fontWeight: 700,
-                color: '#475569',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                marginBottom: 6,
-              }}>
-                Email address
-              </label>
-              <input
-                type="email"
-                autoComplete="email"
-                autoFocus
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setError('') }}
-                placeholder="you@reema.com"
-                style={{
-                  width: '100%',
-                  padding: '10px 13px',
-                  border: error ? '1.5px solid #E31837' : '1.5px solid #e2e8f0',
-                  borderRadius: 8,
-                  fontSize: 14,
-                  color: '#0f172a',
-                  outline: 'none',
-                  background: '#fff',
-                  boxSizing: 'border-box',
-                  transition: 'border-color 0.15s',
-                }}
-                onFocus={(e) => { if (!error) e.target.style.borderColor = '#E31837' }}
-                onBlur={(e) => { if (!error) e.target.style.borderColor = '#e2e8f0' }}
-              />
-            </div>
-
-            {/* Password */}
-            <div style={{ marginBottom: 8 }}>
-              <label style={{
-                display: 'block',
-                fontSize: 11,
-                fontWeight: 700,
-                color: '#475569',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                marginBottom: 6,
-              }}>
-                Password
-              </label>
-              <input
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setError('') }}
-                placeholder="••••••••"
-                style={{
-                  width: '100%',
-                  padding: '10px 13px',
-                  border: error ? '1.5px solid #E31837' : '1.5px solid #e2e8f0',
-                  borderRadius: 8,
-                  fontSize: 14,
-                  color: '#0f172a',
-                  outline: 'none',
-                  background: '#fff',
-                  boxSizing: 'border-box',
-                  transition: 'border-color 0.15s',
-                }}
-                onFocus={(e) => { if (!error) e.target.style.borderColor = '#E31837' }}
-                onBlur={(e) => { if (!error) e.target.style.borderColor = '#e2e8f0' }}
-              />
-            </div>
-
-            {/* Error */}
-            <div style={{ minHeight: 28, display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-              {error && (
-                <p style={{
-                  fontSize: 12,
-                  color: '#E31837',
-                  fontWeight: 500,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  margin: 0,
-                }}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <circle cx="7" cy="7" r="7" fill="#E31837"/>
-                    <text x="7" y="11" textAnchor="middle" fontSize="10" fontWeight="700" fill="white">!</text>
-                  </svg>
-                  {error}
-                </p>
-              )}
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '11px 0',
-                background: loading ? '#f87171' : '#E31837',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                letterSpacing: '0.02em',
-                transition: 'background 0.15s, opacity 0.15s',
-                marginTop: 4,
-              }}
-            >
-              {loading ? 'Signing in…' : 'Sign in'}
-            </button>
-          </form>
-        </div>
-
-        {/* Footer hint */}
-        <p style={{
-          textAlign: 'center',
-          marginTop: 20,
-          fontSize: 12,
-          color: '#94a3b8',
-        }}>
-          Eye Level Missouri City · Admin Portal
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#0f172a', marginBottom: 4, textAlign: 'center' }}>
+          Admin Portal
+        </h1>
+        <p style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', marginBottom: 28 }}>
+          Sign in to continue
         </p>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError('') }}
+              placeholder="you@reema.com"
+              required
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '10px 12px', borderRadius: 8, fontSize: 14,
+                border: `1px solid ${error ? '#E31837' : '#e2e8f0'}`,
+                outline: 'none', color: '#0f172a',
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setError('') }}
+              placeholder="••••••••"
+              required
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '10px 12px', borderRadius: 8, fontSize: 14,
+                border: `1px solid ${error ? '#E31837' : '#e2e8f0'}`,
+                outline: 'none', color: '#0f172a',
+              }}
+            />
+          </div>
+
+          {error && (
+            <div style={{
+              background: '#FFF0F2', border: '1px solid rgba(227,24,55,0.2)',
+              borderRadius: 8, padding: '10px 14px', marginBottom: 16,
+              fontSize: 13, color: '#E31837', display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="7" fill="#E31837"/><path d="M7 4v3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><circle cx="7" cy="10" r="0.75" fill="white"/></svg>
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%', padding: '11px 16px',
+              background: loading ? '#f1a0ab' : '#E31837',
+              color: '#fff', border: 'none', borderRadius: 8,
+              fontSize: 14, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            {loading ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
+
+        <div style={{
+          marginTop: 24, padding: '10px 14px',
+          background: '#f8fafc', borderRadius: 8,
+          fontSize: 11, color: '#94a3b8', textAlign: 'center',
+          lineHeight: 1.6,
+        }}>
+          Admin: admin@reema.com / reema123<br />
+          Teachers: use their email / any password
+        </div>
       </div>
     </div>
   )
