@@ -2,9 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(cd:*)",
+      "Bash(npm run:*)",
       "Bash(git add:*)",
-      "Bash(git merge:*)",
-      "Bash(git rm:*)"
+      "Bash(cp:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }
