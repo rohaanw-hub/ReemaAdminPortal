@@ -1,6 +1,15 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { useApp } from '../../AppContext'
 
 export default function Layout() {
+  const { currentUser, logout } = useApp()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
       <aside style={{ width: 220, background: '#fff', borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh' }}>
@@ -36,6 +45,38 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* User + Logout */}
+        <div style={{ padding: '12px 16px', borderTop: '1px solid #E5E7EB' }}>
+          {currentUser && (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {currentUser.name}
+              </div>
+              <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize' }}>
+                {currentUser.role}
+              </div>
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            style={{
+              width: '100%',
+              padding: '7px 12px',
+              background: '#FFF0F2',
+              color: '#E31837',
+              border: '1px solid rgba(227,24,55,0.2)',
+              borderRadius: 7,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              textAlign: 'left',
+              letterSpacing: '0.01em',
+            }}
+          >
+            Sign out
+          </button>
+        </div>
       </aside>
       <div style={{ marginLeft: 220, flex: 1, background: '#f5f4f0' }}>
         <header style={{ background: '#fff', borderBottom: '1px solid #eee', padding: '16px 24px', fontSize: 18, fontWeight: 500, color: '#1e293b' }}>

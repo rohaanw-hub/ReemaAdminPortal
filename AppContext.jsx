@@ -332,6 +332,33 @@ const SEED_SESSIONS = [
   { id: 19, day: 'Sat', time: '10AM', duration: 60, studentId: 4, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
 ]
 
+// ─── Mock Accounts ────────────────────────────────────────────────────────────
+const ADMIN_ACCOUNT = { email: 'admin@reema.com', password: 'reema123' }
+
+function resolveLogin(email, password, employees, students) {
+  const e = email.trim().toLowerCase()
+  const p = password
+
+  // Admin
+  if (e === ADMIN_ACCOUNT.email && p === ADMIN_ACCOUNT.password) {
+    return { ok: true, user: { name: 'Admin', email: e, role: 'admin', profileId: null } }
+  }
+
+  // Teacher (seeded employee email — any non-empty password accepted in prototype)
+  const emp = employees.find((x) => x.email.toLowerCase() === e)
+  if (emp && p.length > 0) {
+    return { ok: true, user: { name: emp.name, email: e, role: 'teacher', profileId: emp.id } }
+  }
+
+  // Parent (seeded student's parentEmail — any non-empty password accepted)
+  const student = students.find((x) => x.parentEmail?.toLowerCase() === e)
+  if (student && p.length > 0) {
+    return { ok: true, user: { name: student.parentName, email: e, role: 'parent', profileId: student.id } }
+  }
+
+  return { ok: false }
+}
+
 // ─── Context ──────────────────────────────────────────────────────────────────
 const AppContext = createContext(null)
 
@@ -339,6 +366,7 @@ export function AppProvider({ children }) {
   const [employees, setEmployees] = useState(SEED_EMPLOYEES)
   const [students, setStudents] = useState(SEED_STUDENTS)
   const [sessions, setSessions] = useState(SEED_SESSIONS)
+  const [currentUser, setCurrentUser] = useState(null)
   const [notifications, setNotifications] = useState([
     { id: 1, type: 'warning', msg: 'Jaylen Williams — Tue/Thu 5PM sessions need tutor assignment' },
     { id: 2, type: 'warning', msg: 'Lily Nguyen — Wed 3PM Reading session needs tutor assignment' },
@@ -346,6 +374,14 @@ export function AppProvider({ children }) {
   ])
   // weeklyConflicts: { [employeeId]: [{ id, day, startTime, endTime, reason }] }
   const [weeklyConflicts, setWeeklyConflicts] = useState({})
+
+  const login = (email, password) => {
+    const result = resolveLogin(email, password, employees, students)
+    if (result.ok) setCurrentUser(result.user)
+    return result
+  }
+
+  const logout = () => setCurrentUser(null)
 
   const addNotification = (type, msg) => {
     const id = Date.now()
@@ -381,6 +417,7 @@ export function AppProvider({ children }) {
         employees, setEmployees,
         students, setStudents,
         sessions, setSessions,
+        currentUser, login, logout,
         notifications, addNotification, dismissNotification,
         weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, clearWeeklyConflicts,
       }}
