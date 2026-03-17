@@ -147,8 +147,9 @@ function EditModal({ emp, onClose, onSave }) {
 
 export default function EmployeeProfile() {
   const { id } = useParams()
-  const { employees, setEmployees, sessions, students, weeklyConflicts, addWeeklyConflict, removeWeeklyConflict } = useApp()
+  const { employees, setEmployees, sessions, students, weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, currentUser } = useApp()
   const navigate = useNavigate()
+  const isTeacher = currentUser?.role === 'teacher'
   const [tab, setTab] = useState('overview')
   const [showEdit, setShowEdit] = useState(false)
   const [showAddConflict, setShowAddConflict] = useState(false)
@@ -172,6 +173,12 @@ export default function EmployeeProfile() {
   const emp = employees.find((e) => e.id === Number(id))
   if (!emp) return <div className="card">Employee not found.</div>
 
+  // Teachers can only view their own profile
+  if (isTeacher && Number(id) !== currentUser.profileId) {
+    navigate(`/employees/${currentUser.profileId}`, { replace: true })
+    return null
+  }
+
   const rel = calcReliability(emp.callouts, emp.totalShifts)
   const hours = calcHours(emp.clockIns)
   const empSessions = sessions.filter((s) => s.employeeId === emp.id)
@@ -192,9 +199,11 @@ export default function EmployeeProfile() {
 
   return (
     <div>
-      <div className="back-link" onClick={() => navigate('/employees')}>
-        <ChevronLeft size={16} /> Back to Employees
-      </div>
+      {!isTeacher && (
+        <div className="back-link" onClick={() => navigate('/employees')}>
+          <ChevronLeft size={16} /> Back to Employees
+        </div>
+      )}
 
       {/* Header */}
       <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -215,10 +224,12 @@ export default function EmployeeProfile() {
             <span className="text-sm">${emp.hourlyRate}/hr</span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-warning btn-sm" onClick={logCallout}>Log Callout</button>
-          <button className="btn btn-outline btn-sm" onClick={() => setShowEdit(true)}>Edit</button>
-        </div>
+        {!isTeacher && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-warning btn-sm" onClick={logCallout}>Log Callout</button>
+            <button className="btn btn-outline btn-sm" onClick={() => setShowEdit(true)}>Edit</button>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -482,9 +493,11 @@ export default function EmployeeProfile() {
             {rel < 75 && 'Reliability needs attention — please review callout history.'}
           </div>
 
-          <div style={{ marginTop: 20 }}>
-            <button className="btn btn-warning" onClick={logCallout}>Log a Callout</button>
-          </div>
+          {!isTeacher && (
+            <div style={{ marginTop: 20 }}>
+              <button className="btn btn-warning" onClick={logCallout}>Log a Callout</button>
+            </div>
+          )}
         </div>
       )}
 

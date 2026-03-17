@@ -166,7 +166,8 @@ function AddStudentModal({ onClose, onSave }) {
 }
 
 export default function Students() {
-  const { students, setStudents } = useApp()
+  const { students, setStudents, currentUser } = useApp()
+  const isTeacher = currentUser?.role === 'teacher'
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filterGrade, setFilterGrade] = useState('All')
@@ -192,7 +193,9 @@ export default function Students() {
     <div>
       <div className="page-header">
         <h1 className="page-title">Students</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Student</button>
+        {!isTeacher && (
+          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Student</button>
+        )}
       </div>
 
       <div className="search-row">

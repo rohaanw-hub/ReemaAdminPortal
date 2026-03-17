@@ -242,7 +242,7 @@ function ConflictsPanel({ employees, weeklyConflicts, addWeeklyConflict, removeW
 }
 
 // ── Session Chip ──────────────────────────────────────────────────────────────
-function SessionChip({ session, students, employees, weeklyConflicts, onClick, isDragging, onDragStart, onDragEnd }) {
+function SessionChip({ session, students, employees, weeklyConflicts, onClick, isDragging, onDragStart, onDragEnd, readOnly }) {
   const student = students.find((s) => s.id === session.studentId)
   const emp = employees.find((e) => e.id === session.employeeId)
   const colors = SUBJECT_COLORS[session.subject] || { bg: '#f1f5f9', color: '#475569' }
@@ -285,7 +285,7 @@ function SessionChip({ session, students, employees, weeklyConflicts, onClick, i
   }
 
   const handleDragStart = (e) => {
-    if (isCancelled) { e.preventDefault(); return }
+    if (isCancelled || readOnly) { e.preventDefault(); return }
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', String(session.id))
     setTimeout(() => onDragStart(session), 0)
@@ -295,7 +295,7 @@ function SessionChip({ session, students, employees, weeklyConflicts, onClick, i
     <div
       className={`session-chip${extraClass}`}
       style={chipStyle}
-      draggable={!isCancelled}
+      draggable={!isCancelled && !readOnly}
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onClick={() => onClick(session)}
@@ -322,6 +322,7 @@ function WeekGrid({
   checkDropValidity,
   onDragStart, onDragEnd,
   onCellDragEnter, onCellDrop,
+  readOnly,
 }) {
   return (
     <div className="week-grid-wrap">
@@ -397,17 +398,17 @@ function WeekGrid({
                     style={{ position: 'relative', ...cellStyle }}
                     title={conflictTooltip || undefined}
                     onDragOver={(e) => {
-                      if (!draggedSession || isUnavail) return
+                      if (readOnly || !draggedSession || isUnavail) return
                       e.preventDefault()
                       e.dataTransfer.dropEffect = 'move'
                     }}
                     onDragEnter={(e) => {
-                      if (!draggedSession || isUnavail) return
+                      if (readOnly || !draggedSession || isUnavail) return
                       e.preventDefault()
                       onCellDragEnter(day, time)
                     }}
                     onDrop={(e) => {
-                      if (isUnavail) return
+                      if (readOnly || isUnavail) return
                       e.preventDefault()
                       onCellDrop(day, time)
                     }}
@@ -423,6 +424,7 @@ function WeekGrid({
                         isDragging={draggedSession?.id === s.id}
                         onDragStart={onDragStart}
                         onDragEnd={onDragEnd}
+                        readOnly={readOnly}
                       />
                     ))}
 
@@ -459,7 +461,7 @@ function WeekGrid({
 }
 
 // ── Employee Session Modal ────────────────────────────────────────────────────
-function EmpSessionModal({ session, sessions, employees, students, weeklyConflicts, onClose, onUpdate }) {
+function EmpSessionModal({ session, sessions, employees, students, weeklyConflicts, onClose, onUpdate, readOnly }) {
   const student = students.find((s) => s.id === session.studentId)
   const currentEmp = employees.find((e) => e.id === session.employeeId)
   const sessionHasConflict = currentEmp && hasWeeklyConflict(weeklyConflicts, currentEmp.id, session.day, session.time)
@@ -518,7 +520,7 @@ function EmpSessionModal({ session, sessions, employees, students, weeklyConflic
           )}
         </div>
 
-        {session.status !== 'cancelled' && (
+        {!readOnly && session.status !== 'cancelled' && (
           <div className="form-group">
             <label className="form-label">Reassign Tutor</label>
             <select
@@ -540,7 +542,9 @@ function EmpSessionModal({ session, sessions, employees, students, weeklyConflic
         )}
 
         <div className="modal-footer" style={{ flexWrap: 'wrap' }}>
-          {session.status === 'cancelled' ? (
+          {readOnly ? (
+            <button className="btn btn-outline btn-sm" onClick={onClose}>Close</button>
+          ) : session.status === 'cancelled' ? (
             <button className="btn btn-success" onClick={handleFindReplacement}>Find Replacement</button>
           ) : (
             <>
@@ -722,7 +726,13 @@ export default function Schedule() {
   const {
     sessions, setSessions, employees, students, addNotification,
     weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, clearWeeklyConflicts,
+    currentUser,
   } = useApp()
+
+  const isTeacher = currentUser?.role === 'teacher'
+  const visibleSessions = isTeacher
+    ? sessions.filter((s) => s.employeeId === currentUser.profileId)
+    : sessions
 
   const [activeTab, setActiveTab] = useState('employee')
   const [selectedSession, setSelectedSession] = useState(null)
@@ -933,35 +943,44 @@ export default function Schedule() {
           {unassignedCount > 0 && <span className="badge badge-amber">{unassignedCount} unassigned</span>}
           {cancelledCount > 0 && <span className="badge badge-red">{cancelledCount} cancelled</span>}
           {totalConflicts > 0 && <span className="badge badge-red">{totalConflicts} conflict{totalConflicts > 1 ? 's' : ''}</span>}
-          <button className="btn btn-outline btn-sm" onClick={() => setShowConflictsPanel(true)}>
-            🚫 Manage Conflicts
-          </button>
+          {!isTeacher && (
+            <button className="btn btn-outline btn-sm" onClick={() => setShowConflictsPanel(true)}>
+              🚫 Manage Conflicts
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="tabs">
-        <button className={`tab${activeTab === 'employee' ? ' active' : ''}`} onClick={() => setActiveTab('employee')}>
-          Employee Schedule
-        </button>
-        <button className={`tab${activeTab === 'student' ? ' active' : ''}`} onClick={() => setActiveTab('student')}>
-          Student Schedule
-        </button>
-      </div>
+      {/* Tabs — hidden for teacher (always shows employee view) */}
+      {!isTeacher && (
+        <div className="tabs">
+          <button className={`tab${activeTab === 'employee' ? ' active' : ''}`} onClick={() => setActiveTab('employee')}>
+            Employee Schedule
+          </button>
+          <button className={`tab${activeTab === 'student' ? ' active' : ''}`} onClick={() => setActiveTab('student')}>
+            Student Schedule
+          </button>
+        </div>
+      )}
 
       {/* Employee Tab */}
-      {activeTab === 'employee' && (
+      {(activeTab === 'employee' || isTeacher) && (
         <div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-            <button className="btn btn-primary" onClick={autoScheduleEmployees}>Auto-Schedule Employees</button>
-            <span className="text-sm">Drag sessions to move · Click to reassign or cancel</span>
+            {!isTeacher && (
+              <button className="btn btn-primary" onClick={autoScheduleEmployees}>Auto-Schedule Employees</button>
+            )}
+            <span className="text-sm">
+              {isTeacher ? 'Your sessions this week' : 'Drag sessions to move · Click to reassign or cancel'}
+            </span>
           </div>
           <Legend showCancelled />
           <div className="card" style={{ padding: 12 }}>
             <WeekGrid
-              sessions={sessions} students={students} employees={employees}
+              sessions={visibleSessions} students={students} employees={employees}
               weeklyConflicts={weeklyConflicts}
               onClickSession={(s) => { setSelectedSession(s); setShowEmpModal(true) }}
+              readOnly={isTeacher}
               {...dragProps}
             />
           </div>
@@ -994,6 +1013,7 @@ export default function Schedule() {
           students={students} weeklyConflicts={weeklyConflicts}
           onClose={() => { setShowEmpModal(false); setSelectedSession(null) }}
           onUpdate={updateSession}
+          readOnly={isTeacher}
         />
       )}
 
