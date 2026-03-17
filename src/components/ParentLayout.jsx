@@ -80,11 +80,11 @@ export default function ParentLayout() {
               fontWeight: 500,
             }}
           >
-            Missouri City
+            Eye Level — Missouri City
           </div>
         </div>
 
-        {/* Single nav item */}
+        {/* Nav */}
         <nav style={{ flex: 1, padding: 12 }}>
           <NavLink
             to="/parent"
@@ -107,25 +107,201 @@ export default function ParentLayout() {
           </NavLink>
         </nav>
 
-        {/* User + logout */}
+        {/* User info + bell + sign out */}
         <div style={{ padding: "12px 16px", borderTop: "1px solid #E5E7EB" }}>
           {currentUser && (
-            <div style={{ marginBottom: 8 }}>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "#0f172a",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {currentUser.name}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#0f172a",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {currentUser.name}
+                </div>
+                <div style={{ fontSize: 11, color: "#94a3b8" }}>Parent</div>
               </div>
-              <div style={{ fontSize: 11, color: "#94a3b8" }}>Parent</div>
+
+              {/* Bell */}
+              <div
+                ref={panelRef}
+                style={{ position: "relative", flexShrink: 0 }}
+              >
+                <button
+                  onClick={() => setNotifOpen((v) => !v)}
+                  style={{
+                    position: "relative",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px 6px",
+                    borderRadius: 8,
+                    color: notifOpen ? "#E31837" : "#64748b",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  aria-label="Notifications"
+                >
+                  <Bell size={16} />
+                  {unreadCount > 0 && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        right: 0,
+                        background: "#E31837",
+                        color: "#fff",
+                        borderRadius: 999,
+                        fontSize: 9,
+                        fontWeight: 700,
+                        minWidth: 14,
+                        height: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "0 2px",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notification panel — opens upward */}
+                {notifOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "calc(100% + 8px)",
+                      left: 0,
+                      width: 320,
+                      background: "#fff",
+                      borderRadius: 12,
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+                      border: "1px solid #e2e8f0",
+                      zIndex: 1000,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "12px 16px",
+                        borderBottom: "1px solid #f1f5f9",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 14,
+                          color: "#0f172a",
+                        }}
+                      >
+                        Notifications
+                      </span>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllRead}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: 12,
+                            color: "#E31837",
+                            fontWeight: 500,
+                          }}
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ maxHeight: 360, overflowY: "auto" }}>
+                      {myNotifs.length === 0 ? (
+                        <div
+                          style={{
+                            padding: "24px 16px",
+                            textAlign: "center",
+                            color: "#94a3b8",
+                            fontSize: 13,
+                          }}
+                        >
+                          No notifications
+                        </div>
+                      ) : (
+                        myNotifs.map((n) => (
+                          <div
+                            key={n.id}
+                            style={{
+                              padding: "10px 16px",
+                              borderBottom: "1px solid #f8fafc",
+                              background: n.read ? "#fff" : "#fdf8f8",
+                              display: "flex",
+                              gap: 10,
+                              alignItems: "flex-start",
+                            }}
+                          >
+                            {!n.read && (
+                              <div
+                                style={{
+                                  width: 7,
+                                  height: 7,
+                                  borderRadius: 999,
+                                  background: "#E31837",
+                                  flexShrink: 0,
+                                  marginTop: 5,
+                                }}
+                              />
+                            )}
+                            <div
+                              style={{
+                                flex: 1,
+                                paddingLeft: n.read ? 17 : 0,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  color: "#0f172a",
+                                  lineHeight: 1.4,
+                                }}
+                              >
+                                {n.msg}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  color: "#94a3b8",
+                                  marginTop: 3,
+                                }}
+                              >
+                                {formatNotifTime(n.timestamp)}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
+
           <button
             onClick={handleLogout}
             style={{
@@ -147,171 +323,6 @@ export default function ParentLayout() {
       </aside>
 
       <div style={{ marginLeft: 220, flex: 1, background: "#f5f4f0" }}>
-        <header
-          style={{
-            background: "#fff",
-            borderBottom: "1px solid #eee",
-            padding: "16px 24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span style={{ fontSize: 18, fontWeight: 500, color: "#1e293b" }}>
-            Eye Level — Missouri City
-          </span>
-          <div ref={panelRef} style={{ position: "relative" }}>
-            <button
-              onClick={() => setNotifOpen((v) => !v)}
-              style={{
-                position: "relative",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "4px 6px",
-                borderRadius: 8,
-                color: notifOpen ? "#E31837" : "#64748b",
-                display: "flex",
-                alignItems: "center",
-              }}
-              aria-label="Notifications"
-            >
-              <Bell size={20} />
-              {unreadCount > 0 && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    background: "#E31837",
-                    color: "#fff",
-                    borderRadius: 999,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    minWidth: 16,
-                    height: 16,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "0 3px",
-                    lineHeight: 1,
-                  }}
-                >
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </button>
-
-            {notifOpen && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "calc(100% + 8px)",
-                  right: 0,
-                  width: 340,
-                  background: "#fff",
-                  borderRadius: 12,
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-                  border: "1px solid #e2e8f0",
-                  zIndex: 1000,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "12px 16px",
-                    borderBottom: "1px solid #f1f5f9",
-                  }}
-                >
-                  <span
-                    style={{ fontWeight: 600, fontSize: 14, color: "#0f172a" }}
-                  >
-                    Notifications
-                  </span>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllRead}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: 12,
-                        color: "#E31837",
-                        fontWeight: 500,
-                      }}
-                    >
-                      Mark all as read
-                    </button>
-                  )}
-                </div>
-                <div style={{ maxHeight: 360, overflowY: "auto" }}>
-                  {myNotifs.length === 0 ? (
-                    <div
-                      style={{
-                        padding: "24px 16px",
-                        textAlign: "center",
-                        color: "#94a3b8",
-                        fontSize: 13,
-                      }}
-                    >
-                      No notifications
-                    </div>
-                  ) : (
-                    myNotifs.map((n) => (
-                      <div
-                        key={n.id}
-                        style={{
-                          padding: "10px 16px",
-                          borderBottom: "1px solid #f8fafc",
-                          background: n.read ? "#fff" : "#fdf8f8",
-                          display: "flex",
-                          gap: 10,
-                          alignItems: "flex-start",
-                        }}
-                      >
-                        {!n.read && (
-                          <div
-                            style={{
-                              width: 7,
-                              height: 7,
-                              borderRadius: 999,
-                              background: "#E31837",
-                              flexShrink: 0,
-                              marginTop: 5,
-                            }}
-                          />
-                        )}
-                        <div style={{ flex: 1, paddingLeft: n.read ? 17 : 0 }}>
-                          <div
-                            style={{
-                              fontSize: 13,
-                              color: "#0f172a",
-                              lineHeight: 1.4,
-                            }}
-                          >
-                            {n.msg}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: "#94a3b8",
-                              marginTop: 3,
-                            }}
-                          >
-                            {formatNotifTime(n.timestamp)}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </header>
         <main style={{ padding: 24 }}>
           <Outlet />
         </main>
