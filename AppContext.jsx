@@ -465,7 +465,6 @@ export function AppProvider({ children }) {
 
   // Mock invite — logs to console and fires an admin notification.
   const sendInvite = (name, email, accountRole) => {
-    console.log(`Invite sent to ${email} for role ${accountRole}`)
     addNotification('info', `Invite sent to ${name} (${email})`, 'admin')
   }
 
