@@ -1,7 +1,7 @@
 ---
 id: FEAT-012
 title: Global search bar to find students and employees
-status: pending
+status: completed
 priority: medium
 created: 2026-03-17
 assignee: unassigned
