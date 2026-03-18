@@ -69,7 +69,7 @@ export default function ClockIn() {
               <div>
                 <div style={{ fontWeight: 600 }}>{emp.name}</div>
                 <div className="text-sm">
-                  {emp.role} · {hours.toFixed(1)} hrs logged
+                  {emp.grade} · {hours.toFixed(1)} hrs logged
                 </div>
               </div>
             </div>
