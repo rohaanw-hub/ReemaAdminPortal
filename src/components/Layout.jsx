@@ -263,9 +263,8 @@ export default function Layout() {
             gap: 16,
           }}
         >
-          <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <SearchBar />
-          </div>
+          <div style={{ flex: 1 }} />
+          <SearchBar />
 
           {/* Bell */}
           <div ref={panelRef} style={{ position: "relative", flexShrink: 0 }}>

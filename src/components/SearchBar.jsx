@@ -148,10 +148,7 @@ export default function SearchBar() {
   const showDropdown = open && query.trim().length > 0;
 
   return (
-    <div
-      ref={containerRef}
-      style={{ position: "relative", flex: 1, maxWidth: 480 }}
-    >
+    <div ref={containerRef} style={{ position: "relative", maxWidth: 480 }}>
       {/* Input */}
       <div
         style={{
