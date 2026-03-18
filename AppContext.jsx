@@ -721,6 +721,48 @@ export function AppProvider({ children }) {
     setWeeklyConflicts((prev) => ({ ...prev, [empId]: [] }))
   }
 
+  const [calendarEvents, setCalendarEvents] = useState([
+    {
+      id: 1,
+      title: 'Math Enrichment Workshop',
+      date: 'Wed',
+      startTime: '16:00',
+      endTime: '17:30',
+      description: 'Algebra and geometry practice for intermediate students.',
+      location: 'Eye Level Missouri City',
+      staffIds: [],
+      type: 'Workshop',
+      allDay: false,
+    },
+    {
+      id: 2,
+      title: 'Staff Meeting',
+      date: 'Sat',
+      startTime: '10:00',
+      endTime: '11:00',
+      description: 'Monthly all-hands staff meeting.',
+      location: 'Eye Level Missouri City',
+      staffIds: [],
+      type: 'Meeting',
+      allDay: false,
+    },
+  ])
+
+  const addCalendarEvent = (event) => {
+    const id = Date.now()
+    setCalendarEvents((prev) => [...prev, { ...event, id }])
+  }
+
+  const updateCalendarEvent = (id, changes) => {
+    setCalendarEvents((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, ...changes } : e)),
+    )
+  }
+
+  const deleteCalendarEvent = (id) => {
+    setCalendarEvents((prev) => prev.filter((e) => e.id !== id))
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -731,6 +773,7 @@ export function AppProvider({ children }) {
         currentUser, login, logout,
         notifications, addNotification, dismissNotification, markAllRead,
         weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, clearWeeklyConflicts,
+        calendarEvents, addCalendarEvent, updateCalendarEvent, deleteCalendarEvent,
         isEmailTaken, sendInvite,
       }}
     >

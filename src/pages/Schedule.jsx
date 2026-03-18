@@ -11,6 +11,8 @@ import {
 } from "../../helpers";
 import MoveSessionModal from "../components/MoveSessionModal";
 import ChangeGraderModal from "../components/ChangeGraderModal";
+import NewEventModal from "../components/NewEventModal";
+import EventDetailModal from "../components/EventDetailModal";
 
 // Classrooms shown in the schedule grid — excludes Grader
 const SCHEDULE_CLASSROOMS = ["Classroom 1", "Classroom 2", "Classroom 3"];
@@ -429,6 +431,9 @@ function SessionDetailModal({
   );
 }
 
+// Event block style
+const EVENT_COLORS = { bg: "#ede9fe", border: "#8b5cf6", color: "#5b21b6" };
+
 // ── Day View — 24-hour calendar ────────────────────────────────────────────────
 function DayView({
   sessions,
@@ -437,6 +442,9 @@ function DayView({
   studentMap,
   onSessionClick,
   onMove,
+  calendarEvents,
+  onEventClick,
+  onSlotClick,
 }) {
   const slots = getSlotsForDay(day);
   const [draggedId, setDraggedId] = useState(null);
@@ -512,6 +520,21 @@ function DayView({
               </div>
             );
           })}
+          <div
+            style={{
+              width: 130,
+              flexShrink: 0,
+              padding: "10px 12px",
+              textAlign: "center",
+              fontWeight: 600,
+              fontSize: 13,
+              background: EVENT_COLORS.bg,
+              color: EVENT_COLORS.color,
+              borderLeft: "1px solid #e2e8f0",
+            }}
+          >
+            Events
+          </div>
         </div>
 
         {/* Scrollable 24-hour body */}
@@ -586,13 +609,19 @@ function DayView({
                     minWidth: 140,
                   }}
                 >
-                  {/* Hour row backgrounds */}
+                  {/* Hour row backgrounds (click to create event) */}
                   {getCalHours().map((h) => {
                     const rowMin = h * 60;
                     const isOp = rowMin >= opStart && rowMin < opEnd;
+                    const hh = String(h).padStart(2, "0");
                     return (
                       <div
                         key={h}
+                        onClick={
+                          onSlotClick
+                            ? () => onSlotClick(day, `${hh}:00`)
+                            : undefined
+                        }
                         style={{
                           position: "absolute",
                           top: h * HOUR_HEIGHT,
@@ -601,6 +630,7 @@ function DayView({
                           height: HOUR_HEIGHT,
                           background: isOp ? "#fff" : "#f8fafc",
                           borderBottom: "1px solid #f1f5f9",
+                          cursor: onSlotClick ? "pointer" : "default",
                         }}
                       />
                     );
@@ -646,6 +676,53 @@ function DayView({
                         />
                       );
                     })}
+
+                  {/* Calendar event blocks — shown in first classroom column only */}
+                  {classroom === SCHEDULE_CLASSROOMS[0] &&
+                    calendarEvents
+                      ?.filter((ev) => ev.date === day)
+                      .map((ev) => {
+                        if (ev.allDay) return null;
+                        const evTop =
+                          (timeToMinutes(ev.startTime) / 60) * HOUR_HEIGHT;
+                        const evEnd =
+                          (timeToMinutes(ev.endTime) / 60) * HOUR_HEIGHT;
+                        const evHeight = Math.max(evEnd - evTop - 2, 20);
+                        return (
+                          <div
+                            key={`ev-${ev.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEventClick && onEventClick(ev);
+                            }}
+                            style={{
+                              position: "absolute",
+                              top: evTop + 2,
+                              left: "33%",
+                              right: 4,
+                              height: evHeight,
+                              zIndex: 3,
+                              background: EVENT_COLORS.bg,
+                              borderLeft: `4px solid ${EVENT_COLORS.border}`,
+                              borderRadius: 6,
+                              padding: "3px 7px",
+                              cursor: "pointer",
+                              overflow: "hidden",
+                              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 11,
+                                color: EVENT_COLORS.color,
+                              }}
+                            >
+                              {ev.title}
+                            </div>
+                          </div>
+                        );
+                      })}
 
                   {/* Session blocks */}
                   {classSessions.map((s) => {
@@ -721,6 +798,9 @@ function WeekView({
   onSessionClick,
   isAdmin,
   onGraderClick,
+  calendarEvents,
+  onEventClick,
+  onSlotClick,
 }) {
   const scrollRef = useRef(null);
 
@@ -852,19 +932,26 @@ function WeekView({
                     minWidth: 100,
                   }}
                 >
-                  {/* Hour backgrounds */}
+                  {/* Hour backgrounds — click to create event */}
                   {getCalHours().map((h) => {
                     const rowMin = h * 60;
                     const isOp = rowMin >= opStart && rowMin < opEnd;
+                    const hh = String(h).padStart(2, "0");
                     return (
                       <div
                         key={h}
+                        onClick={
+                          onSlotClick
+                            ? () => onSlotClick(day, `${hh}:00`)
+                            : undefined
+                        }
                         style={{
                           position: "absolute",
                           top: h * HOUR_HEIGHT,
                           left: 0,
                           right: 0,
                           height: HOUR_HEIGHT,
+                          cursor: onSlotClick ? "pointer" : "default",
                           background: isOp ? "#fff" : "#f8fafc",
                           borderBottom: "1px solid #f1f5f9",
                         }}
@@ -924,6 +1011,54 @@ function WeekView({
                       </div>
                     );
                   })}
+
+                  {/* Calendar event blocks */}
+                  {calendarEvents
+                    ?.filter((ev) => ev.date === day && !ev.allDay)
+                    .map((ev) => {
+                      const evTop =
+                        (timeToMinutes(ev.startTime) / 60) * HOUR_HEIGHT;
+                      const evEnd =
+                        (timeToMinutes(ev.endTime) / 60) * HOUR_HEIGHT;
+                      const evHeight = Math.max(evEnd - evTop - 2, 16);
+                      return (
+                        <div
+                          key={`ev-${ev.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEventClick && onEventClick(ev);
+                          }}
+                          style={{
+                            position: "absolute",
+                            top: evTop + 2,
+                            left: 2,
+                            right: 2,
+                            height: evHeight,
+                            zIndex: 3,
+                            background: EVENT_COLORS.bg,
+                            borderLeft: `3px solid ${EVENT_COLORS.border}`,
+                            borderRadius: 4,
+                            padding: "2px 5px",
+                            cursor: "pointer",
+                            overflow: "hidden",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 10,
+                              color: EVENT_COLORS.color,
+                              fontWeight: 600,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {ev.title}
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               );
             })}
@@ -945,6 +1080,10 @@ export default function Schedule() {
     currentUser,
     graderSchedule,
     setGraderSchedule,
+    calendarEvents,
+    addCalendarEvent,
+    updateCalendarEvent,
+    deleteCalendarEvent,
   } = useApp();
   const isAdmin = currentUser?.role === "admin";
 
@@ -954,6 +1093,8 @@ export default function Schedule() {
   const [toasts, setToasts] = useState([]);
   const [pendingMove, setPendingMove] = useState(null);
   const [graderDay, setGraderDay] = useState(null); // day for grader change modal
+  const [newEventInit, setNewEventInit] = useState(null); // { day, startTime } for new event
+  const [detailEvent, setDetailEvent] = useState(null); // event for detail modal
 
   const addToast = useCallback((msg) => {
     const id = Date.now();
@@ -1136,6 +1277,13 @@ export default function Schedule() {
             studentMap={studentMap}
             onSessionClick={setDetailId}
             onMove={isAdmin ? handleMoveRequest : undefined}
+            calendarEvents={calendarEvents}
+            onEventClick={setDetailEvent}
+            onSlotClick={
+              isAdmin
+                ? (day, time) => setNewEventInit({ day, startTime: time })
+                : undefined
+            }
           />
         ) : (
           <WeekView
@@ -1146,6 +1294,13 @@ export default function Schedule() {
             onSessionClick={setDetailId}
             isAdmin={isAdmin}
             onGraderClick={setGraderDay}
+            calendarEvents={calendarEvents}
+            onEventClick={setDetailEvent}
+            onSlotClick={
+              isAdmin
+                ? (day, time) => setNewEventInit({ day, startTime: time })
+                : undefined
+            }
           />
         )}
       </div>
@@ -1184,6 +1339,38 @@ export default function Schedule() {
           employees={employees}
           onSave={(empId) => handleGraderSave(graderDay, empId)}
           onCancel={() => setGraderDay(null)}
+        />
+      )}
+
+      {newEventInit && (
+        <NewEventModal
+          initDay={newEventInit.day}
+          initTime={newEventInit.startTime}
+          employees={employees}
+          onSave={(eventData) => {
+            addCalendarEvent(eventData);
+            addToast("Event created.");
+            setNewEventInit(null);
+          }}
+          onCancel={() => setNewEventInit(null)}
+        />
+      )}
+
+      {detailEvent && (
+        <EventDetailModal
+          event={detailEvent}
+          employees={employees}
+          isAdmin={isAdmin}
+          onUpdate={(id, changes) => {
+            updateCalendarEvent(id, changes);
+            setDetailEvent((prev) => ({ ...prev, ...changes }));
+            addToast("Event updated.");
+          }}
+          onDelete={(id) => {
+            deleteCalendarEvent(id);
+            addToast("Event deleted.");
+          }}
+          onClose={() => setDetailEvent(null)}
         />
       )}
 
