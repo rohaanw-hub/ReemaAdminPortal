@@ -14,13 +14,6 @@ import AttendanceReport from './src/pages/reports/AttendanceReport'
 import PayrollReport from './src/pages/reports/PayrollReport'
 import ParentPortal from './src/pages/ParentPortal'
 
-// Redirects unauthenticated users to /login
-function ProtectedRoute() {
-  const { currentUser } = useApp()
-  if (!currentUser) return <Navigate to="/login" replace />
-  return <Outlet />
-}
-
 // Redirects authenticated users whose role is not in the allow list.
 // Parents → /parent, teachers → /schedule, admins → /dashboard.
 function RoleGuard({ allow }) {
@@ -38,6 +31,7 @@ function RoleGuard({ allow }) {
 function DefaultRedirect() {
   const { currentUser } = useApp()
   if (!currentUser) return <Navigate to="/login" replace />
+  if (currentUser.role === 'parent') return <Navigate to="/parent" replace />
   if (currentUser.role === 'teacher') return <Navigate to="/schedule" replace />
   return <Navigate to="/dashboard" replace />
 }
@@ -47,9 +41,8 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
 
-      {/* Parent portal — authenticated, any role that reaches here is fine;
-          page-level content is parent-specific */}
-      <Route path="/parent" element={<ProtectedRoute />}>
+      {/* Parent portal — parents only */}
+      <Route path="/parent" element={<RoleGuard allow={['parent']} />}>
         <Route index element={<ParentPortal />} />
       </Route>
 
