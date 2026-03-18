@@ -51,10 +51,8 @@ export default function SearchBar() {
   const results = (() => {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
-    const matchedEmps = employees.filter(
-      (e) =>
-        e.name.toLowerCase().includes(q) ||
-        (e.subjects || []).some((s) => s.toLowerCase().includes(q)),
+    const matchedEmps = employees.filter((e) =>
+      e.name.toLowerCase().includes(q),
     );
     const matchedStus = students.filter((s) =>
       s.name.toLowerCase().includes(q),
@@ -69,10 +67,8 @@ export default function SearchBar() {
   const totalMatches = (() => {
     if (!query.trim()) return 0;
     const q = query.toLowerCase();
-    const emps = employees.filter(
-      (e) =>
-        e.name.toLowerCase().includes(q) ||
-        (e.subjects || []).some((s) => s.toLowerCase().includes(q)),
+    const emps = employees.filter((e) =>
+      e.name.toLowerCase().includes(q),
     ).length;
     const stus = students.filter((s) =>
       s.name.toLowerCase().includes(q),
@@ -248,7 +244,7 @@ export default function SearchBar() {
                       key={`emp-${r.item.id}`}
                       result={r}
                       isActive={results.indexOf(r) === activeIndex}
-                      subtitle={`${r.item.accountRole === "admin" ? "Admin" : "Teacher"} · ${(r.item.subjects || []).join(", ") || r.item.role}`}
+                      subtitle={`${r.item.accountRole === "admin" ? "Admin" : "Teacher"} · ${r.item.role}`}
                       onMouseEnter={() => setActiveIndex(results.indexOf(r))}
                       onClick={() => navigate_to(r)}
                     />

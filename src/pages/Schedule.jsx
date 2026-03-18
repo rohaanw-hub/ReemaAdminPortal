@@ -684,7 +684,6 @@ function EmpSessionModal({
     );
 
   const availableEmps = employees.filter((emp) => {
-    if (!emp.subjects.includes(session.subject)) return false;
     if (!isTutorAvailableAt(emp, session.day, session.time)) return false;
     if (hasWeeklyConflict(weeklyConflicts, emp.id, session.day, session.time))
       return false;
@@ -1407,31 +1406,29 @@ export default function Schedule() {
           );
           if (already) return;
 
-          for (const subject of student.subjects) {
-            const emp = findBestTutor(
-              updated,
-              employees,
-              weeklyConflicts,
+          const subject = "Reading";
+          const emp = findBestTutor(
+            updated,
+            employees,
+            weeklyConflicts,
+            day,
+            sessionTime,
+            subject,
+            null,
+            null,
+          );
+          if (emp) {
+            updated.push({
+              id: nextId++,
               day,
-              sessionTime,
+              time: sessionTime,
+              duration: 60,
+              studentId: student.id,
+              employeeId: emp.id,
               subject,
-              null,
-              null,
-            );
-            if (emp) {
-              updated.push({
-                id: nextId++,
-                day,
-                time: sessionTime,
-                duration: 60,
-                studentId: student.id,
-                employeeId: emp.id,
-                subject,
-                status: "scheduled",
-              });
-              created++;
-              break;
-            }
+              status: "scheduled",
+            });
+            created++;
           }
         });
       });
