@@ -125,6 +125,18 @@ function ClassroomLegend() {
           </div>
         );
       })}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div
+          style={{
+            width: 14,
+            height: 14,
+            borderRadius: 3,
+            background: EVENT_COLORS.bg,
+            border: `2px solid ${EVENT_COLORS.border}`,
+          }}
+        />
+        <span style={{ fontSize: 13, color: "#475569" }}>Events</span>
+      </div>
     </div>
   );
 }
@@ -481,21 +493,6 @@ function DayView({
               </div>
             );
           })}
-          <div
-            style={{
-              width: 130,
-              flexShrink: 0,
-              padding: "10px 12px",
-              textAlign: "center",
-              fontWeight: 600,
-              fontSize: 13,
-              background: EVENT_COLORS.bg,
-              color: EVENT_COLORS.color,
-              borderLeft: "1px solid #e2e8f0",
-            }}
-          >
-            Events
-          </div>
         </div>
 
         {/* Scrollable 24-hour body */}
@@ -638,53 +635,6 @@ function DayView({
                       );
                     })}
 
-                  {/* Calendar event blocks — shown in first classroom column only */}
-                  {classroom === SCHEDULE_CLASSROOMS[0] &&
-                    calendarEvents
-                      ?.filter((ev) => ev.date === day)
-                      .map((ev) => {
-                        if (ev.allDay) return null;
-                        const evTop =
-                          (timeToMinutes(ev.startTime) / 60) * HOUR_HEIGHT;
-                        const evEnd =
-                          (timeToMinutes(ev.endTime) / 60) * HOUR_HEIGHT;
-                        const evHeight = Math.max(evEnd - evTop - 2, 20);
-                        return (
-                          <div
-                            key={`ev-${ev.id}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEventClick && onEventClick(ev);
-                            }}
-                            style={{
-                              position: "absolute",
-                              top: evTop + 2,
-                              left: "33%",
-                              right: 4,
-                              height: evHeight,
-                              zIndex: 3,
-                              background: EVENT_COLORS.bg,
-                              borderLeft: `4px solid ${EVENT_COLORS.border}`,
-                              borderRadius: 6,
-                              padding: "3px 7px",
-                              cursor: "pointer",
-                              overflow: "hidden",
-                              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontWeight: 600,
-                                fontSize: 11,
-                                color: EVENT_COLORS.color,
-                              }}
-                            >
-                              {ev.title}
-                            </div>
-                          </div>
-                        );
-                      })}
-
                   {/* Session blocks */}
                   {classSessions.map((s) => {
                     const top = sessionTopPx(s.time);
@@ -743,6 +693,66 @@ function DayView({
                 </div>
               );
             })}
+
+            {/* Event overlay — floats above the classroom grid, no dedicated column */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 64, // after time gutter
+                width: 160,
+                height: TOTAL_HEIGHT,
+                pointerEvents: "none",
+                zIndex: 4,
+              }}
+            >
+              {calendarEvents
+                ?.filter((ev) => ev.date === day && !ev.allDay)
+                .map((ev) => {
+                  const evTop =
+                    (timeToMinutes(ev.startTime) / 60) * HOUR_HEIGHT;
+                  const evEnd = (timeToMinutes(ev.endTime) / 60) * HOUR_HEIGHT;
+                  const evHeight = Math.max(evEnd - evTop - 2, 20);
+                  return (
+                    <div
+                      key={`ev-${ev.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEventClick && onEventClick(ev);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: evTop + 2,
+                        left: 0,
+                        right: 0,
+                        height: evHeight,
+                        pointerEvents: "auto",
+                        background: EVENT_COLORS.bg,
+                        borderLeft: `4px solid ${EVENT_COLORS.border}`,
+                        borderRadius: 6,
+                        padding: "3px 7px",
+                        cursor: "pointer",
+                        overflow: "hidden",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                        opacity: 0.95,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 11,
+                          color: EVENT_COLORS.color,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {ev.title}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
           </div>
         </div>
       </div>
