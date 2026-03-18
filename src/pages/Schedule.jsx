@@ -9,6 +9,7 @@ import {
   CLASSROOMS,
   CLASSROOM_COLORS,
 } from "../../helpers";
+import MoveSessionModal from "../components/MoveSessionModal";
 
 // Classrooms shown in the schedule grid — excludes Grader
 const SCHEDULE_CLASSROOMS = ["Classroom 1", "Classroom 2", "Classroom 3"];
@@ -791,6 +792,7 @@ export default function Schedule() {
   const [selectedDay, setSelectedDay] = useState(getDefaultDay);
   const [detailId, setDetailId] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const [pendingMove, setPendingMove] = useState(null);
 
   const addToast = useCallback((msg) => {
     const id = Date.now();
@@ -842,14 +844,29 @@ export default function Schedule() {
     [setSessions, addToast],
   );
 
-  const handleMove = useCallback(
+  const handleMoveRequest = useCallback(
     (sessionId, { time, classroom }) => {
+      const session = sessions.find((s) => s.id === sessionId);
+      if (!session) return;
+      setPendingMove({ session, initTime: time, initClassroom: classroom });
+    },
+    [sessions],
+  );
+
+  const handleMoveConfirm = useCallback(
+    ({ day, time, classroom, employeeId }) => {
+      if (!pendingMove) return;
       setSessions((prev) =>
-        prev.map((s) => (s.id === sessionId ? { ...s, time, classroom } : s)),
+        prev.map((s) =>
+          s.id === pendingMove.session.id
+            ? { ...s, day, time, classroom, employeeId }
+            : s,
+        ),
       );
       addToast("Session moved.");
+      setPendingMove(null);
     },
-    [setSessions, addToast],
+    [pendingMove, setSessions, addToast],
   );
 
   const autoSchedule = useCallback(() => {
@@ -961,7 +978,7 @@ export default function Schedule() {
             employeeMap={employeeMap}
             studentMap={studentMap}
             onSessionClick={setDetailId}
-            onMove={handleMove}
+            onMove={isAdmin ? handleMoveRequest : undefined}
           />
         ) : (
           <WeekView
@@ -984,6 +1001,21 @@ export default function Schedule() {
           onClose={() => setDetailId(null)}
           onUpdate={handleUpdate}
           isAdmin={isAdmin}
+        />
+      )}
+
+      {pendingMove && (
+        <MoveSessionModal
+          session={pendingMove.session}
+          day={selectedDay}
+          initTime={pendingMove.initTime}
+          initClassroom={pendingMove.initClassroom}
+          employees={employees}
+          sessions={sessions}
+          students={students}
+          weeklyConflicts={weeklyConflicts}
+          onConfirm={handleMoveConfirm}
+          onCancel={() => setPendingMove(null)}
         />
       )}
 
