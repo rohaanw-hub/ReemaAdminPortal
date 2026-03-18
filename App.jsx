@@ -2,7 +2,6 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useApp } from './AppContext'
 import Layout from './src/components/Layout'
 import Login from './src/pages/Login'
-import Dashboard from './src/pages/Dashboard'
 import Employees from './src/pages/Employees'
 import EmployeeProfile from './src/pages/EmployeeProfile'
 import Students from './src/pages/Students'
@@ -15,14 +14,13 @@ import PayrollReport from './src/pages/reports/PayrollReport'
 import ParentPortal from './src/pages/ParentPortal'
 
 // Redirects authenticated users whose role is not in the allow list.
-// Parents → /parent, teachers → /schedule, admins → /dashboard.
+// Parents → /parent, teachers → /schedule, admins → /schedule.
 function RoleGuard({ allow }) {
   const { currentUser } = useApp()
   if (!currentUser) return <Navigate to="/login" replace />
   if (!allow.includes(currentUser.role)) {
     if (currentUser.role === 'parent') return <Navigate to="/parent" replace />
-    if (currentUser.role === 'teacher') return <Navigate to="/schedule" replace />
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/schedule" replace />
   }
   return <Outlet />
 }
@@ -32,8 +30,7 @@ function DefaultRedirect() {
   const { currentUser } = useApp()
   if (!currentUser) return <Navigate to="/login" replace />
   if (currentUser.role === 'parent') return <Navigate to="/parent" replace />
-  if (currentUser.role === 'teacher') return <Navigate to="/schedule" replace />
-  return <Navigate to="/dashboard" replace />
+  return <Navigate to="/schedule" replace />
 }
 
 export default function App() {
@@ -59,7 +56,6 @@ export default function App() {
 
           {/* Admin-only routes */}
           <Route element={<RoleGuard allow={['admin']} />}>
-            <Route path="dashboard" element={<Dashboard />} />
             <Route path="clock-in" element={<ClockIn />} />
             <Route path="employees" element={<Employees />} />
             <Route path="payroll" element={<Payroll />} />
