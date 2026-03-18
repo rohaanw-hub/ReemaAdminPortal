@@ -9,8 +9,25 @@ import {
   GRADES,
   serializeSchedule,
 } from "../../helpers";
+import { useSortableTable } from "../hooks/useSortableTable";
 import ScheduleEditor from "../components/ScheduleEditor";
 import AttendanceBar from "../components/AttendanceBar";
+
+function Th({ label, col, sortKey, sortDir, onSort }) {
+  return (
+    <th
+      style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
+      onClick={() => onSort(col)}
+    >
+      {label}
+      {sortKey === col && (
+        <span style={{ marginLeft: 4, fontSize: 10 }}>
+          {sortDir === "asc" ? "▲" : "▼"}
+        </span>
+      )}
+    </th>
+  );
+}
 
 function blankForm() {
   const schedule = {};
@@ -205,6 +222,9 @@ export default function Students() {
     [students, search, filterGrade],
   );
 
+  const { sortedData, sortKey, sortDir, handleSort } =
+    useSortableTable(filtered);
+
   const handleAdd = (formData) => {
     const newId = Math.max(0, ...students.map((s) => s.id)) + 1;
     setStudents((prev) => [...prev, { ...formData, id: newId }]);
@@ -250,14 +270,33 @@ export default function Students() {
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Grade</th>
+                <Th
+                  label="Name"
+                  col="name"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <Th
+                  label="Grade"
+                  col="grade"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <Th
+                  label="Enroll Date"
+                  col="enrollDate"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
                 <th>Attendance</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((s) => (
+              {sortedData.map((s) => (
                 <tr
                   key={s.id}
                   style={{ cursor: "pointer" }}
@@ -281,6 +320,7 @@ export default function Students() {
                     </div>
                   </td>
                   <td>{s.grade}</td>
+                  <td>{s.enrollDate}</td>
                   <td>
                     <AttendanceBar pct={s.attendance} />
                   </td>
@@ -293,10 +333,10 @@ export default function Students() {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {sortedData.length === 0 && (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     style={{ textAlign: "center", color: "#94a3b8" }}
                   >
                     No students found.

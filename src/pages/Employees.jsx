@@ -11,7 +11,24 @@ import {
   ED_LEVELS,
   serializeSchedule,
 } from "../../helpers";
+import { useSortableTable } from "../hooks/useSortableTable";
 import ScheduleEditor from "../components/ScheduleEditor";
+
+function Th({ label, col, sortKey, sortDir, onSort }) {
+  return (
+    <th
+      style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
+      onClick={() => onSort(col)}
+    >
+      {label}
+      {sortKey === col && (
+        <span style={{ marginLeft: 4, fontSize: 10 }}>
+          {sortDir === "asc" ? "▲" : "▼"}
+        </span>
+      )}
+    </th>
+  );
+}
 
 const ROLES = ["Lead Tutor", "Reading Specialist", "SAT Specialist", "Tutor"];
 
@@ -210,6 +227,18 @@ export default function Employees() {
     [employees, search, filterRole],
   );
 
+  const withReliability = useMemo(
+    () =>
+      filtered.map((e) => ({
+        ...e,
+        _rel: calcReliability(e.callouts, e.totalShifts),
+      })),
+    [filtered],
+  );
+
+  const { sortedData, sortKey, sortDir, handleSort } =
+    useSortableTable(withReliability);
+
   const handleAdd = (formData) => {
     const newId = Math.max(0, ...employees.map((e) => e.id)) + 1;
     setEmployees((prev) => [...prev, { ...formData, id: newId }]);
@@ -251,18 +280,43 @@ export default function Employees() {
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Position</th>
+                <Th
+                  label="Name"
+                  col="name"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <Th
+                  label="Position"
+                  col="role"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
                 <th>Account</th>
                 <th>Education</th>
                 <th>Rate</th>
-                <th>Reliability</th>
+                <Th
+                  label="Hire Date"
+                  col="hireDate"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
+                <Th
+                  label="Reliability"
+                  col="_rel"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((e) => {
-                const rel = calcReliability(e.callouts, e.totalShifts);
+              {sortedData.map((e) => {
+                const rel = e._rel;
                 return (
                   <tr
                     key={e.id}
@@ -296,6 +350,7 @@ export default function Employees() {
                     </td>
                     <td>{e.grade}</td>
                     <td>${e.hourlyRate}/hr</td>
+                    <td>{e.hireDate}</td>
                     <td>
                       <span
                         style={{
@@ -316,10 +371,10 @@ export default function Employees() {
                   </tr>
                 );
               })}
-              {filtered.length === 0 && (
+              {sortedData.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     style={{ textAlign: "center", color: "#94a3b8" }}
                   >
                     No employees found.

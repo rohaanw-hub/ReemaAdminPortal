@@ -1,6 +1,23 @@
 import { useState, useMemo } from "react";
 import { useApp } from "../../../AppContext";
 import { DAYS, exportToCSV } from "../../../helpers";
+import { useSortableTable } from "../../hooks/useSortableTable";
+
+function Th({ label, col, sortKey, sortDir, onSort }) {
+  return (
+    <th
+      style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
+      onClick={() => onSort(col)}
+    >
+      {label}
+      {sortKey === col && (
+        <span style={{ marginLeft: 4, fontSize: 10 }}>
+          {sortDir === "asc" ? "▲" : "▼"}
+        </span>
+      )}
+    </th>
+  );
+}
 
 const STATUS_OPTIONS = ["all", "scheduled", "attended", "cancelled"];
 
@@ -42,6 +59,21 @@ export default function AttendanceReport() {
     if (!id) return "Unassigned";
     return employees.find((e) => e.id === id)?.name ?? "—";
   }
+
+  const augmented = useMemo(
+    () =>
+      filtered.map((s) => ({
+        ...s,
+        _student: students.find((x) => x.id === s.studentId)?.name ?? "—",
+        _teacher: s.employeeId
+          ? (employees.find((e) => e.id === s.employeeId)?.name ?? "—")
+          : "Unassigned",
+      })),
+    [filtered, students, employees],
+  );
+
+  const { sortedData, sortKey, sortDir, handleSort } =
+    useSortableTable(augmented);
 
   function handleExport() {
     const today = new Date().toISOString().slice(0, 10);
@@ -235,27 +267,57 @@ export default function AttendanceReport() {
             <table>
               <thead>
                 <tr>
-                  <th>Day</th>
+                  <Th
+                    label="Day"
+                    col="day"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
                   <th>Time</th>
-                  <th>Student</th>
-                  <th>Teacher</th>
-                  <th>Status</th>
-                  <th>Duration</th>
+                  <Th
+                    label="Student"
+                    col="_student"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
+                  <Th
+                    label="Teacher"
+                    col="_teacher"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
+                  <Th
+                    label="Status"
+                    col="status"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
+                  <Th
+                    label="Duration"
+                    col="duration"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((s) => (
+                {sortedData.map((s) => (
                   <tr key={s.id}>
                     <td style={{ fontWeight: 500 }}>{s.day}</td>
                     <td>{s.time}</td>
-                    <td>{studentName(s.studentId)}</td>
+                    <td>{s._student}</td>
                     <td
                       style={{
                         color: s.employeeId ? "#334155" : "#94a3b8",
                         fontStyle: s.employeeId ? "normal" : "italic",
                       }}
                     >
-                      {teacherName(s.employeeId)}
+                      {s._teacher}
                     </td>
                     <td>
                       <span

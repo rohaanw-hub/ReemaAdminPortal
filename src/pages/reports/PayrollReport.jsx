@@ -1,6 +1,23 @@
 import { useState, useMemo } from "react";
 import { useApp } from "../../../AppContext";
 import { formatCurrency, calculateHours, exportToCSV } from "../../../helpers";
+import { useSortableTable } from "../../hooks/useSortableTable";
+
+function Th({ label, col, sortKey, sortDir, onSort }) {
+  return (
+    <th
+      style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
+      onClick={() => onSort(col)}
+    >
+      {label}
+      {sortKey === col && (
+        <span style={{ marginLeft: 4, fontSize: 10 }}>
+          {sortDir === "asc" ? "▲" : "▼"}
+        </span>
+      )}
+    </th>
+  );
+}
 
 const PERIOD_OPTIONS = ["weekly", "monthly"];
 const PERIOD_MULTIPLIER = { weekly: 1, monthly: 4 };
@@ -33,6 +50,8 @@ export default function PayrollReport() {
       };
     });
   }, [employees, sessions, filterEmployee, multiplier]);
+
+  const { sortedData, sortKey, sortDir, handleSort } = useSortableTable(rows);
 
   const totalHours = rows.reduce((acc, r) => acc + r.hours, 0);
   const totalGross = rows.reduce((acc, r) => acc + r.gross, 0);
@@ -181,16 +200,34 @@ export default function PayrollReport() {
             <table>
               <thead>
                 <tr>
-                  <th>Employee</th>
+                  <Th
+                    label="Employee"
+                    col="name"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
                   <th>Role</th>
-                  <th>Hours Worked</th>
+                  <Th
+                    label="Hours Worked"
+                    col="hours"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
                   <th>Hourly Rate</th>
-                  <th>Gross Pay</th>
+                  <Th
+                    label="Gross Pay"
+                    col="gross"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
                   <th>Period</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => (
+                {sortedData.map((r) => (
                   <tr key={r._id}>
                     <td style={{ fontWeight: 500 }}>{r.name}</td>
                     <td style={{ textTransform: "capitalize" }}>{r.role}</td>
