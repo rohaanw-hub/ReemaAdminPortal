@@ -1,3 +1,5 @@
+import * as XLSX from 'xlsx'
+
 // ─── Name Utilities ───────────────────────────────────────────────────────────
 export const getInitials = (name = '') =>
   name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -317,9 +319,8 @@ export function exportToCSV(rows, filename) {
 // ─── Excel Export ─────────────────────────────────────────────────────────────
 // data: array of plain objects; options.percentCols: column keys to format as %
 // options.dateCols: column keys to format as dates
-export async function exportToExcel(data, filename, options = {}) {
+export function exportToExcel(data, filename, options = {}) {
   if (!data.length) return
-  const XLSX = await import('xlsx')
   const { percentCols = [], dateCols = [] } = options
   const headers = Object.keys(data[0])
 
