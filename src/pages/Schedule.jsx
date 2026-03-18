@@ -10,6 +10,7 @@ import {
   timeToMinutes,
 } from "../../helpers";
 import MoveSessionModal from "../components/MoveSessionModal";
+import ChangeGraderModal from "../components/ChangeGraderModal";
 
 // Classrooms shown in the schedule grid — excludes Grader
 const SCHEDULE_CLASSROOMS = ["Classroom 1", "Classroom 2", "Classroom 3"];
@@ -166,11 +167,12 @@ function ClassroomLegend() {
 }
 
 // ── Grader Bar (Day View) ──────────────────────────────────────────────────────
-function GraderBar({ graderSchedule, employeeMap, day }) {
+function GraderBar({ graderSchedule, employeeMap, day, isAdmin, onClick }) {
   const empId = graderSchedule?.[day];
   const grader = employeeMap[empId];
   return (
     <div
+      onClick={isAdmin ? onClick : undefined}
       style={{
         display: "flex",
         alignItems: "center",
@@ -182,12 +184,23 @@ function GraderBar({ graderSchedule, employeeMap, day }) {
         fontSize: 13,
         color: "#0369a1",
         marginBottom: 12,
+        cursor: isAdmin ? "pointer" : "default",
       }}
     >
       <span>📋 Grader:</span>
-      <span style={{ fontWeight: 500 }}>
+      <span
+        style={{
+          fontWeight: 500,
+          textDecoration: isAdmin ? "underline dotted" : "none",
+        }}
+      >
         {grader ? grader.name : "No grader assigned"}
       </span>
+      {isAdmin && (
+        <span style={{ fontSize: 11, color: "#7dd3fc", marginLeft: 4 }}>
+          (click to change)
+        </span>
+      )}
     </div>
   );
 }
@@ -706,6 +719,8 @@ function WeekView({
   studentMap,
   graderSchedule,
   onSessionClick,
+  isAdmin,
+  onGraderClick,
 }) {
   const scrollRef = useRef(null);
 
@@ -750,11 +765,19 @@ function WeekView({
                 >
                   {d}
                 </div>
-                {grader && (
-                  <div style={{ fontSize: 10, color: "#0369a1", marginTop: 2 }}>
-                    Grader: {grader.name.split(" ")[0]}
-                  </div>
-                )}
+                <div
+                  onClick={isAdmin ? () => onGraderClick(d) : undefined}
+                  style={{
+                    fontSize: 10,
+                    color: "#0369a1",
+                    marginTop: 2,
+                    cursor: isAdmin ? "pointer" : "default",
+                    textDecoration: isAdmin ? "underline dotted" : "none",
+                  }}
+                  title={isAdmin ? "Click to change grader" : undefined}
+                >
+                  Grader: {grader ? grader.name.split(" ")[0] : "—"}
+                </div>
               </div>
             );
           })}
@@ -921,6 +944,7 @@ export default function Schedule() {
     weeklyConflicts,
     currentUser,
     graderSchedule,
+    setGraderSchedule,
   } = useApp();
   const isAdmin = currentUser?.role === "admin";
 
@@ -929,6 +953,7 @@ export default function Schedule() {
   const [detailId, setDetailId] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [pendingMove, setPendingMove] = useState(null);
+  const [graderDay, setGraderDay] = useState(null); // day for grader change modal
 
   const addToast = useCallback((msg) => {
     const id = Date.now();
@@ -988,6 +1013,16 @@ export default function Schedule() {
       setPendingMove(null);
     },
     [pendingMove, setSessions, addToast],
+  );
+
+  const handleGraderSave = useCallback(
+    (day, employeeId) => {
+      setGraderSchedule((prev) => ({ ...prev, [day]: employeeId }));
+      const emp = employees.find((e) => e.id === employeeId);
+      addToast(`Grader updated for ${day}${emp ? `: ${emp.name}` : ""}.`);
+      setGraderDay(null);
+    },
+    [setGraderSchedule, employees, addToast],
   );
 
   const autoSchedule = useCallback(() => {
@@ -1087,6 +1122,8 @@ export default function Schedule() {
           graderSchedule={graderSchedule}
           employeeMap={employeeMap}
           day={selectedDay}
+          isAdmin={isAdmin}
+          onClick={() => setGraderDay(selectedDay)}
         />
       )}
 
@@ -1107,6 +1144,8 @@ export default function Schedule() {
             studentMap={studentMap}
             graderSchedule={graderSchedule}
             onSessionClick={setDetailId}
+            isAdmin={isAdmin}
+            onGraderClick={setGraderDay}
           />
         )}
       </div>
@@ -1135,6 +1174,16 @@ export default function Schedule() {
           weeklyConflicts={weeklyConflicts}
           onConfirm={handleMoveConfirm}
           onCancel={() => setPendingMove(null)}
+        />
+      )}
+
+      {graderDay && (
+        <ChangeGraderModal
+          day={graderDay}
+          currentGraderId={graderSchedule?.[graderDay]}
+          employees={employees}
+          onSave={(empId) => handleGraderSave(graderDay, empId)}
+          onCancel={() => setGraderDay(null)}
         />
       )}
 
