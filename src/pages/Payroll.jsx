@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useApp } from "../../AppContext";
 import {
   getInitials,
@@ -9,11 +10,15 @@ import {
 export default function Payroll() {
   const { employees } = useApp();
 
-  const rows = employees.map((e) => {
-    const hours = calcHours(e.clockIns);
-    const gross = hours * e.hourlyRate;
-    return { ...e, hours, gross };
-  });
+  const rows = useMemo(
+    () =>
+      employees.map((e) => {
+        const hours = calcHours(e.clockIns);
+        const gross = hours * e.hourlyRate;
+        return { ...e, hours, gross };
+      }),
+    [employees],
+  );
 
   const totalGross = rows.reduce((acc, r) => acc + r.gross, 0);
   const totalHours = rows.reduce((acc, r) => acc + r.hours, 0);
@@ -49,7 +54,7 @@ export default function Payroll() {
             <thead>
               <tr>
                 <th>Employee</th>
-                <th>Role</th>
+                <th>Year in School</th>
                 <th>Rate</th>
                 <th>Hours</th>
                 <th>Gross Pay</th>
@@ -72,7 +77,7 @@ export default function Payroll() {
                       <span style={{ fontWeight: 500 }}>{e.name}</span>
                     </div>
                   </td>
-                  <td>{e.role}</td>
+                  <td>{e.grade}</td>
                   <td>${e.hourlyRate}/hr</td>
                   <td>{e.hours.toFixed(1)}</td>
                   <td style={{ fontWeight: 600 }}>${e.gross.toFixed(2)}</td>
