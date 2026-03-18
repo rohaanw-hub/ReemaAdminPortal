@@ -223,6 +223,8 @@ export default function Students() {
     setShowModal(false);
   };
 
+  // TODO(v2): enforce Admin-only import server-side once Supabase auth is in place.
+  // Currently the button is hidden from non-admins but there is no server guard.
   const handleImport = (records) => {
     let nextId = Math.max(0, ...students.map((s) => s.id)) + 1;
     const newStudents = records.map((r) => ({ ...r, id: nextId++ }));

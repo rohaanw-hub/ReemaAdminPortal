@@ -167,6 +167,14 @@ export const calculateHours = (sessions, employeeId) =>
     .reduce((acc, s) => acc + s.duration / 60, 0)
 
 // ─── Import Utilities ─────────────────────────────────────────────────────────
+// Strips leading CSV formula-injection characters (=, +, -, @, tab, CR) to
+// prevent stored values from executing as spreadsheet formulas on re-export.
+// TODO(v2): apply server-side once Supabase is integrated.
+const FORMULA_CHARS = /^[=+\-@\t\r]+/
+export function sanitiseImportValue(value) {
+  return String(value ?? '').replace(FORMULA_CHARS, '')
+}
+
 export const STUDENT_IMPORT_FIELDS = [
   { key: 'firstName',    label: 'First Name',          required: true  },
   { key: 'lastName',     label: 'Last Name',           required: true  },
@@ -202,7 +210,7 @@ export function validateImportRow(rawRow, fieldMap, type, isEmailTaken) {
   const val = (key) => {
     const col = fieldMap[key]
     if (!col || col === '__skip__') return ''
-    return String(rawRow[col] ?? '').trim()
+    return sanitiseImportValue(String(rawRow[col] ?? '').trim())
   }
   const errors = []
   const firstName = val('firstName')
