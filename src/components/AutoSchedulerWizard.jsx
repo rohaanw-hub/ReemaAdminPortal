@@ -6,6 +6,7 @@ import {
   hasWeeklyConflict,
   formatShortDate,
   autoAssignSessions,
+  empIsAdmin,
 } from "../../helpers";
 
 // ─── Step Indicator ──────────────────────────────────────────────────────────
@@ -366,7 +367,7 @@ function Step3({
   selectedDays,
   weeklyConflicts,
 }) {
-  const teachers = employees.filter((e) => e.accountRole !== "admin");
+  const teachers = employees.filter((e) => !empIsAdmin(e));
   const maxDays = selectedDays.length;
 
   const setDays = (empId, numDays) =>
@@ -624,7 +625,7 @@ export default function AutoSchedulerWizard({
   const [teacherDays, setTeacherDays] = useState(() => {
     const init = {};
     employees
-      .filter((e) => e.accountRole !== "admin")
+      .filter((e) => !empIsAdmin(e))
       .forEach((e) => {
         init[e.id] = 0;
       });

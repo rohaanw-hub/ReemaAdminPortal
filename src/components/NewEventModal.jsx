@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { OPEN_DAYS } from "../../helpers";
+import { OPEN_DAYS, empIsAdmin } from "../../helpers";
 
 const EVENT_TYPES = ["Workshop", "Meeting", "Training", "Other"];
 
@@ -175,7 +175,7 @@ export default function NewEventModal({
             }}
           >
             {employees
-              .filter((e) => e.accountRole !== "admin")
+              .filter((e) => !empIsAdmin(e))
               .map((e) => (
                 <label
                   key={e.id}

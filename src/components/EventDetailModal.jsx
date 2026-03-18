@@ -1,5 +1,6 @@
 import { useState } from "react";
 import NewEventModal from "./NewEventModal";
+import { format24hTo12h } from "../../helpers";
 
 const TYPE_COLORS = {
   Workshop: { bg: "#ede9fe", color: "#5b21b6", border: "#c4b5fd" },
@@ -7,14 +8,6 @@ const TYPE_COLORS = {
   Training: { bg: "#d1fae5", color: "#065f46", border: "#a7f3d0" },
   Other: { bg: "#f1f5f9", color: "#475569", border: "#e2e8f0" },
 };
-
-function formatTime(t) {
-  if (!t) return "";
-  const [h, m] = t.split(":").map(Number);
-  const period = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 || 12;
-  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
-}
 
 export default function EventDetailModal({
   event,
@@ -88,7 +81,7 @@ export default function EventDetailModal({
           <div className="detail-value">
             {event.allDay
               ? "All Day"
-              : `${formatTime(event.startTime)} – ${formatTime(event.endTime)}`}
+              : `${format24hTo12h(event.startTime)} – ${format24hTo12h(event.endTime)}`}
           </div>
         </div>
         {event.location && (

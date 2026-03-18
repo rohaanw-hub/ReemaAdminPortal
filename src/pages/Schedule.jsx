@@ -8,6 +8,8 @@ import {
   timeToMinutes,
   getWeekDates,
   formatShortDate,
+  userIsAdmin,
+  empIsAdmin,
 } from "../../helpers";
 import MoveSessionModal from "../components/MoveSessionModal";
 import ChangeGraderModal from "../components/ChangeGraderModal";
@@ -350,7 +352,7 @@ function SessionDetailModal({
               >
                 <option value="">Unassigned</option>
                 {employees
-                  .filter((e) => e.accountRole !== "admin")
+                  .filter((e) => !empIsAdmin(e))
                   .map((e) => (
                     <option key={e.id} value={e.id}>
                       {e.name}
@@ -1114,7 +1116,7 @@ export default function Schedule() {
     updateCalendarEvent,
     deleteCalendarEvent,
   } = useApp();
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin = userIsAdmin(currentUser);
 
   const [viewMode, setViewMode] = useState("day");
   const [selectedDay, setSelectedDay] = useState(getDefaultDay);

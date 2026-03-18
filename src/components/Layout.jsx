@@ -2,7 +2,14 @@ import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Bell, ChevronRight, ChevronDown } from "lucide-react";
 import { useApp } from "../../AppContext";
-import { getInitials, getAvatarBg, getAvatarText } from "../../helpers";
+import {
+  getInitials,
+  getAvatarBg,
+  getAvatarText,
+  formatNotificationTime,
+  userIsAdmin,
+  userIsTeacher,
+} from "../../helpers";
 import SearchBar from "./SearchBar";
 import eyeLevelLogo from "../assets/EyeLevelLogo.png";
 
@@ -27,17 +34,6 @@ function teacherNav(profileId) {
     { to: `/employees/${profileId}`, label: "My Profile" },
     { to: "/students", label: "Students" },
   ];
-}
-
-function formatNotifTime(ts) {
-  const d = new Date(ts);
-  const today = new Date();
-  const isToday = d.toDateString() === today.toDateString();
-  return isToday
-    ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : d.toLocaleDateString([], { month: "short", day: "numeric" }) +
-        " · " +
-        d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 export default function Layout() {
@@ -92,10 +88,9 @@ export default function Layout() {
     navigate("/login", { replace: true });
   };
 
-  const navItems =
-    currentUser?.role === "teacher"
-      ? teacherNav(currentUser.profileId)
-      : ADMIN_NAV;
+  const navItems = userIsTeacher(currentUser)
+    ? teacherNav(currentUser.profileId)
+    : ADMIN_NAV;
 
   // Resolve profile photo from employee record (admin/teacher only)
   const empRecord =
@@ -181,7 +176,7 @@ export default function Layout() {
           ))}
 
           {/* Reports dropdown — admin only */}
-          {currentUser?.role === "admin" && (
+          {userIsAdmin(currentUser) && (
             <div style={{ marginTop: 2 }}>
               <button
                 onClick={() => setReportsOpen((v) => !v)}
@@ -408,7 +403,7 @@ export default function Layout() {
                               marginTop: 3,
                             }}
                           >
-                            {formatNotifTime(n.timestamp)}
+                            {formatNotificationTime(n.timestamp)}
                           </div>
                         </div>
                       </div>

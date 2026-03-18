@@ -10,6 +10,8 @@ import {
   serializeSchedule,
   exportToCSV,
   exportToExcel,
+  userIsTeacher,
+  userIsParent,
 } from "../../helpers";
 import { useSortableTable } from "../hooks/useSortableTable";
 import { usePagination } from "../hooks/usePagination";
@@ -190,8 +192,8 @@ function AddStudentModal({ onClose, onSave, isEmailTaken }) {
 export default function Students() {
   const { students, setStudents, currentUser, isEmailTaken, sendInvite } =
     useApp();
-  const isTeacher = currentUser?.role === "teacher";
-  const isParent = currentUser?.role === "parent";
+  const isTeacher = userIsTeacher(currentUser);
+  const isParent = userIsParent(currentUser);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filterGrade, setFilterGrade] = useState("All");

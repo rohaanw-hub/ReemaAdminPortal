@@ -3,10 +3,11 @@ import {
   getSlotsForDay,
   isTutorAvailableAt,
   hasWeeklyConflict,
+  empIsAdmin,
+  MAX_STUDENTS_PER_SLOT,
 } from "../../helpers";
 
 const SCHEDULE_CLASSROOMS = ["Classroom 1", "Classroom 2", "Classroom 3"];
-const CLASSROOM_CAPACITY = 4;
 
 export default function MoveSessionModal({
   session,
@@ -49,13 +50,13 @@ export default function MoveSessionModal({
     [targetSlotSessions, classroom],
   );
 
-  const classroomFull = classroomCount >= CLASSROOM_CAPACITY;
+  const classroomFull = classroomCount >= MAX_STUDENTS_PER_SLOT;
 
   // Available teachers for target day+time
   const availableTeachers = useMemo(
     () =>
       employees.filter((emp) => {
-        if (emp.accountRole === "admin") return false;
+        if (empIsAdmin(emp)) return false;
         if (!isTutorAvailableAt(emp, day, time)) return false;
         if (hasWeeklyConflict(weeklyConflicts, emp.id, day, time)) return false;
         // Allow already-selected teacher even if double-booked (just warn below)
@@ -160,10 +161,10 @@ export default function MoveSessionModal({
               const count = targetSlotSessions.filter(
                 (s) => s.classroom === c,
               ).length;
-              const full = count >= CLASSROOM_CAPACITY;
+              const full = count >= MAX_STUDENTS_PER_SLOT;
               return (
                 <option key={c} value={c}>
-                  {c} ({count}/{CLASSROOM_CAPACITY}
+                  {c} ({count}/{MAX_STUDENTS_PER_SLOT}
                   {full ? " — full" : ""})
                 </option>
               );
@@ -186,7 +187,7 @@ export default function MoveSessionModal({
           >
             <option value="">— Unassigned —</option>
             {employees
-              .filter((e) => e.accountRole !== "admin")
+              .filter((e) => !empIsAdmin(e))
               .map((e) => {
                 const avail = availableTeachers.some((a) => a.id === e.id);
                 return (

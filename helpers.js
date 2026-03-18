@@ -1,5 +1,47 @@
 import * as XLSX from 'xlsx'
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+/** Maximum students allowed per classroom per time slot */
+export const MAX_STUDENTS_PER_SLOT = 4
+
+/** Maximum results shown in the global search dropdown */
+export const MAX_SEARCH_RESULTS = 8
+
+// ─── Role Helpers ─────────────────────────────────────────────────────────────
+/** True if the logged-in user (currentUser) is an admin */
+export const userIsAdmin    = (user) => user?.role === 'admin'
+/** True if the logged-in user (currentUser) is a teacher */
+export const userIsTeacher  = (user) => user?.role === 'teacher'
+/** True if the logged-in user (currentUser) is a parent */
+export const userIsParent   = (user) => user?.role === 'parent'
+
+/** True if an employee record has accountRole === 'admin' */
+export const empIsAdmin     = (emp) => emp?.accountRole === 'admin'
+/** True if an employee record has accountRole === 'teacher' */
+export const empIsTeacher   = (emp) => emp?.accountRole === 'teacher'
+
+// ─── Notification Time Formatter ──────────────────────────────────────────────
+/** Formats an ISO timestamp for the notification panel (time if today, date+time otherwise) */
+export function formatNotificationTime(ts) {
+  const d = new Date(ts)
+  const today = new Date()
+  const isToday = d.toDateString() === today.toDateString()
+  return isToday
+    ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString([], { month: 'short', day: 'numeric' }) +
+        ' · ' +
+        d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+/** Converts a 24h "HH:MM" time string to 12h "H:MM AM/PM" format */
+export function format24hTo12h(t) {
+  if (!t) return ''
+  const [h, m] = t.split(':').map(Number)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${String(m).padStart(2, '0')} ${period}`
+}
+
 // ─── Name Utilities ───────────────────────────────────────────────────────────
 export const getInitials = (name = '') =>
   name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -421,10 +463,10 @@ export function autoAssignSessions(
 
       // Distribute students across time slots in groups of 4 (max per slot)
       slots.forEach((slot, slotIdx) => {
-        const groupStart = slotIdx * 4
+        const groupStart = slotIdx * MAX_STUDENTS_PER_SLOT
         if (groupStart >= studentsInRoom.length) return // no more students for this slot
 
-        const studentsInSlot = studentsInRoom.slice(groupStart, groupStart + 4)
+        const studentsInSlot = studentsInRoom.slice(groupStart, groupStart + MAX_STUDENTS_PER_SLOT)
 
         // Check per-slot capacity against existing sessions for this week
         const existingInSlot = replaceAll ? [] : existingSessions.filter(

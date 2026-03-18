@@ -10,6 +10,7 @@ import {
   DAYS,
   ED_LEVELS,
   serializeSchedule,
+  userIsAdmin,
 } from "../../helpers";
 import { useSortableTable } from "../hooks/useSortableTable";
 import { usePagination } from "../hooks/usePagination";
@@ -182,7 +183,7 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
 export default function Employees() {
   const { employees, setEmployees, currentUser, isEmailTaken, sendInvite } =
     useApp();
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin = userIsAdmin(currentUser);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);

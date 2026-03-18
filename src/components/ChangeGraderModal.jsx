@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { empIsAdmin, empIsTeacher } from "../../helpers";
 
 export default function ChangeGraderModal({
   day,
@@ -52,13 +53,10 @@ export default function ChangeGraderModal({
           >
             <option value="">— Unassigned —</option>
             {employees
-              .filter((e) => e.accountRole !== "admin")
+              .filter((e) => !empIsAdmin(e))
               .map((e) => (
                 <option key={e.id} value={e.id}>
-                  {e.name} —{" "}
-                  {e.accountRole === "teacher"
-                    ? "Teacher"
-                    : (e.role ?? "Staff")}
+                  {e.name} — {empIsTeacher(e) ? "Teacher" : (e.role ?? "Staff")}
                 </option>
               ))}
           </select>
