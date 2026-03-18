@@ -635,61 +635,83 @@ function DayView({
                       );
                     })}
 
-                  {/* Session blocks */}
-                  {classSessions.map((s) => {
-                    const top = sessionTopPx(s.time);
-                    const height = sessionHeightPx(s.time) - 2;
-                    const teacher = employeeMap[s.employeeId];
-                    const student = studentMap[s.studentId];
-                    const isDragging = draggedId === s.id;
-
-                    return (
-                      <div
-                        key={s.id}
-                        draggable={!!onMove}
-                        onDragStart={(e) => handleDragStart(e, s.id)}
-                        onDragEnd={handleDragEnd}
-                        onClick={() => onSessionClick(s.id)}
-                        style={{
-                          position: "absolute",
-                          top: top + 2,
-                          left: 4,
-                          right: 4,
-                          height,
-                          zIndex: 2,
-                          background: col.bg,
-                          borderLeft: `4px solid ${col.border}`,
-                          borderRadius: 6,
-                          padding: "4px 8px",
-                          cursor: "pointer",
-                          opacity: isDragging ? 0.35 : 1,
-                          transition: "opacity 0.15s",
-                          overflow: "hidden",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
-                        }}
-                      >
+                  {/* Session blocks — grouped by time slot; one block shows teacher + all students */}
+                  {(() => {
+                    const groups = {};
+                    classSessions.forEach((s) => {
+                      if (!groups[s.time]) {
+                        groups[s.time] = {
+                          time: s.time,
+                          employeeId: s.employeeId,
+                          firstId: s.id,
+                          students: [],
+                        };
+                      }
+                      const st = studentMap[s.studentId];
+                      if (st) groups[s.time].students.push(st);
+                    });
+                    return Object.values(groups).map((g) => {
+                      const top = sessionTopPx(g.time);
+                      const height = sessionHeightPx(g.time) - 2;
+                      const teacher = employeeMap[g.employeeId];
+                      const isDragging = draggedId === g.firstId;
+                      return (
                         <div
+                          key={g.time}
+                          draggable={!!onMove}
+                          onDragStart={(e) => handleDragStart(e, g.firstId)}
+                          onDragEnd={handleDragEnd}
+                          onClick={() => onSessionClick(g.firstId)}
                           style={{
-                            fontWeight: 600,
-                            fontSize: 12,
-                            color: col.color,
-                            lineHeight: 1.3,
+                            position: "absolute",
+                            top: top + 2,
+                            left: 4,
+                            right: 4,
+                            height,
+                            zIndex: 2,
+                            background: col.bg,
+                            borderLeft: `4px solid ${col.border}`,
+                            borderRadius: 6,
+                            padding: "4px 8px",
+                            cursor: "pointer",
+                            opacity: isDragging ? 0.35 : 1,
+                            transition: "opacity 0.15s",
+                            overflow: "hidden",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
                           }}
                         >
-                          {student?.name ?? "—"}
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              fontSize: 11,
+                              color: col.color,
+                              lineHeight: 1.3,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {teacher?.name.split(" ")[0] ?? "Unassigned"}
+                          </div>
+                          {g.students.map((st) => (
+                            <div
+                              key={st.id}
+                              style={{
+                                fontSize: 10,
+                                color: "#475569",
+                                lineHeight: 1.25,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {st.name}
+                            </div>
+                          ))}
                         </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: "#64748b",
-                            lineHeight: 1.3,
-                          }}
-                        >
-                          {teacher?.name.split(" ")[0] ?? "Unassigned"}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
               );
             })}
