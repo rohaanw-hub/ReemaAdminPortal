@@ -8,6 +8,8 @@ import {
   CLASSROOMS,
   CLASSROOM_COLORS,
   timeToMinutes,
+  getWeekDates,
+  formatShortDate,
 } from "../../helpers";
 import MoveSessionModal from "../components/MoveSessionModal";
 import ChangeGraderModal from "../components/ChangeGraderModal";
@@ -801,6 +803,7 @@ function WeekView({
   calendarEvents,
   onEventClick,
   onSlotClick,
+  weekDates,
 }) {
   const scrollRef = useRef(null);
 
@@ -844,6 +847,18 @@ function WeekView({
                   style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}
                 >
                   {d}
+                  {weekDates?.[d] && (
+                    <span
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 10,
+                        color: "#64748b",
+                        marginLeft: 4,
+                      }}
+                    >
+                      {formatShortDate(weekDates[d])}
+                    </span>
+                  )}
                 </div>
                 <div
                   onClick={isAdmin ? () => onGraderClick(d) : undefined}
@@ -1089,12 +1104,18 @@ export default function Schedule() {
 
   const [viewMode, setViewMode] = useState("day");
   const [selectedDay, setSelectedDay] = useState(getDefaultDay);
+  const [weekOffset, setWeekOffset] = useState(0); // 0=current week, +1/-1=next/prev
   const [detailId, setDetailId] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [pendingMove, setPendingMove] = useState(null);
   const [graderDay, setGraderDay] = useState(null); // day for grader change modal
   const [newEventInit, setNewEventInit] = useState(null); // { day, startTime } for new event
   const [detailEvent, setDetailEvent] = useState(null); // event for detail modal
+
+  const MIN_WEEK_OFFSET = -1;
+  const MAX_WEEK_OFFSET = 4;
+
+  const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
 
   const addToast = useCallback((msg) => {
     const id = Date.now();
@@ -1103,8 +1124,13 @@ export default function Schedule() {
   }, []);
 
   const activeSessions = useMemo(
-    () => sessions.filter((s) => s.status !== "cancelled"),
-    [sessions],
+    () =>
+      sessions.filter(
+        (s) =>
+          s.status !== "cancelled" &&
+          (s.date ? s.date === weekDates[s.day] : weekOffset === 0),
+      ),
+    [sessions, weekDates, weekOffset],
   );
 
   const employeeMap = useMemo(
@@ -1146,14 +1172,14 @@ export default function Schedule() {
       setSessions((prev) =>
         prev.map((s) =>
           s.id === pendingMove.session.id
-            ? { ...s, day, time, classroom, employeeId }
+            ? { ...s, day, time, classroom, employeeId, date: weekDates[day] }
             : s,
         ),
       );
       addToast("Session moved.");
       setPendingMove(null);
     },
-    [pendingMove, setSessions, addToast],
+    [pendingMove, setSessions, addToast, weekDates],
   );
 
   const handleGraderSave = useCallback(
@@ -1234,6 +1260,53 @@ export default function Schedule() {
 
       <ClassroomLegend />
 
+      {/* Week navigation */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 12,
+        }}
+      >
+        <button
+          className="btn btn-outline"
+          onClick={() => setWeekOffset((o) => Math.max(MIN_WEEK_OFFSET, o - 1))}
+          disabled={weekOffset <= MIN_WEEK_OFFSET}
+          style={{ padding: "5px 12px", fontSize: 16, lineHeight: 1 }}
+        >
+          ‹
+        </button>
+        <span
+          style={{
+            fontWeight: 500,
+            fontSize: 13,
+            color: "#374151",
+            minWidth: 160,
+            textAlign: "center",
+          }}
+        >
+          {formatShortDate(weekDates.Mon)} – {formatShortDate(weekDates.Sat)}
+        </span>
+        <button
+          className="btn btn-outline"
+          onClick={() => setWeekOffset((o) => Math.min(MAX_WEEK_OFFSET, o + 1))}
+          disabled={weekOffset >= MAX_WEEK_OFFSET}
+          style={{ padding: "5px 12px", fontSize: 16, lineHeight: 1 }}
+        >
+          ›
+        </button>
+        {weekOffset !== 0 && (
+          <button
+            className="btn btn-outline"
+            onClick={() => setWeekOffset(0)}
+            style={{ fontSize: 12, padding: "4px 10px" }}
+          >
+            Today
+          </button>
+        )}
+      </div>
+
       {viewMode === "day" && (
         <div style={{ display: "flex", gap: 4, marginBottom: 16 }}>
           {OPEN_DAYS.map((d) => (
@@ -1250,9 +1323,16 @@ export default function Schedule() {
                 fontWeight: selectedDay === d ? 600 : 400,
                 cursor: "pointer",
                 fontSize: 13,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 1,
               }}
             >
-              {d}
+              <span>{d}</span>
+              <span style={{ fontSize: 10, fontWeight: 400, opacity: 0.75 }}>
+                {formatShortDate(weekDates[d])}
+              </span>
             </button>
           ))}
         </div>
@@ -1301,6 +1381,7 @@ export default function Schedule() {
                 ? (day, time) => setNewEventInit({ day, startTime: time })
                 : undefined
             }
+            weekDates={weekDates}
           />
         )}
       </div>

@@ -99,6 +99,52 @@ export function getSlotsForDay(day) {
   if (day === 'Mon' || day === 'Tue' || day === 'Wed') return MON_WED_SLOTS
   return []
 }
+
+// Day name to offset from Monday (Sat = +5 calendar days from Mon)
+const DAY_OFFSETS = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Sat: 5 }
+
+/** Returns the Monday date for the week at given offset (0 = current week). */
+export function getWeekMonday(weekOffset = 0) {
+  const today = new Date()
+  const dow = today.getDay() // 0=Sun
+  const daysSinceMon = dow === 0 ? 6 : dow - 1
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - daysSinceMon + weekOffset * 7)
+  monday.setHours(0, 0, 0, 0)
+  return monday
+}
+
+/**
+ * Returns a map of { Mon: 'YYYY-MM-DD', Tue: ..., Wed: ..., Thu: ..., Sat: ... }
+ * for the week at the given offset.
+ */
+export function getWeekDates(weekOffset = 0) {
+  const monday = getWeekMonday(weekOffset)
+  const result = {}
+  Object.entries(DAY_OFFSETS).forEach(([name, offset]) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + offset)
+    result[name] = d.toISOString().split('T')[0]
+  })
+  return result
+}
+
+/** Format a YYYY-MM-DD string to "Mar 18" */
+export function formatShortDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+/** Given a session day name, return the YYYY-MM-DD for current week (offset 0). */
+export function getDateForDay(day, weekOffset = 0) {
+  const monday = getWeekMonday(weekOffset)
+  const offset = DAY_OFFSETS[day]
+  if (offset === undefined) return null
+  const d = new Date(monday)
+  d.setDate(monday.getDate() + offset)
+  return d.toISOString().split('T')[0]
+}
 export const GRADE_LEVELS = [
   'Pre-K', 'K', '1st', '2nd', '3rd', '4th', '5th', '6th',
   '7th', '8th', '9th', '10th', '11th', '12th', 'College',

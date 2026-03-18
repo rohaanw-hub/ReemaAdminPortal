@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react'
+import { getDateForDay } from './helpers'
 
 // ─── Seed Data ────────────────────────────────────────────────────────────────
 // TODO: v2 (Supabase) — replace hardcoded credentials with environment variables
@@ -631,7 +632,9 @@ const AppContext = createContext(null)
 export function AppProvider({ children }) {
   const [employees, setEmployees] = useState(SEED_EMPLOYEES)
   const [students, setStudents] = useState(SEED_STUDENTS)
-  const [sessions, setSessions] = useState(SEED_SESSIONS)
+  const [sessions, setSessions] = useState(() =>
+    SEED_SESSIONS.map((s) => ({ ...s, date: s.date ?? getDateForDay(s.day, 0) })),
+  )
   const [graderSchedule, setGraderSchedule] = useState(SEED_GRADER_SCHEDULE)
   const [currentUser, setCurrentUser] = useState(null)
   // Notification shape: { id, type, msg, scope, timestamp, read }
