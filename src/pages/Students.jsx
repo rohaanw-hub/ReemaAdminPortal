@@ -8,6 +8,8 @@ import {
   DAYS,
   GRADES,
   serializeSchedule,
+  exportToCSV,
+  exportToExcel,
 } from "../../helpers";
 import { useSortableTable } from "../hooks/useSortableTable";
 import ScheduleEditor from "../components/ScheduleEditor";
@@ -186,11 +188,13 @@ export default function Students() {
   const { students, setStudents, currentUser, isEmailTaken, sendInvite } =
     useApp();
   const isTeacher = currentUser?.role === "teacher";
+  const isParent = currentUser?.role === "parent";
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filterGrade, setFilterGrade] = useState("All");
   const [showModal, setShowModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const allGrades = useMemo(
     () => ["All", ...new Set(students.map((s) => s.grade))],
@@ -229,24 +233,112 @@ export default function Students() {
     setShowImport(false);
   };
 
+  const toExportRow = (s) => ({
+    "First Name": s.name.split(" ")[0] ?? "",
+    "Last Name": s.name.split(" ").slice(1).join(" ") ?? "",
+    Grade: s.grade,
+    "Enroll Date": s.enrollDate,
+    "Attendance (%)": s.attendance,
+    "Sessions Completed": s.sessions,
+    "Math Grade Level": s.gradeLevel?.math ?? "",
+    "Reading Grade Level": s.gradeLevel?.reading ?? "",
+    "Writing Grade Level": s.gradeLevel?.writing ?? "",
+    "Parent Email": s.parentEmail,
+    Notes: s.notes,
+  });
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const handleExportCSV = () => {
+    exportToCSV(sortedData.map(toExportRow), `students-export-${today}.csv`);
+    setShowExportMenu(false);
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(
+      sortedData.map(toExportRow),
+      `students-export-${today}.xlsx`,
+      { percentCols: ["Attendance (%)"], dateCols: ["Enroll Date"] },
+    );
+    setShowExportMenu(false);
+  };
+
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">Students</h1>
-        {!isTeacher && (
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              className="btn btn-outline"
-              onClick={() => setShowImport(true)}
-            >
-              ↑ Import
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShowModal(true)}
-            >
-              + Add Student
-            </button>
+        {!isParent && (
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ position: "relative" }}>
+              <button
+                className="btn btn-outline"
+                onClick={() => setShowExportMenu((v) => !v)}
+              >
+                ↓ Export
+              </button>
+              {showExportMenu && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 4px)",
+                    right: 0,
+                    background: "#fff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 6,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    zIndex: 100,
+                    minWidth: 160,
+                  }}
+                >
+                  <button
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "8px 16px",
+                      textAlign: "left",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 13,
+                    }}
+                    onClick={handleExportCSV}
+                  >
+                    Export as CSV (.csv)
+                  </button>
+                  <button
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "8px 16px",
+                      textAlign: "left",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 13,
+                    }}
+                    onClick={handleExportExcel}
+                  >
+                    Export as Excel (.xlsx)
+                  </button>
+                </div>
+              )}
+            </div>
+            {!isTeacher && (
+              <>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => setShowImport(true)}
+                >
+                  ↑ Import
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowModal(true)}
+                >
+                  + Add Student
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -305,3 +305,63 @@ export function exportToCSV(rows, filename) {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+// ─── Excel Export ─────────────────────────────────────────────────────────────
+// data: array of plain objects; options.percentCols: column keys to format as %
+// options.dateCols: column keys to format as dates
+export async function exportToExcel(data, filename, options = {}) {
+  if (!data.length) return
+  const XLSX = await import('xlsx')
+  const { percentCols = [], dateCols = [] } = options
+  const headers = Object.keys(data[0])
+
+  const aoaRows = [
+    headers,
+    ...data.map((row) =>
+      headers.map((h) => {
+        const v = row[h] ?? ''
+        if (percentCols.includes(h)) return typeof v === 'number' ? v / 100 : Number(v) / 100
+        if (dateCols.includes(h) && v) {
+          const d = new Date(v)
+          return isNaN(d.getTime()) ? v : d
+        }
+        return v
+      }),
+    ),
+  ]
+
+  const ws = XLSX.utils.aoa_to_sheet(aoaRows)
+
+  // Format percentage columns
+  percentCols.forEach((col) => {
+    const colIdx = headers.indexOf(col)
+    if (colIdx === -1) return
+    for (let r = 1; r < aoaRows.length; r++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c: colIdx })
+      if (ws[cellRef]) ws[cellRef].z = '0%'
+    }
+  })
+
+  // Format date columns
+  dateCols.forEach((col) => {
+    const colIdx = headers.indexOf(col)
+    if (colIdx === -1) return
+    for (let r = 1; r < aoaRows.length; r++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c: colIdx })
+      if (ws[cellRef] && ws[cellRef].v instanceof Date) ws[cellRef].z = 'yyyy-mm-dd'
+    }
+  })
+
+  // Auto-fit column widths based on max content length
+  ws['!cols'] = headers.map((h) => {
+    const maxLen = Math.max(
+      h.length,
+      ...data.map((row) => String(row[h] ?? '').length),
+    )
+    return { wch: Math.min(maxLen + 2, 40) }
+  })
+
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Students')
+  XLSX.writeFile(wb, filename)
+}
