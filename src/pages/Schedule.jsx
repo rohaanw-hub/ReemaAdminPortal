@@ -347,10 +347,10 @@ function SessionDetailModal({
 
 // ── Day View ───────────────────────────────────────────────────────────────────
 function DayView({
-  sessions,
+  sessionIndex,
   day,
-  employees,
-  students,
+  employeeMap,
+  studentMap,
   tab,
   onSessionClick,
   onMove,
@@ -359,10 +359,8 @@ function DayView({
   const [draggedId, setDraggedId] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
 
-  const daySessions = sessions.filter((s) => s.day === day);
-
   const getCellSessions = (time, classroom) =>
-    daySessions.filter((s) => s.time === time && s.classroom === classroom);
+    sessionIndex[`${day}|${time}|${classroom}`] ?? [];
 
   const handleDragStart = (e, sessionId) => {
     e.dataTransfer.effectAllowed = "move";
@@ -495,12 +493,8 @@ function DayView({
                         }}
                       >
                         {cellSessions.map((s) => {
-                          const teacher = employees.find(
-                            (e) => e.id === s.employeeId,
-                          );
-                          const student = students.find(
-                            (st) => st.id === s.studentId,
-                          );
+                          const teacher = employeeMap[s.employeeId];
+                          const student = studentMap[s.studentId];
                           const isDragging = draggedId === s.id;
                           const line1 =
                             tab === "student"
@@ -564,11 +558,16 @@ function DayView({
 }
 
 // ── Week View ──────────────────────────────────────────────────────────────────
-function WeekView({ sessions, employees, students, tab, onSessionClick }) {
+function WeekView({
+  sessionIndex,
+  employeeMap,
+  studentMap,
+  tab,
+  onSessionClick,
+}) {
   const isSlotOpen = (day, slot) => getSlotsForDay(day).includes(slot);
 
-  const getCellSessions = (day, slot) =>
-    sessions.filter((s) => s.day === day && s.time === slot);
+  const getCellSessions = (day, slot) => sessionIndex[`${day}|${slot}`] ?? [];
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -669,12 +668,8 @@ function WeekView({ sessions, employees, students, tab, onSessionClick }) {
                           const col =
                             CLASSROOM_COLORS[s.classroom] ??
                             CLASSROOM_COLORS["Classroom 1"];
-                          const teacher = employees.find(
-                            (e) => e.id === s.employeeId,
-                          );
-                          const student = students.find(
-                            (st) => st.id === s.studentId,
-                          );
+                          const teacher = employeeMap[s.employeeId];
+                          const student = studentMap[s.studentId];
                           const nameParts = teacher?.name.split(" ") ?? [];
                           const shortTeacher =
                             nameParts.length >= 2
@@ -754,6 +749,31 @@ export default function Schedule() {
   const activeSessions = useMemo(
     () => sessions.filter((s) => s.status !== "cancelled"),
     [sessions],
+  );
+
+  // O(1) lookup indexes — rebuilt only when data changes
+  const sessionIndex = useMemo(() => {
+    const idx = {};
+    activeSessions.forEach((s) => {
+      const key = `${s.day}|${s.time}|${s.classroom}`;
+      if (!idx[key]) idx[key] = [];
+      idx[key].push(s);
+      // Also index by day|time for week view
+      const slotKey = `${s.day}|${s.time}`;
+      if (!idx[slotKey]) idx[slotKey] = [];
+      idx[slotKey].push(s);
+    });
+    return idx;
+  }, [activeSessions]);
+
+  const employeeMap = useMemo(
+    () => Object.fromEntries(employees.map((e) => [e.id, e])),
+    [employees],
+  );
+
+  const studentMap = useMemo(
+    () => Object.fromEntries(students.map((s) => [s.id, s])),
+    [students],
   );
 
   const handleUpdate = useCallback(
@@ -891,9 +911,10 @@ export default function Schedule() {
         {viewMode === "day" ? (
           <DayView
             sessions={activeSessions}
+            sessionIndex={sessionIndex}
             day={selectedDay}
-            employees={employees}
-            students={students}
+            employeeMap={employeeMap}
+            studentMap={studentMap}
             tab={tab}
             onSessionClick={setDetailId}
             onMove={handleMove}
@@ -901,8 +922,9 @@ export default function Schedule() {
         ) : (
           <WeekView
             sessions={activeSessions}
-            employees={employees}
-            students={students}
+            sessionIndex={sessionIndex}
+            employeeMap={employeeMap}
+            studentMap={studentMap}
             tab={tab}
             onSessionClick={setDetailId}
           />
