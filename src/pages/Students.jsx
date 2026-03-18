@@ -12,22 +12,7 @@ import {
 import { useSortableTable } from "../hooks/useSortableTable";
 import ScheduleEditor from "../components/ScheduleEditor";
 import AttendanceBar from "../components/AttendanceBar";
-
-function Th({ label, col, sortKey, sortDir, onSort }) {
-  return (
-    <th
-      style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
-      onClick={() => onSort(col)}
-    >
-      {label}
-      {sortKey === col && (
-        <span style={{ marginLeft: 4, fontSize: 10 }}>
-          {sortDir === "asc" ? "▲" : "▼"}
-        </span>
-      )}
-    </th>
-  );
-}
+import Th from "../components/Th";
 
 function blankForm() {
   const schedule = {};
