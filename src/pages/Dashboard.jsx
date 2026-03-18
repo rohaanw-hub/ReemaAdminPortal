@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useApp } from "../../AppContext";
 import {
   getInitials,
@@ -15,41 +16,57 @@ export default function Dashboard() {
   const { employees, students, sessions, notifications, dismissNotification } =
     useApp();
 
-  const activeEmployees = employees.filter((e) => e.status === "active").length;
-  const enrolledStudents = students.filter((s) => s.status === "active").length;
-  const todaySessions = sessions.filter((s) => s.day === TODAY);
-  const avgAttendance = students.length
-    ? Math.round(
-        students.reduce((sum, s) => sum + s.attendance, 0) / students.length,
-      )
-    : 0;
+  const activeEmployees = useMemo(
+    () => employees.filter((e) => e.status === "active").length,
+    [employees],
+  );
+  const enrolledStudents = useMemo(
+    () => students.filter((s) => s.status === "active").length,
+    [students],
+  );
+  const todaySessions = useMemo(
+    () => sessions.filter((s) => s.day === TODAY),
+    [sessions],
+  );
+  const avgAttendance = useMemo(
+    () =>
+      students.length
+        ? Math.round(
+            students.reduce((sum, s) => sum + s.attendance, 0) / students.length,
+          )
+        : 0,
+    [students],
+  );
 
-  const stats = [
-    {
-      label: "Active Employees",
-      value: activeEmployees,
-      color: "#E31837",
-      sub: "on staff",
-    },
-    {
-      label: "Enrolled Students",
-      value: enrolledStudents,
-      color: "#16a34a",
-      sub: "active",
-    },
-    {
-      label: "Sessions Today",
-      value: todaySessions.length,
-      color: "#d97706",
-      sub: "Monday",
-    },
-    {
-      label: "Avg Attendance",
-      value: `${avgAttendance}%`,
-      color: "#7c3aed",
-      sub: "all students",
-    },
-  ];
+  const stats = useMemo(
+    () => [
+      {
+        label: "Active Employees",
+        value: activeEmployees,
+        color: "#E31837",
+        sub: "on staff",
+      },
+      {
+        label: "Enrolled Students",
+        value: enrolledStudents,
+        color: "#16a34a",
+        sub: "active",
+      },
+      {
+        label: "Sessions Today",
+        value: todaySessions.length,
+        color: "#d97706",
+        sub: "Monday",
+      },
+      {
+        label: "Avg Attendance",
+        value: `${avgAttendance}%`,
+        color: "#7c3aed",
+        sub: "all students",
+      },
+    ],
+    [activeEmployees, enrolledStudents, todaySessions.length, avgAttendance],
+  );
 
   return (
     <div>

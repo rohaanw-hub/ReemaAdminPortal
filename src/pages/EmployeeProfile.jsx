@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useApp } from "../../AppContext";
 import {
@@ -266,7 +266,10 @@ export default function EmployeeProfile() {
   const isAdminAccount = emp.email.toLowerCase() === "mehdi.reema@gmail.com";
   const rel = calcReliability(emp.callouts, emp.totalShifts);
   const hours = calcHours(emp.clockIns);
-  const empSessions = sessions.filter((s) => s.employeeId === emp.id);
+  const empSessions = useMemo(
+    () => sessions.filter((s) => s.employeeId === emp.id),
+    [sessions, emp.id],
+  );
   const myConflicts = weeklyConflicts[emp.id] || [];
 
   const handleSaveEdit = (updated) => {

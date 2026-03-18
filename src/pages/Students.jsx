@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../AppContext";
 import {
@@ -262,16 +262,23 @@ export default function Students() {
   const [filterGrade, setFilterGrade] = useState("All");
   const [showModal, setShowModal] = useState(false);
 
-  const allGrades = ["All", ...new Set(students.map((s) => s.grade))];
+  const allGrades = useMemo(
+    () => ["All", ...new Set(students.map((s) => s.grade))],
+    [students],
+  );
 
-  const filtered = students.filter((s) => {
-    const matchSearch =
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.parentName.toLowerCase().includes(search.toLowerCase()) ||
-      s.subjects.join(" ").toLowerCase().includes(search.toLowerCase());
-    const matchGrade = filterGrade === "All" || s.grade === filterGrade;
-    return matchSearch && matchGrade;
-  });
+  const filtered = useMemo(
+    () =>
+      students.filter((s) => {
+        const matchSearch =
+          s.name.toLowerCase().includes(search.toLowerCase()) ||
+          s.parentName.toLowerCase().includes(search.toLowerCase()) ||
+          s.subjects.join(" ").toLowerCase().includes(search.toLowerCase());
+        const matchGrade = filterGrade === "All" || s.grade === filterGrade;
+        return matchSearch && matchGrade;
+      }),
+    [students, search, filterGrade],
+  );
 
   const handleAdd = (formData) => {
     const newId = Math.max(0, ...students.map((s) => s.id)) + 1;

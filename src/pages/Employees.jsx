@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../AppContext";
 import {
@@ -227,14 +227,18 @@ export default function Employees() {
   const [filterRole, setFilterRole] = useState("All");
   const [showModal, setShowModal] = useState(false);
 
-  const filtered = employees.filter((e) => {
-    const matchSearch =
-      e.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.email.toLowerCase().includes(search.toLowerCase()) ||
-      e.subjects.join(" ").toLowerCase().includes(search.toLowerCase());
-    const matchRole = filterRole === "All" || e.role === filterRole;
-    return matchSearch && matchRole;
-  });
+  const filtered = useMemo(
+    () =>
+      employees.filter((e) => {
+        const matchSearch =
+          e.name.toLowerCase().includes(search.toLowerCase()) ||
+          e.email.toLowerCase().includes(search.toLowerCase()) ||
+          e.subjects.join(" ").toLowerCase().includes(search.toLowerCase());
+        const matchRole = filterRole === "All" || e.role === filterRole;
+        return matchSearch && matchRole;
+      }),
+    [employees, search, filterRole],
+  );
 
   const handleAdd = (formData) => {
     const newId = Math.max(0, ...employees.map((e) => e.id)) + 1;

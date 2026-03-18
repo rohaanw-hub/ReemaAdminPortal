@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useApp } from "../../AppContext";
 import {
   DAYS,
@@ -1209,9 +1209,13 @@ export default function Schedule() {
   } = useApp();
 
   const isTeacher = currentUser?.role === "teacher";
-  const visibleSessions = isTeacher
-    ? sessions.filter((s) => s.employeeId === currentUser.profileId)
-    : sessions;
+  const visibleSessions = useMemo(
+    () =>
+      isTeacher
+        ? sessions.filter((s) => s.employeeId === currentUser.profileId)
+        : sessions,
+    [isTeacher, sessions, currentUser?.profileId],
+  );
 
   const [activeTab, setActiveTab] = useState("employee");
   const [selectedSession, setSelectedSession] = useState(null);
@@ -1476,16 +1480,48 @@ export default function Schedule() {
     setShowMoveModal(true);
   };
 
-  const unassignedCount = sessions.filter(
-    (s) => !s.employeeId && s.status === "scheduled",
-  ).length;
-  const cancelledCount = sessions.filter(
-    (s) => s.status === "cancelled",
-  ).length;
-  const totalConflicts = Object.values(weeklyConflicts).reduce(
-    (sum, arr) => sum + (arr?.length ?? 0),
-    0,
+  const unassignedCount = useMemo(
+    () => sessions.filter((s) => !s.employeeId && s.status === "scheduled").length,
+    [sessions],
   );
+  const cancelledCount = useMemo(
+    () => sessions.filter((s) => s.status === "cancelled").length,
+    [sessions],
+  );
+  const totalConflicts = useMemo(
+    () => Object.values(weeklyConflicts).reduce((sum, arr) => sum + (arr?.length ?? 0), 0),
+    [weeklyConflicts],
+  );
+
+  const onClickEmpSession = useCallback((s) => {
+    setSelectedSession(s);
+    setShowEmpModal(true);
+  }, []);
+
+  const onClickStuSession = useCallback((s) => {
+    setSelectedSession(s);
+    setShowStuModal(true);
+  }, []);
+
+  const onCloseEmpModal = useCallback(() => {
+    setShowEmpModal(false);
+    setSelectedSession(null);
+  }, []);
+
+  const onCloseStuModal = useCallback(() => {
+    setShowStuModal(false);
+    setSelectedSession(null);
+  }, []);
+
+  const onStuMove = useCallback((s) => {
+    setSelectedSession(null);
+    openMove(s);
+  }, [openMove]);
+
+  const onCloseMoveModal = useCallback(() => {
+    setShowMoveModal(false);
+    setMoveTarget(null);
+  }, []);
 
   const dragProps = {
     draggedSession,
@@ -1591,10 +1627,7 @@ export default function Schedule() {
               students={students}
               employees={employees}
               weeklyConflicts={weeklyConflicts}
-              onClickSession={(s) => {
-                setSelectedSession(s);
-                setShowEmpModal(true);
-              }}
+              onClickSession={onClickEmpSession}
               readOnly={isTeacher}
               {...dragProps}
             />
@@ -1628,10 +1661,7 @@ export default function Schedule() {
               students={students}
               employees={employees}
               weeklyConflicts={weeklyConflicts}
-              onClickSession={(s) => {
-                setSelectedSession(s);
-                setShowStuModal(true);
-              }}
+              onClickSession={onClickStuSession}
               {...dragProps}
             />
           </div>
@@ -1646,10 +1676,7 @@ export default function Schedule() {
           employees={employees}
           students={students}
           weeklyConflicts={weeklyConflicts}
-          onClose={() => {
-            setShowEmpModal(false);
-            setSelectedSession(null);
-          }}
+          onClose={onCloseEmpModal}
           onUpdate={updateSession}
           readOnly={isTeacher}
           addNotification={addNotification}
@@ -1662,15 +1689,9 @@ export default function Schedule() {
           sessions={sessions}
           employees={employees}
           students={students}
-          onClose={() => {
-            setShowStuModal(false);
-            setSelectedSession(null);
-          }}
+          onClose={onCloseStuModal}
           onUpdate={updateSession}
-          onMove={(s) => {
-            setSelectedSession(null);
-            openMove(s);
-          }}
+          onMove={onStuMove}
           addNotification={addNotification}
         />
       )}
@@ -1682,10 +1703,7 @@ export default function Schedule() {
           employees={employees}
           students={students}
           weeklyConflicts={weeklyConflicts}
-          onClose={() => {
-            setShowMoveModal(false);
-            setMoveTarget(null);
-          }}
+          onClose={onCloseMoveModal}
           onMove={moveSession}
         />
       )}
