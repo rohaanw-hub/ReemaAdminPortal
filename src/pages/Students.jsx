@@ -17,6 +17,7 @@ import ScheduleEditor from "../components/ScheduleEditor";
 import AttendanceBar from "../components/AttendanceBar";
 import Th from "../components/Th";
 import Pagination from "../components/Pagination";
+import GradeLevelPill from "../components/GradeLevelPill";
 import ImportModal from "../components/ImportModal";
 
 function blankForm() {
@@ -436,23 +437,20 @@ export default function Students() {
                   <td>
                     {s.gradeLevel ? (
                       <div
-                        style={{
-                          display: "flex",
-                          gap: 4,
-                          flexWrap: "wrap",
-                          fontSize: 11,
-                          fontWeight: 600,
-                        }}
+                        style={{ display: "flex", gap: 4, flexWrap: "wrap" }}
                       >
-                        <span style={{ color: "#166534" }}>
-                          M:{s.gradeLevel.math}
-                        </span>
-                        <span style={{ color: "#B5112A" }}>
-                          R:{s.gradeLevel.reading}
-                        </span>
-                        <span style={{ color: "#5b21b6" }}>
-                          W:{s.gradeLevel.writing}
-                        </span>
+                        <GradeLevelPill
+                          subject="math"
+                          level={s.gradeLevel.math}
+                        />
+                        <GradeLevelPill
+                          subject="reading"
+                          level={s.gradeLevel.reading}
+                        />
+                        <GradeLevelPill
+                          subject="writing"
+                          level={s.gradeLevel.writing}
+                        />
                       </div>
                     ) : (
                       <span style={{ color: "#94a3b8", fontSize: 12 }}>—</span>

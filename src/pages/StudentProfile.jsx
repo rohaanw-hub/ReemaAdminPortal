@@ -15,6 +15,7 @@ import {
   attendanceColor,
 } from "../../helpers";
 import ScheduleEditor from "../components/ScheduleEditor";
+import GradeLevelPill from "../components/GradeLevelPill";
 import { ChevronLeft, Pencil } from "lucide-react";
 
 const PROGRESS_SUBJECTS = ["math", "reading", "writing"];
@@ -347,7 +348,6 @@ export default function StudentProfile() {
             {PROGRESS_SUBJECTS.map((subj) => {
               const level = student.gradeLevel?.[subj] ?? "—";
               const isEditing = editingSubject === subj;
-              const { bg, color } = SUBJECT_COLOR[subj];
               return (
                 <div
                   key={subj}
@@ -397,18 +397,39 @@ export default function StudentProfile() {
                     </>
                   ) : (
                     <>
-                      <span
-                        style={{
-                          background: bg,
-                          color,
-                          fontWeight: 700,
-                          fontSize: 13,
-                          padding: "3px 10px",
-                          borderRadius: 6,
-                        }}
-                      >
-                        {level === "—" ? "—" : `${level} Grade`}
-                      </span>
+                      {level === "—" ? (
+                        <span style={{ color: "#94a3b8", fontSize: 13 }}>
+                          —
+                        </span>
+                      ) : (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 4,
+                            flex: 1,
+                          }}
+                        >
+                          <GradeLevelPill
+                            subject={subj}
+                            level={level}
+                            size="lg"
+                          />
+                          <div
+                            className="progress-bar"
+                            style={{ height: 5, maxWidth: 200 }}
+                            title={`${level} — level ${GRADE_LEVELS.indexOf(level) + 1} of ${GRADE_LEVELS.length}`}
+                          >
+                            <div
+                              className="progress-fill"
+                              style={{
+                                width: `${((GRADE_LEVELS.indexOf(level) + 1) / GRADE_LEVELS.length) * 100}%`,
+                                background: SUBJECT_COLOR[subj].color,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
                       {canEditProgress && (
                         <button
                           onClick={() => startEditGrade(subj)}
