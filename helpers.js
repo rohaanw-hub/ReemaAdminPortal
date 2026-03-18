@@ -103,12 +103,9 @@ export const ED_LEVELS = [
 ]
 
 export const SUBJECT_COLORS = {
-  Reading:   { bg: '#FFF0F2', color: '#B5112A' },
-  Writing:   { bg: '#ede9fe', color: '#5b21b6' },
-  Math:      { bg: '#dcfce7', color: '#166534' },
-  Science:   { bg: '#e0f2fe', color: '#075985' },
-  'SAT Prep': { bg: '#fef3c7', color: '#92400e' },
-  'Test Prep': { bg: '#fce7f3', color: '#9d174d' },
+  Reading: { bg: '#FFF0F2', color: '#B5112A' },
+  Writing: { bg: '#ede9fe', color: '#5b21b6' },
+  Math:    { bg: '#dcfce7', color: '#166534' },
 }
 
 // ─── Schedule Form Helpers ────────────────────────────────────────────────────
