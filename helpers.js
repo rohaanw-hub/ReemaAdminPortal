@@ -113,6 +113,14 @@ export const SUBJECT_COLORS = {
   Math:    { bg: '#dcfce7', color: '#166534' },
 }
 
+export const CLASSROOMS = ['Classroom 1', 'Classroom 2', 'Classroom 3', 'Grader']
+export const CLASSROOM_COLORS = {
+  'Classroom 1': { bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' },
+  'Classroom 2': { bg: '#dcfce7', color: '#166534', border: '#bbf7d0' },
+  'Classroom 3': { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
+  'Grader':      { bg: '#f1f5f9', color: '#475569', border: '#e2e8f0' },
+}
+
 // ─── Schedule Form Helpers ────────────────────────────────────────────────────
 // Converts { Mon: {enabled, time}, ... } → { Mon: ["3PM-7PM"], ... }
 export function serializeSchedule(formSchedule) {
