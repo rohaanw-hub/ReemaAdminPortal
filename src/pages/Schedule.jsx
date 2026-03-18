@@ -3,8 +3,6 @@ import { useApp } from "../../AppContext";
 import {
   OPEN_DAYS,
   getSlotsForDay,
-  isTutorAvailableAt,
-  hasWeeklyConflict,
   CLASSROOMS,
   CLASSROOM_COLORS,
   timeToMinutes,
@@ -15,6 +13,7 @@ import MoveSessionModal from "../components/MoveSessionModal";
 import ChangeGraderModal from "../components/ChangeGraderModal";
 import NewEventModal from "../components/NewEventModal";
 import EventDetailModal from "../components/EventDetailModal";
+import AutoSchedulerWizard from "../components/AutoSchedulerWizard";
 
 // Classrooms shown in the schedule grid — excludes Grader
 const SCHEDULE_CLASSROOMS = ["Classroom 1", "Classroom 2", "Classroom 3"];
@@ -60,46 +59,6 @@ function opRange(day) {
 }
 
 // ── Pure helpers ───────────────────────────────────────────────────────────────
-function relScore(emp) {
-  return emp.totalShifts === 0
-    ? 100
-    : Math.round((1 - emp.callouts / emp.totalShifts) * 100);
-}
-
-function isDoubleBooked(sessions, empId, day, time, excludeId = null) {
-  return sessions.some(
-    (s) =>
-      s.employeeId === empId &&
-      s.day === day &&
-      s.time === time &&
-      s.id !== excludeId &&
-      s.status !== "cancelled",
-  );
-}
-
-function findBestTutor(
-  sessions,
-  employees,
-  weeklyConflicts,
-  day,
-  time,
-  excludeEmpId = null,
-  excludeSessionId = null,
-) {
-  const candidates = employees.filter((emp) => {
-    if (emp.accountRole === "admin") return false;
-    if (emp.id === excludeEmpId) return false;
-    if (!isTutorAvailableAt(emp, day, time)) return false;
-    if (hasWeeklyConflict(weeklyConflicts, emp.id, day, time)) return false;
-    if (isDoubleBooked(sessions, emp.id, day, time, excludeSessionId))
-      return false;
-    return true;
-  });
-  if (!candidates.length) return null;
-  candidates.sort((a, b) => relScore(b) - relScore(a));
-  return candidates[0];
-}
-
 function getDefaultDay() {
   const dayMap = { 1: "Mon", 2: "Tue", 3: "Wed", 4: "Thu", 6: "Sat" };
   return dayMap[new Date().getDay()] ?? "Mon";
@@ -1111,6 +1070,7 @@ export default function Schedule() {
   const [graderDay, setGraderDay] = useState(null); // day for grader change modal
   const [newEventInit, setNewEventInit] = useState(null); // { day, startTime } for new event
   const [detailEvent, setDetailEvent] = useState(null); // event for detail modal
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const MIN_WEEK_OFFSET = -1;
   const MAX_WEEK_OFFSET = 4;
@@ -1192,30 +1152,26 @@ export default function Schedule() {
     [setGraderSchedule, employees, addToast],
   );
 
-  const autoSchedule = useCallback(() => {
-    let count = 0;
-    const updated = sessions.map((s) => {
-      if (s.employeeId || s.status === "cancelled") return s;
-      const best = findBestTutor(
-        sessions,
-        employees,
-        weeklyConflicts,
-        s.day,
-        s.time,
-      );
-      if (best) {
-        count += 1;
-        return { ...s, employeeId: best.id };
-      }
-      return s;
-    });
-    setSessions(updated);
-    addToast(
-      count > 0
-        ? `Auto-assigned ${count} session(s).`
-        : "No sessions to auto-assign.",
-    );
-  }, [sessions, employees, weeklyConflicts, setSessions, addToast]);
+  const handleWizardApply = useCallback(
+    ({ proposed, replaceAll, selectedDays, weekDates: wDates }) => {
+      setSessions((prev) => {
+        let base = prev;
+        if (replaceAll) {
+          // Remove all non-cancelled sessions for the selected days in this week
+          base = prev.filter(
+            (s) =>
+              s.status === "cancelled" ||
+              !selectedDays.includes(s.day) ||
+              (s.date && s.date !== wDates[s.day]),
+          );
+        }
+        return [...base, ...proposed];
+      });
+      addToast(`Schedule applied: ${proposed.length} session(s) created.`);
+      setWizardOpen(false);
+    },
+    [setSessions, addToast],
+  );
 
   return (
     <div>
@@ -1223,7 +1179,10 @@ export default function Schedule() {
         <h1 className="page-title">Schedule</h1>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {isAdmin && (
-            <button className="btn btn-outline" onClick={autoSchedule}>
+            <button
+              className="btn btn-outline"
+              onClick={() => setWizardOpen(true)}
+            >
               Auto-Schedule
             </button>
           )}
@@ -1452,6 +1411,18 @@ export default function Schedule() {
             addToast("Event deleted.");
           }}
           onClose={() => setDetailEvent(null)}
+        />
+      )}
+
+      {wizardOpen && (
+        <AutoSchedulerWizard
+          weekDates={weekDates}
+          employees={employees}
+          students={students}
+          existingSessions={sessions}
+          weeklyConflicts={weeklyConflicts}
+          onApply={handleWizardApply}
+          onCancel={() => setWizardOpen(false)}
         />
       )}
 
