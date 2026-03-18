@@ -8,13 +8,22 @@ import {
   formatDate,
   DAYS,
   GRADES,
+  GRADE_LEVELS,
   serializeSchedule,
   deserializeSchedule,
   validatePhotoFile,
   attendanceColor,
 } from "../../helpers";
 import ScheduleEditor from "../components/ScheduleEditor";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Pencil } from "lucide-react";
+
+const PROGRESS_SUBJECTS = ["math", "reading", "writing"];
+const SUBJECT_LABEL = { math: "Math", reading: "Reading", writing: "Writing" };
+const SUBJECT_COLOR = {
+  math: { bg: "#dcfce7", color: "#166534" },
+  reading: { bg: "#FFF0F2", color: "#B5112A" },
+  writing: { bg: "#ede9fe", color: "#5b21b6" },
+};
 
 function EditModal({ student, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -149,7 +158,10 @@ export default function StudentProfile() {
   const [tab, setTab] = useState("overview");
   const [showEdit, setShowEdit] = useState(false);
   const [photoError, setPhotoError] = useState("");
+  const [editingSubject, setEditingSubject] = useState(null);
+  const [editingValue, setEditingValue] = useState("");
   const isAdmin = currentUser?.role === "admin";
+  const canEditProgress = isAdmin || isTeacher;
 
   const student = students.find((s) => s.id === Number(id));
   if (!student) return <div className="card">Student not found.</div>;
@@ -180,6 +192,28 @@ export default function StudentProfile() {
       );
     };
     reader.readAsDataURL(file);
+  };
+
+  const startEditGrade = (subj) => {
+    setEditingSubject(subj);
+    setEditingValue(student.gradeLevel?.[subj] ?? "");
+  };
+
+  const saveGradeLevel = () => {
+    setStudents((prev) =>
+      prev.map((s) =>
+        s.id === student.id
+          ? {
+              ...s,
+              gradeLevel: {
+                ...(s.gradeLevel ?? {}),
+                [editingSubject]: editingValue,
+              },
+            }
+          : s,
+      ),
+    );
+    setEditingSubject(null);
   };
 
   return (
@@ -306,74 +340,170 @@ export default function StudentProfile() {
 
       {/* Overview Tab */}
       {tab === "overview" && (
-        <div className="profile-grid">
-          <div className="card">
-            <div className="section-title">Student Info</div>
-            <div className="detail-row">
-              <div className="detail-label">Grade</div>
-              <div className="detail-value">{student.grade}</div>
-            </div>
-            <div className="detail-row">
-              <div className="detail-label">Attendance</div>
-              <div className="detail-value">{student.attendance}%</div>
-            </div>
-            <div className="detail-row">
-              <div className="detail-label">Sessions Completed</div>
-              <div className="detail-value">{student.sessions}</div>
-            </div>
-            <div className="detail-row">
-              <div className="detail-label">Enrolled</div>
-              <div className="detail-value">
-                {formatDate(student.enrollDate)}
-              </div>
-            </div>
-            {student.notes && (
-              <div className="detail-row">
-                <div className="detail-label">Notes</div>
-                <div className="detail-value">{student.notes}</div>
-              </div>
-            )}
+        <div>
+          {/* Academic Progress — full width, top */}
+          <div className="card" style={{ marginBottom: 16 }}>
+            <div className="section-title">Academic Progress</div>
+            {PROGRESS_SUBJECTS.map((subj) => {
+              const level = student.gradeLevel?.[subj] ?? "—";
+              const isEditing = editingSubject === subj;
+              const { bg, color } = SUBJECT_COLOR[subj];
+              return (
+                <div
+                  key={subj}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "10px 0",
+                    borderBottom: "1px solid #f1f5f9",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 72,
+                      fontWeight: 600,
+                      fontSize: 13,
+                      color: "#0f172a",
+                    }}
+                  >
+                    {SUBJECT_LABEL[subj]}
+                  </div>
+                  {isEditing ? (
+                    <>
+                      <select
+                        className="form-select"
+                        style={{ width: 120, padding: "4px 8px", fontSize: 13 }}
+                        value={editingValue}
+                        onChange={(e) => setEditingValue(e.target.value)}
+                        autoFocus
+                      >
+                        {GRADE_LEVELS.map((g) => (
+                          <option key={g}>{g}</option>
+                        ))}
+                      </select>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={saveGradeLevel}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="btn btn-outline btn-sm"
+                        onClick={() => setEditingSubject(null)}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span
+                        style={{
+                          background: bg,
+                          color,
+                          fontWeight: 700,
+                          fontSize: 13,
+                          padding: "3px 10px",
+                          borderRadius: 6,
+                        }}
+                      >
+                        {level === "—" ? "—" : `${level} Grade`}
+                      </span>
+                      {canEditProgress && (
+                        <button
+                          onClick={() => startEditGrade(subj)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            color: "#94a3b8",
+                            padding: "2px 4px",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                          title={`Edit ${SUBJECT_LABEL[subj]} grade level`}
+                        >
+                          <Pencil size={13} />
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          <div className="card">
-            <div className="section-title">Assigned Sessions</div>
-            {stuSessions.length === 0 ? (
-              <p className="text-sm">No sessions assigned.</p>
-            ) : (
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Day</th>
-                      <th>Time</th>
-                      <th>Tutor</th>
-                      <th>Subject</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stuSessions.map((s) => {
-                      const emp = employees.find((x) => x.id === s.employeeId);
-                      return (
-                        <tr key={s.id}>
-                          <td>{s.day}</td>
-                          <td>{s.time}</td>
-                          <td>{emp?.name ?? "Unassigned"}</td>
-                          <td>{s.subject}</td>
-                          <td>
-                            <span
-                              className={`badge ${s.status === "cancelled" ? "badge-red" : "badge-green"}`}
-                            >
-                              {s.status}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+          <div className="profile-grid">
+            <div className="card">
+              <div className="section-title">Student Info</div>
+              <div className="detail-row">
+                <div className="detail-label">Grade</div>
+                <div className="detail-value">{student.grade}</div>
               </div>
-            )}
+              <div className="detail-row">
+                <div className="detail-label">Attendance</div>
+                <div className="detail-value">{student.attendance}%</div>
+              </div>
+              <div className="detail-row">
+                <div className="detail-label">Sessions Completed</div>
+                <div className="detail-value">{student.sessions}</div>
+              </div>
+              <div className="detail-row">
+                <div className="detail-label">Enrolled</div>
+                <div className="detail-value">
+                  {formatDate(student.enrollDate)}
+                </div>
+              </div>
+              {student.notes && (
+                <div className="detail-row">
+                  <div className="detail-label">Notes</div>
+                  <div className="detail-value">{student.notes}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="card">
+              <div className="section-title">Assigned Sessions</div>
+              {stuSessions.length === 0 ? (
+                <p className="text-sm">No sessions assigned.</p>
+              ) : (
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Tutor</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stuSessions.map((s) => {
+                        const emp = employees.find(
+                          (x) => x.id === s.employeeId,
+                        );
+                        return (
+                          <tr key={s.id}>
+                            <td>{s.day}</td>
+                            <td>{s.time}</td>
+                            <td>{emp?.name ?? "Unassigned"}</td>
+                            <td>{s.subject}</td>
+                            <td>
+                              <span
+                                className={`badge ${s.status === "cancelled" ? "badge-red" : "badge-green"}`}
+                              >
+                                {s.status}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -276,6 +276,7 @@ export default function Students() {
                   sortDir={sortDir}
                   onSort={handleSort}
                 />
+                <th>Progress</th>
                 <th>Attendance</th>
                 <th>Status</th>
               </tr>
@@ -307,6 +308,31 @@ export default function Students() {
                   <td>{s.grade}</td>
                   <td>{s.enrollDate}</td>
                   <td>
+                    {s.gradeLevel ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 4,
+                          flexWrap: "wrap",
+                          fontSize: 11,
+                          fontWeight: 600,
+                        }}
+                      >
+                        <span style={{ color: "#166534" }}>
+                          M:{s.gradeLevel.math}
+                        </span>
+                        <span style={{ color: "#B5112A" }}>
+                          R:{s.gradeLevel.reading}
+                        </span>
+                        <span style={{ color: "#5b21b6" }}>
+                          W:{s.gradeLevel.writing}
+                        </span>
+                      </div>
+                    ) : (
+                      <span style={{ color: "#94a3b8", fontSize: 12 }}>—</span>
+                    )}
+                  </td>
+                  <td>
                     <AttendanceBar pct={s.attendance} />
                   </td>
                   <td>
@@ -321,7 +347,7 @@ export default function Students() {
               {sortedData.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     style={{ textAlign: "center", color: "#94a3b8" }}
                   >
                     No students found.

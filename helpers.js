@@ -97,6 +97,11 @@ export function getSlotsForDay(day) {
   if (day === 'Mon' || day === 'Tue' || day === 'Wed') return MON_WED_SLOTS
   return []
 }
+export const GRADE_LEVELS = [
+  'Pre-K', 'K', '1st', '2nd', '3rd', '4th', '5th', '6th',
+  '7th', '8th', '9th', '10th', '11th', '12th', 'College',
+]
+
 export const ED_LEVELS = [
   'High School', 'College Freshman', 'College Sophomore',
   'College Junior', 'College Senior', "Bachelor's", "Master's", 'Doctorate',
