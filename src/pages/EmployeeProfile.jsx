@@ -20,12 +20,9 @@ import {
 import ScheduleEditor from "../components/ScheduleEditor";
 import { ChevronLeft } from "lucide-react";
 
-const ROLES = ["Lead Tutor", "Reading Specialist", "SAT Specialist", "Tutor"];
-
 function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
   const [form, setForm] = useState({
     name: emp.name,
-    role: emp.role,
     email: emp.email,
     phone: emp.phone,
     grade: emp.grade,
@@ -51,27 +48,13 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
           </button>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Full Name</label>
-            <input
-              className="form-input"
-              value={form.name}
-              onChange={(e) => set("name", e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Position</label>
-            <select
-              className="form-select"
-              value={form.role}
-              onChange={(e) => set("role", e.target.value)}
-            >
-              {ROLES.map((r) => (
-                <option key={r}>{r}</option>
-              ))}
-            </select>
-          </div>
+        <div className="form-group">
+          <label className="form-label">Full Name</label>
+          <input
+            className="form-input"
+            value={form.name}
+            onChange={(e) => set("name", e.target.value)}
+          />
         </div>
 
         {isAdmin && (
@@ -123,7 +106,7 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
 
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">Education Level</label>
+            <label className="form-label">Year in School</label>
             <select
               className="form-select"
               value={form.grade}
@@ -376,7 +359,7 @@ export default function EmployeeProfile() {
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 20 }}>{emp.name}</div>
           <div className="text-sm" style={{ fontSize: 13, marginTop: 2 }}>
-            {emp.role} · {emp.grade}
+            {emp.grade}
             {" · "}
             <span
               className={`badge ${emp.accountRole === "admin" ? "badge-red" : "badge-gray"}`}
@@ -412,14 +395,14 @@ export default function EmployeeProfile() {
         </div>
         {!isTeacher && (
           <div style={{ display: "flex", gap: 8 }}>
-            <button className="btn btn-warning btn-sm" onClick={logCallout}>
-              Log Callout
-            </button>
             <button
-              className="btn btn-outline btn-sm"
+              className="btn btn-primary btn-sm"
               onClick={() => setShowEdit(true)}
             >
               Edit
+            </button>
+            <button className="btn btn-outline btn-sm" onClick={logCallout}>
+              Log Callout
             </button>
           </div>
         )}
@@ -452,7 +435,7 @@ export default function EmployeeProfile() {
               <div className="detail-value">{emp.phone}</div>
             </div>
             <div className="detail-row">
-              <div className="detail-label">Education</div>
+              <div className="detail-label">Year in School</div>
               <div className="detail-value">{emp.grade}</div>
             </div>
             <div className="detail-row">

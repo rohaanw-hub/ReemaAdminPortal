@@ -15,8 +15,6 @@ import { useSortableTable } from "../hooks/useSortableTable";
 import ScheduleEditor from "../components/ScheduleEditor";
 import Th from "../components/Th";
 
-const ROLES = ["Lead Tutor", "Reading Specialist", "SAT Specialist", "Tutor"];
-
 function blankForm() {
   const schedule = {};
   DAYS.forEach((d) => {
@@ -24,10 +22,9 @@ function blankForm() {
   });
   return {
     name: "",
-    role: "Tutor",
     email: "",
     phone: "",
-    grade: "Bachelor's",
+    grade: "College Freshman",
     hourlyRate: 15,
     schedule,
     conflicts: "",
@@ -76,28 +73,14 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
           </button>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Full Name *</label>
-            <input
-              className="form-input"
-              value={form.name}
-              onChange={(e) => set("name", e.target.value)}
-              placeholder="Jane Smith"
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Role</label>
-            <select
-              className="form-select"
-              value={form.role}
-              onChange={(e) => set("role", e.target.value)}
-            >
-              {ROLES.map((r) => (
-                <option key={r}>{r}</option>
-              ))}
-            </select>
-          </div>
+        <div className="form-group">
+          <label className="form-label">Full Name *</label>
+          <input
+            className="form-input"
+            value={form.name}
+            onChange={(e) => set("name", e.target.value)}
+            placeholder="Jane Smith"
+          />
         </div>
 
         <div className="form-row">
@@ -130,7 +113,7 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
 
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">Education Level</label>
+            <label className="form-label">Year in School</label>
             <select
               className="form-select"
               value={form.grade}
@@ -197,19 +180,16 @@ export default function Employees() {
   const { employees, setEmployees, isEmailTaken, sendInvite } = useApp();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [filterRole, setFilterRole] = useState("All");
   const [showModal, setShowModal] = useState(false);
 
   const filtered = useMemo(
     () =>
-      employees.filter((e) => {
-        const matchSearch =
+      employees.filter(
+        (e) =>
           e.name.toLowerCase().includes(search.toLowerCase()) ||
-          e.email.toLowerCase().includes(search.toLowerCase());
-        const matchRole = filterRole === "All" || e.role === filterRole;
-        return matchSearch && matchRole;
-      }),
-    [employees, search, filterRole],
+          e.email.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [employees, search],
   );
 
   const withReliability = useMemo(
@@ -247,17 +227,6 @@ export default function Employees() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <select
-          className="form-select"
-          style={{ width: 180 }}
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-        >
-          <option value="All">All Roles</option>
-          {ROLES.map((r) => (
-            <option key={r}>{r}</option>
-          ))}
-        </select>
       </div>
 
       <div className="card">
@@ -272,15 +241,8 @@ export default function Employees() {
                   sortDir={sortDir}
                   onSort={handleSort}
                 />
-                <Th
-                  label="Position"
-                  col="role"
-                  sortKey={sortKey}
-                  sortDir={sortDir}
-                  onSort={handleSort}
-                />
                 <th>Account</th>
-                <th>Education</th>
+                <th>Year in School</th>
                 <th>Rate</th>
                 <Th
                   label="Hire Date"
@@ -325,7 +287,6 @@ export default function Employees() {
                         </div>
                       </div>
                     </td>
-                    <td>{e.role}</td>
                     <td>
                       <span
                         className={`badge ${e.accountRole === "admin" ? "badge-red" : "badge-gray"}`}
@@ -359,7 +320,7 @@ export default function Employees() {
               {sortedData.length === 0 && (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={7}
                     style={{ textAlign: "center", color: "#94a3b8" }}
                   >
                     No employees found.
