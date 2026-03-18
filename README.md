@@ -1,16 +1,30 @@
 # Reema Admin Portal
 
-A full-featured admin and operations portal for managing a tutoring center — built with React + Vite.
+An internal operations portal for **Eye Level Missouri City** tutoring center — built with React + Vite.
 
 ## Overview
 
-Reema Admin Portal is an internal management tool that covers every operational need of a tutoring center:
+The Reema Admin Portal covers every day-to-day operational need of the center:
 
-- **Employee Management** — profiles, scheduling, reliability tracking, callout logging
-- **Student Management** — academic level tracking (reading, writing, math), parent contacts, attendance
-- **Schedule Builder** — weekly view, conflict detection, auto-reassignment on cancellations
-- **Clock In / Out** — photo-verified clock-in system tied directly to payroll
-- **Payroll** — automatic hour tracking and gross pay calculations per employee
+| Feature | Description |
+|---|---|
+| **Schedule** | Google Calendar-style classroom view — Day/Week toggle, drag-and-drop, auto-assign |
+| **Employee Management** | Profiles, year-in-school, reliability tracking, callout logging, clock-in history |
+| **Student Management** | Profiles, academic grade-level tracking (reading, writing, math), parent contacts, attendance |
+| **Clock In / Out** | Real-time clock-in system tied directly to payroll |
+| **Payroll** | Automatic hour tracking and gross pay calculation per employee |
+| **Reports** | Attendance and payroll reports with CSV export |
+| **Parent Portal** | Read-only view for parents to see their child's schedule and progress |
+
+---
+
+## Role Overview
+
+| Role | Landing Page | Can Do |
+|---|---|---|
+| **Admin** | `/schedule` | Full access — all pages, edit/cancel sessions, add/edit employees and students |
+| **Teacher** | `/schedule` | View schedule (read-only modal), view students, view own profile |
+| **Parent** | `/parent` | View own child's sessions and profile |
 
 ---
 
@@ -22,11 +36,10 @@ Reema Admin Portal is an internal management tool that covers every operational 
 | Build Tool | [Vite 5](https://vitejs.dev/) |
 | Routing | [React Router v6](https://reactrouter.com/) |
 | Icons | [Lucide React](https://lucide.dev/) |
-| Date Utilities | [date-fns](https://date-fns.org/) |
-| Linting | ESLint + eslint-plugin-react |
+| Linting | ESLint + eslint-plugin-react (`--max-warnings 0`) |
 | Formatting | Prettier |
 
-> **Backend not yet connected.** All data currently lives in React state with seed data. Supabase integration is planned for v2.
+> **No backend yet.** All data lives in React state with seed data. Supabase integration is planned for v2.
 
 ---
 
@@ -34,36 +47,51 @@ Reema Admin Portal is an internal management tool that covers every operational 
 
 ```
 ReemaAdminPortal/
+├── AppContext.jsx             # (root) All global state, seed data, auth helpers
+├── App.jsx                   # (root) All route definitions + RoleGuard
+├── helpers.js                # (root) All pure utility functions and constants
+├── docs/
+│   ├── data-model.md         # Entity field reference
+│   ├── architecture.md       # File layout and key conventions
+│   └── supabase-migration.md # v2 migration guide
 ├── public/                   # Static assets (favicon, etc.)
 ├── src/
-│   ├── assets/               # Images, fonts, static files
-│   ├── components/           # Shared/reusable UI components
-│   │   └── Layout.jsx        # Sidebar + topbar shell
+│   ├── assets/               # Images (logo, etc.)
+│   ├── components/
+│   │   ├── AttendanceBar.jsx  # Progress bar for student attendance %
+│   │   ├── Layout.jsx         # Sidebar + topbar shell (admin/teacher)
+│   │   ├── ParentLayout.jsx   # Minimal shell for parent portal
+│   │   ├── ScheduleEditor.jsx # Availability day/time picker
+│   │   ├── SearchBar.jsx      # Global search (employees + students)
+│   │   └── Th.jsx             # Sortable table header cell
 │   ├── context/
-│   │   └── AppContext.jsx    # Global state (employees, students, sessions)
-│   ├── hooks/                # Custom React hooks
-│   ├── pages/                # One file per route/page
-│   │   ├── Dashboard.jsx
-│   │   ├── Employees.jsx
-│   │   ├── EmployeeProfile.jsx
-│   │   ├── Students.jsx
-│   │   ├── StudentProfile.jsx
-│   │   ├── Schedule.jsx
+│   │   └── AppContext.jsx     # Re-export shim → ../../AppContext
+│   ├── hooks/
+│   │   └── useSortableTable.js # Generic sortable table hook
+│   ├── pages/
 │   │   ├── ClockIn.jsx
-│   │   └── Payroll.jsx
-│   ├── utils/
-│   │   └── helpers.js        # Pure utility functions and constants
-│   ├── App.jsx               # Route definitions
-│   ├── index.css             # Global styles + CSS variables
+│   │   ├── EmployeeProfile.jsx
+│   │   ├── Employees.jsx
+│   │   ├── Login.jsx
+│   │   ├── ParentPortal.jsx
+│   │   ├── Payroll.jsx
+│   │   ├── Schedule.jsx
+│   │   ├── StudentProfile.jsx
+│   │   ├── Students.jsx
+│   │   └── reports/
+│   │       ├── AttendanceReport.jsx
+│   │       └── PayrollReport.jsx
+│   ├── index.css             # Global stylesheet (no modules, no Tailwind)
 │   └── main.jsx              # React entry point
-├── .env.example              # Environment variable template
-├── .eslintrc.cjs             # ESLint config
-├── .gitignore
-├── .prettierrc               # Prettier config
-├── index.html                # HTML entry point
+├── .env.example
+├── .eslintrc.cjs
+├── .prettierrc
+├── index.html
 ├── package.json
 └── vite.config.js
 ```
+
+> **Important:** The README previously described `src/utils/helpers.js` and `src/context/AppContext.jsx` as source-of-truth files. The actual source-of-truth files are `AppContext.jsx` and `helpers.js` at the **project root**. `src/context/AppContext.jsx` is a one-line re-export shim only.
 
 ---
 
@@ -72,7 +100,7 @@ ReemaAdminPortal/
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) v18 or higher
-- [npm](https://www.npmjs.com/) v9 or higher (comes with Node)
+- npm v9 or higher (comes with Node)
 
 ### Installation
 
@@ -84,15 +112,21 @@ cd ReemaAdminPortal
 # 2. Install dependencies
 npm install
 
-# 3. Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your values (no values needed yet for prototype)
-
-# 4. Start the development server
+# 3. Start the development server
 npm run dev
 ```
 
-The app will open at **http://localhost:3000**
+The app opens at **http://localhost:3000**
+
+### Demo Login Credentials
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `mehdi.reema@gmail.com` | `reema123` |
+| Teacher | `marcus@reema.com` | *(any non-empty string)* |
+| Parent | `linda.chen@email.com` | *(any non-empty string)* |
+
+> These are seed-data credentials for the prototype only. See `AppContext.jsx` for all seed accounts.
 
 ---
 
@@ -103,9 +137,9 @@ The app will open at **http://localhost:3000**
 | `npm run dev` | Start local dev server at localhost:3000 |
 | `npm run build` | Build for production (output to `/dist`) |
 | `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run ESLint across all source files |
+| `npm run lint` | Run ESLint — zero warnings allowed |
 | `npm run lint:fix` | Auto-fix ESLint issues |
-| `npm run format` | Format all files with Prettier |
+| `npm run format` | Format all `src/**/*.{js,jsx,css}` with Prettier |
 
 ---
 
@@ -114,34 +148,49 @@ The app will open at **http://localhost:3000**
 Copy `.env.example` to `.env.local` and fill in values. **Never commit `.env.local` to git.**
 
 ```env
-VITE_APP_NAME=ReemaAdminPortal
+# No values needed for the prototype — all data is in-memory.
 
-# Add when backend is connected:
-# VITE_SUPABASE_URL=...
-# VITE_SUPABASE_ANON_KEY=...
+# Add when Supabase is connected (v2):
+# VITE_SUPABASE_URL=https://your-project.supabase.co
+# VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-All Vite env vars must be prefixed with `VITE_` to be accessible in the browser.
+---
+
+## Prototype Limitations
+
+- **No persistence** — all data resets on page refresh
+- **No real authentication** — any non-empty password works for non-admin accounts
+- **No file storage** — employee/student photos stored as base64 strings in state
+- **No email/SMS** — "invite sent" notifications are mocked (logged to notification panel only)
+- **No real-time** — no live updates between browser tabs
 
 ---
 
 ## Roadmap
 
 ### v1 — Prototype (current)
-- [x] Employee list, profiles, reliability tracking
-- [x] Student list, profiles, academic level tracking
-- [x] Weekly schedule view with cancellation/reassignment
-- [x] Clock in / out with photo verification
-- [x] Payroll hours summary
+
+- [x] Google Calendar-style schedule (Day/Week view, classroom columns, DnD)
+- [x] Employee profiles — reliability, callout tracking, year-in-school
+- [x] Student profiles — academic grade-level tracking (per subject), attendance
+- [x] Clock In / Out with hours tracking
+- [x] Payroll summary with gross pay calculation
+- [x] Attendance and payroll reports with CSV export
+- [x] Parent portal (read-only student view)
+- [x] Role-based access (Admin / Teacher / Parent)
 
 ### v2 — Backend Integration
+
 - [ ] Connect Supabase (auth, database, storage)
-- [ ] Admin login / authentication
-- [ ] Persist all data to database
-- [ ] Parent portal (read-only student view)
-- [ ] SMS/email notifications on cancellations
+- [ ] Real authentication with invite flow
+- [ ] Persist all data to Supabase tables
+- [ ] Row Level Security per role
+- [ ] Profile photo upload via Supabase Storage
+- [ ] SMS/email notifications on session cancellations
 
 ### v3 — Advanced Features
+
 - [ ] Automated scheduling algorithm
 - [ ] Invoice and billing generation
 - [ ] Progress reports (PDF export)
@@ -149,43 +198,21 @@ All Vite env vars must be prefixed with `VITE_` to be accessible in the browser.
 
 ---
 
-## Contributing
+## Commit Convention
 
-This is a private internal project. To make changes:
-
-1. **Always branch off `main`**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **Keep commits small and descriptive**
-   ```bash
-   git commit -m "feat: add parent notification on session cancellation"
-   ```
-
-3. **Run lint and format before committing**
-   ```bash
-   npm run lint
-   npm run format
-   ```
-
-4. **Open a pull request** — even for solo projects, PRs create a useful paper trail.
-
-### Commit Message Format
-
-Use [Conventional Commits](https://www.conventionalcommits.org/):
+Uses [Conventional Commits](https://www.conventionalcommits.org/):
 
 | Prefix | Use for |
 |---|---|
 | `feat:` | New feature |
 | `fix:` | Bug fix |
-| `chore:` | Config, dependencies, tooling |
+| `chore:` | Config, dependencies, backlog state |
 | `docs:` | Documentation only |
 | `refactor:` | Code change with no feature/fix |
-| `style:` | Formatting, whitespace |
+| `sec:` | Security fix or audit |
 
 ---
 
 ## License
 
-Private — internal use only for Reema Tutoring Center.
+Private — internal use only for Eye Level Missouri City tutoring center.
