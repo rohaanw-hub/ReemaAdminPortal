@@ -1,6 +1,8 @@
 import { createContext, useContext, useState } from 'react'
 
 // ─── Seed Data ────────────────────────────────────────────────────────────────
+// TODO: v2 (Supabase) — replace hardcoded credentials with environment variables
+// and server-side authentication. Never ship these values to a public deployment.
 const ADMIN_EMAIL = 'mehdi.reema@gmail.com'
 const ADMIN_PASSWORD = 'reema123'
 
@@ -346,10 +348,12 @@ function resolveLogin(email, password, employees, students) {
   if (e === ADMIN_EMAIL && password === ADMIN_PASSWORD)
     return { ok: true, user: { name: 'Reema Mehdi', email: e, role: 'admin', profileId: 7 } }
   // Employee accounts — role resolved from accountRole field (supports promoted admins)
+  // TODO: v2 (Supabase) — replace password.length > 0 check with proper hash verification
   const emp = employees.find((x) => x.email.toLowerCase() === e)
   if (emp && password.length > 0)
     return { ok: true, user: { name: emp.name, email: e, role: emp.accountRole ?? 'teacher', profileId: emp.id } }
   // Parent accounts — tied to student's parentEmail
+  // TODO: v2 (Supabase) — same as above; any non-empty password is accepted in this demo
   const student = students.find((x) => x.parentEmail?.toLowerCase() === e)
   if (student && password.length > 0)
     return { ok: true, user: { name: student.parentName, email: e, role: 'parent', profileId: student.id } }
