@@ -12,21 +12,15 @@ import {
   SUBJECTS,
   GRADES,
   LEVELS,
+  serializeSchedule,
+  deserializeSchedule,
+  validatePhotoFile,
+  attendanceColor,
 } from "../../helpers";
+import ScheduleEditor from "../components/ScheduleEditor";
 import { ChevronLeft } from "lucide-react";
 
 function EditModal({ student, onClose, onSave }) {
-  const initSchedule = () => {
-    const s = {};
-    DAYS.forEach((d) => {
-      s[d] = {
-        enabled: !!student.schedule[d]?.length,
-        time: student.schedule[d]?.[0] || "",
-      };
-    });
-    return s;
-  };
-
   const [form, setForm] = useState({
     name: student.name,
     grade: student.grade,
@@ -34,7 +28,7 @@ function EditModal({ student, onClose, onSave }) {
     reading: student.reading,
     writing: student.writing,
     math: student.math,
-    schedule: initSchedule(),
+    schedule: deserializeSchedule(student.schedule),
     parentName: student.parentName,
     parentPhone: student.parentPhone,
     parentEmail: student.parentEmail,
@@ -53,30 +47,7 @@ function EditModal({ student, onClose, onSave }) {
         : [...form.subjects, s],
     );
 
-  const toggleDay = (day) =>
-    setForm((f) => ({
-      ...f,
-      schedule: {
-        ...f.schedule,
-        [day]: { ...f.schedule[day], enabled: !f.schedule[day].enabled },
-      },
-    }));
-
-  const setDayTime = (day, val) =>
-    setForm((f) => ({
-      ...f,
-      schedule: { ...f.schedule, [day]: { ...f.schedule[day], time: val } },
-    }));
-
-  const handleSave = () => {
-    const schedule = {};
-    DAYS.forEach((d) => {
-      if (form.schedule[d].enabled && form.schedule[d].time) {
-        schedule[d] = [form.schedule[d].time];
-      }
-    });
-    onSave({ ...form, schedule });
-  };
+  const handleSave = () => onSave({ ...form, schedule: serializeSchedule(form.schedule) });
 
   return (
     <div className="modal-overlay">
@@ -171,38 +142,10 @@ function EditModal({ student, onClose, onSave }) {
         </div>
 
         <div className="form-section">Schedule</div>
-        {DAYS.map((day) => (
-          <div
-            key={day}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              marginBottom: 8,
-            }}
-          >
-            <label
-              className={`checkbox-chip${form.schedule[day].enabled ? " selected" : ""}`}
-              style={{ minWidth: 52 }}
-            >
-              <input
-                type="checkbox"
-                checked={form.schedule[day].enabled}
-                onChange={() => toggleDay(day)}
-              />
-              {day}
-            </label>
-            {form.schedule[day].enabled && (
-              <input
-                className="form-input"
-                style={{ flex: 1, fontSize: 13 }}
-                placeholder="e.g. 4PM-5PM"
-                value={form.schedule[day].time}
-                onChange={(e) => setDayTime(day, e.target.value)}
-              />
-            )}
-          </div>
-        ))}
+        <ScheduleEditor
+          schedule={form.schedule}
+          onChange={(s) => setForm((f) => ({ ...f, schedule: s }))}
+        />
 
         <div className="form-section">Parent / Guardian</div>
         <div className="form-group">
@@ -296,14 +239,9 @@ export default function StudentProfile() {
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) {
-      setPhotoError("Only JPG, PNG, or WEBP files are allowed.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setPhotoError("File must be under 2MB.");
+    const { ok, error } = validatePhotoFile(file);
+    if (!ok) {
+      if (error) setPhotoError(error);
       return;
     }
     setPhotoError("");
@@ -409,12 +347,7 @@ export default function StudentProfile() {
               style={{
                 fontWeight: 700,
                 fontSize: 14,
-                color:
-                  student.attendance >= 90
-                    ? "#16a34a"
-                    : student.attendance >= 75
-                      ? "#d97706"
-                      : "#dc2626",
+                color: attendanceColor(student.attendance),
               }}
             >
               {student.attendance}% attendance
@@ -591,12 +524,7 @@ export default function StudentProfile() {
                 style={{
                   fontSize: 32,
                   fontWeight: 700,
-                  color:
-                    student.attendance >= 90
-                      ? "#16a34a"
-                      : student.attendance >= 75
-                        ? "#d97706"
-                        : "#dc2626",
+                  color: attendanceColor(student.attendance),
                 }}
               >
                 {student.attendance}%
@@ -607,12 +535,7 @@ export default function StudentProfile() {
                     className="progress-fill"
                     style={{
                       width: `${student.attendance}%`,
-                      background:
-                        student.attendance >= 90
-                          ? "#16a34a"
-                          : student.attendance >= 75
-                            ? "#d97706"
-                            : "#dc2626",
+                      background: attendanceColor(student.attendance),
                     }}
                   />
                 </div>

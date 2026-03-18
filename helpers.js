@@ -95,6 +95,42 @@ export const SUBJECT_COLORS = {
   'Test Prep': { bg: '#fce7f3', color: '#9d174d' },
 }
 
+// ─── Schedule Form Helpers ────────────────────────────────────────────────────
+// Converts { Mon: {enabled, time}, ... } → { Mon: ["3PM-7PM"], ... }
+export function serializeSchedule(formSchedule) {
+  const schedule = {}
+  DAYS.forEach((d) => {
+    if (formSchedule[d].enabled && formSchedule[d].time) {
+      schedule[d] = [formSchedule[d].time]
+    }
+  })
+  return schedule
+}
+
+// Converts { Mon: ["3PM-7PM"], ... } → { Mon: {enabled, time}, ... }
+export function deserializeSchedule(schedule) {
+  const result = {}
+  DAYS.forEach((d) => {
+    result[d] = { enabled: !!schedule[d]?.length, time: schedule[d]?.[0] || '' }
+  })
+  return result
+}
+
+// ─── Attendance ───────────────────────────────────────────────────────────────
+export const attendanceColor = (pct) => (pct >= 90 ? '#16a34a' : pct >= 75 ? '#d97706' : '#dc2626')
+
+// ─── Photo Upload Validation ──────────────────────────────────────────────────
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+export function validatePhotoFile(file) {
+  if (!file) return { ok: false, error: '' }
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type))
+    return { ok: false, error: 'Only JPG, PNG, or WEBP files are allowed.' }
+  if (file.size > 2 * 1024 * 1024)
+    return { ok: false, error: 'File must be under 2MB.' }
+  return { ok: true, error: '' }
+}
+
 // ─── Report Utilities ─────────────────────────────────────────────────────────
 export const formatCurrency = (amount) =>
   '$' + Number(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')

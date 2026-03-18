@@ -1,91 +1,114 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useApp } from '../../AppContext'
-import { getInitials, getAvatarBg, getAvatarText, calcReliability, reliabilityColor, DAYS, SUBJECTS, ED_LEVELS } from '../../helpers'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useApp } from "../../AppContext";
+import {
+  getInitials,
+  getAvatarBg,
+  getAvatarText,
+  calcReliability,
+  reliabilityColor,
+  DAYS,
+  SUBJECTS,
+  ED_LEVELS,
+  serializeSchedule,
+} from "../../helpers";
+import ScheduleEditor from "../components/ScheduleEditor";
 
-const ROLES = ['Lead Tutor', 'Reading Specialist', 'SAT Specialist', 'Tutor']
+const ROLES = ["Lead Tutor", "Reading Specialist", "SAT Specialist", "Tutor"];
 
 function blankForm() {
-  const schedule = {}
-  DAYS.forEach((d) => { schedule[d] = { enabled: false, time: '' } })
+  const schedule = {};
+  DAYS.forEach((d) => {
+    schedule[d] = { enabled: false, time: "" };
+  });
   return {
-    name: '', role: 'Tutor', email: '', phone: '',
-    grade: "Bachelor's", subjects: [], hourlyRate: 15,
-    schedule, conflicts: '', notes: '',
-    status: 'active', callouts: 0, totalShifts: 0, clockIns: [],
-    hireDate: new Date().toISOString().split('T')[0],
-  }
+    name: "",
+    role: "Tutor",
+    email: "",
+    phone: "",
+    grade: "Bachelor's",
+    subjects: [],
+    hourlyRate: 15,
+    schedule,
+    conflicts: "",
+    notes: "",
+    status: "active",
+    callouts: 0,
+    totalShifts: 0,
+    clockIns: [],
+    hireDate: new Date().toISOString().split("T")[0],
+  };
 }
 
 function CheckChip({ label, checked, onChange }) {
   return (
-    <label className={`checkbox-chip${checked ? ' selected' : ''}`}>
+    <label className={`checkbox-chip${checked ? " selected" : ""}`}>
       <input type="checkbox" checked={checked} onChange={onChange} />
       {label}
     </label>
-  )
+  );
 }
 
 function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
-  const [form, setForm] = useState(blankForm())
-  const [emailError, setEmailError] = useState('')
+  const [form, setForm] = useState(blankForm());
+  const [emailError, setEmailError] = useState("");
 
   const set = (field, val) => {
-    setForm((f) => ({ ...f, [field]: val }))
-    if (field === 'email') setEmailError('')
-  }
+    setForm((f) => ({ ...f, [field]: val }));
+    if (field === "email") setEmailError("");
+  };
 
   const toggleSubject = (s) =>
-    set('subjects', form.subjects.includes(s) ? form.subjects.filter((x) => x !== s) : [...form.subjects, s])
-
-  const toggleDay = (day) =>
-    setForm((f) => ({
-      ...f,
-      schedule: { ...f.schedule, [day]: { ...f.schedule[day], enabled: !f.schedule[day].enabled } },
-    }))
-
-  const setDayTime = (day, val) =>
-    setForm((f) => ({
-      ...f,
-      schedule: { ...f.schedule, [day]: { ...f.schedule[day], time: val } },
-    }))
+    set(
+      "subjects",
+      form.subjects.includes(s)
+        ? form.subjects.filter((x) => x !== s)
+        : [...form.subjects, s],
+    );
 
   const handleSave = () => {
-    if (!form.name.trim()) return alert('Name is required')
+    if (!form.name.trim()) return alert("Name is required");
     if (!form.email.trim()) {
-      setEmailError('Email is required to create a profile')
-      return
+      setEmailError("Email is required to create a profile");
+      return;
     }
     if (isEmailTaken(form.email)) {
-      setEmailError('This email is already associated with an account')
-      return
+      setEmailError("This email is already associated with an account");
+      return;
     }
-    const schedule = {}
-    DAYS.forEach((d) => {
-      if (form.schedule[d].enabled && form.schedule[d].time) {
-        schedule[d] = [form.schedule[d].time]
-      }
-    })
-    onSave({ ...form, schedule, accountRole: 'teacher' })
-  }
+    onSave({ ...form, schedule: serializeSchedule(form.schedule), accountRole: "teacher" });
+  };
 
   return (
     <div className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
           <span className="modal-title">Add Employee</span>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">Full Name *</label>
-            <input className="form-input" value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Jane Smith" />
+            <input
+              className="form-input"
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+              placeholder="Jane Smith"
+            />
           </div>
           <div className="form-group">
             <label className="form-label">Role</label>
-            <select className="form-select" value={form.role} onChange={(e) => set('role', e.target.value)}>
-              {ROLES.map((r) => <option key={r}>{r}</option>)}
+            <select
+              className="form-select"
+              value={form.role}
+              onChange={(e) => set("role", e.target.value)}
+            >
+              {ROLES.map((r) => (
+                <option key={r}>{r}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -97,30 +120,50 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
               className="form-input"
               type="email"
               value={form.email}
-              onChange={(e) => set('email', e.target.value)}
+              onChange={(e) => set("email", e.target.value)}
               placeholder="jane@reema.com"
-              style={emailError ? { borderColor: '#E31837' } : {}}
+              style={emailError ? { borderColor: "#E31837" } : {}}
             />
             {emailError && (
-              <div style={{ color: '#E31837', fontSize: 12, marginTop: 4 }}>{emailError}</div>
+              <div style={{ color: "#E31837", fontSize: 12, marginTop: 4 }}>
+                {emailError}
+              </div>
             )}
           </div>
           <div className="form-group">
             <label className="form-label">Phone</label>
-            <input className="form-input" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="(713) 555-0100" />
+            <input
+              className="form-input"
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              placeholder="(713) 555-0100"
+            />
           </div>
         </div>
 
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">Education Level</label>
-            <select className="form-select" value={form.grade} onChange={(e) => set('grade', e.target.value)}>
-              {ED_LEVELS.map((l) => <option key={l}>{l}</option>)}
+            <select
+              className="form-select"
+              value={form.grade}
+              onChange={(e) => set("grade", e.target.value)}
+            >
+              {ED_LEVELS.map((l) => (
+                <option key={l}>{l}</option>
+              ))}
             </select>
           </div>
           <div className="form-group">
             <label className="form-label">Hourly Rate ($)</label>
-            <input className="form-input" type="number" min="10" max="100" value={form.hourlyRate} onChange={(e) => set('hourlyRate', Number(e.target.value))} />
+            <input
+              className="form-input"
+              type="number"
+              min="10"
+              max="100"
+              value={form.hourlyRate}
+              onChange={(e) => set("hourlyRate", Number(e.target.value))}
+            />
           </div>
         </div>
 
@@ -128,76 +171,85 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
           <label className="form-label">Subjects</label>
           <div className="checkbox-group">
             {SUBJECTS.map((s) => (
-              <CheckChip key={s} label={s} checked={form.subjects.includes(s)} onChange={() => toggleSubject(s)} />
+              <CheckChip
+                key={s}
+                label={s}
+                checked={form.subjects.includes(s)}
+                onChange={() => toggleSubject(s)}
+              />
             ))}
           </div>
         </div>
 
         <div className="form-section">Availability</div>
-        {DAYS.map((day) => (
-          <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <label className={`checkbox-chip${form.schedule[day].enabled ? ' selected' : ''}`} style={{ minWidth: 52 }}>
-              <input type="checkbox" checked={form.schedule[day].enabled} onChange={() => toggleDay(day)} />
-              {day}
-            </label>
-            {form.schedule[day].enabled && (
-              <input
-                className="form-input"
-                style={{ flex: 1, fontSize: 13 }}
-                placeholder="e.g. 3PM-7PM"
-                value={form.schedule[day].time}
-                onChange={(e) => setDayTime(day, e.target.value)}
-              />
-            )}
-          </div>
-        ))}
+        <ScheduleEditor
+          schedule={form.schedule}
+          onChange={(s) => setForm((f) => ({ ...f, schedule: s }))}
+        />
 
         <div className="form-group" style={{ marginTop: 8 }}>
           <label className="form-label">Conflicts / Restrictions</label>
-          <textarea className="form-textarea" value={form.conflicts} onChange={(e) => set('conflicts', e.target.value)} placeholder="Any scheduling conflicts or restrictions..." />
+          <textarea
+            className="form-textarea"
+            value={form.conflicts}
+            onChange={(e) => set("conflicts", e.target.value)}
+            placeholder="Any scheduling conflicts or restrictions..."
+          />
         </div>
 
         <div className="form-group">
           <label className="form-label">Notes</label>
-          <textarea className="form-textarea" value={form.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Additional notes..." />
+          <textarea
+            className="form-textarea"
+            value={form.notes}
+            onChange={(e) => set("notes", e.target.value)}
+            placeholder="Additional notes..."
+          />
         </div>
 
         <div className="modal-footer">
-          <button className="btn btn-outline" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave}>Add Employee</button>
+          <button className="btn btn-outline" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            Add Employee
+          </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function Employees() {
-  const { employees, setEmployees, isEmailTaken, sendInvite } = useApp()
-  const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  const [filterRole, setFilterRole] = useState('All')
-  const [showModal, setShowModal] = useState(false)
+  const { employees, setEmployees, isEmailTaken, sendInvite } = useApp();
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [filterRole, setFilterRole] = useState("All");
+  const [showModal, setShowModal] = useState(false);
 
   const filtered = employees.filter((e) => {
-    const matchSearch = e.name.toLowerCase().includes(search.toLowerCase()) ||
+    const matchSearch =
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
       e.email.toLowerCase().includes(search.toLowerCase()) ||
-      e.subjects.join(' ').toLowerCase().includes(search.toLowerCase())
-    const matchRole = filterRole === 'All' || e.role === filterRole
-    return matchSearch && matchRole
-  })
+      e.subjects.join(" ").toLowerCase().includes(search.toLowerCase());
+    const matchRole = filterRole === "All" || e.role === filterRole;
+    return matchSearch && matchRole;
+  });
 
   const handleAdd = (formData) => {
-    const newId = Math.max(0, ...employees.map((e) => e.id)) + 1
-    setEmployees((prev) => [...prev, { ...formData, id: newId }])
-    sendInvite(formData.name, formData.email, 'teacher')
-    setShowModal(false)
-  }
+    const newId = Math.max(0, ...employees.map((e) => e.id)) + 1;
+    setEmployees((prev) => [...prev, { ...formData, id: newId }]);
+    sendInvite(formData.name, formData.email, "teacher");
+    setShowModal(false);
+  };
 
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">Employees</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Employee</button>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+          + Add Employee
+        </button>
       </div>
 
       <div className="search-row">
@@ -214,7 +266,9 @@ export default function Employees() {
           onChange={(e) => setFilterRole(e.target.value)}
         >
           <option value="All">All Roles</option>
-          {ROLES.map((r) => <option key={r}>{r}</option>)}
+          {ROLES.map((r) => (
+            <option key={r}>{r}</option>
+          ))}
         </select>
       </div>
 
@@ -235,16 +289,22 @@ export default function Employees() {
             </thead>
             <tbody>
               {filtered.map((e) => {
-                const rel = calcReliability(e.callouts, e.totalShifts)
+                const rel = calcReliability(e.callouts, e.totalShifts);
                 return (
                   <tr
                     key={e.id}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                     onClick={() => navigate(`/employees/${e.id}`)}
                   >
                     <td>
                       <div className="flex items-center gap-2">
-                        <div className="avatar" style={{ background: getAvatarBg(e.name), color: getAvatarText(e.name) }}>
+                        <div
+                          className="avatar"
+                          style={{
+                            background: getAvatarBg(e.name),
+                            color: getAvatarText(e.name),
+                          }}
+                        >
                           {getInitials(e.name)}
                         </div>
                         <div>
@@ -255,26 +315,44 @@ export default function Employees() {
                     </td>
                     <td>{e.role}</td>
                     <td>
-                      <span className={`badge ${e.accountRole === 'admin' ? 'badge-red' : 'badge-gray'}`}>
-                        {e.accountRole === 'admin' ? 'Admin' : 'Teacher'}
+                      <span
+                        className={`badge ${e.accountRole === "admin" ? "badge-red" : "badge-gray"}`}
+                      >
+                        {e.accountRole === "admin" ? "Admin" : "Teacher"}
                       </span>
                     </td>
-                    <td>{e.subjects.join(', ')}</td>
+                    <td>{e.subjects.join(", ")}</td>
                     <td>{e.grade}</td>
                     <td>${e.hourlyRate}/hr</td>
                     <td>
-                      <span style={{ color: reliabilityColor(rel), fontWeight: 700 }}>{rel}%</span>
+                      <span
+                        style={{
+                          color: reliabilityColor(rel),
+                          fontWeight: 700,
+                        }}
+                      >
+                        {rel}%
+                      </span>
                     </td>
                     <td>
-                      <span className={`badge ${e.status === 'active' ? 'badge-green' : 'badge-gray'}`}>
+                      <span
+                        className={`badge ${e.status === "active" ? "badge-green" : "badge-gray"}`}
+                      >
                         {e.status}
                       </span>
                     </td>
                   </tr>
-                )
+                );
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8' }}>No employees found.</td></tr>
+                <tr>
+                  <td
+                    colSpan={8}
+                    style={{ textAlign: "center", color: "#94a3b8" }}
+                  >
+                    No employees found.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -282,8 +360,12 @@ export default function Employees() {
       </div>
 
       {showModal && (
-        <AddEmployeeModal onClose={() => setShowModal(false)} onSave={handleAdd} isEmailTaken={isEmailTaken} />
+        <AddEmployeeModal
+          onClose={() => setShowModal(false)}
+          onSave={handleAdd}
+          isEmailTaken={isEmailTaken}
+        />
       )}
     </div>
-  )
+  );
 }

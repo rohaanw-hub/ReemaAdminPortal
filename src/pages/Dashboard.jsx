@@ -7,6 +7,7 @@ import {
   reliabilityColor,
   LEVEL_BADGE_CLASS,
 } from "../../helpers";
+import AttendanceBar from "../components/AttendanceBar";
 
 const TODAY = "Mon";
 
@@ -264,25 +265,7 @@ export default function Dashboard() {
                     </span>
                   </td>
                   <td>
-                    <div className="att-bar-wrap">
-                      <span style={{ fontSize: 12, minWidth: 36 }}>
-                        {s.attendance}%
-                      </span>
-                      <div className="att-bar">
-                        <div
-                          className="att-bar-fill"
-                          style={{
-                            width: `${s.attendance}%`,
-                            background:
-                              s.attendance >= 90
-                                ? "#16a34a"
-                                : s.attendance >= 75
-                                  ? "#d97706"
-                                  : "#dc2626",
-                          }}
-                        />
-                      </div>
-                    </div>
+                    <AttendanceBar pct={s.attendance} />
                   </td>
                 </tr>
               ))}

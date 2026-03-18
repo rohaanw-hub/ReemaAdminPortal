@@ -13,23 +13,16 @@ import {
   SUBJECTS,
   ED_LEVELS,
   ALL_TIME_SLOTS,
+  serializeSchedule,
+  deserializeSchedule,
+  validatePhotoFile,
 } from "../../helpers";
+import ScheduleEditor from "../components/ScheduleEditor";
 import { ChevronLeft } from "lucide-react";
 
 const ROLES = ["Lead Tutor", "Reading Specialist", "SAT Specialist", "Tutor"];
 
 function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
-  const initSchedule = () => {
-    const s = {};
-    DAYS.forEach((d) => {
-      s[d] = {
-        enabled: !!emp.schedule[d]?.length,
-        time: emp.schedule[d]?.[0] || "",
-      };
-    });
-    return s;
-  };
-
   const [form, setForm] = useState({
     name: emp.name,
     role: emp.role,
@@ -40,7 +33,7 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
     hourlyRate: emp.hourlyRate,
     conflicts: emp.conflicts || "",
     notes: emp.notes || "",
-    schedule: initSchedule(),
+    schedule: deserializeSchedule(emp.schedule),
     accountRole: emp.accountRole ?? "teacher",
   });
 
@@ -54,30 +47,7 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
         : [...form.subjects, s],
     );
 
-  const toggleDay = (day) =>
-    setForm((f) => ({
-      ...f,
-      schedule: {
-        ...f.schedule,
-        [day]: { ...f.schedule[day], enabled: !f.schedule[day].enabled },
-      },
-    }));
-
-  const setDayTime = (day, val) =>
-    setForm((f) => ({
-      ...f,
-      schedule: { ...f.schedule, [day]: { ...f.schedule[day], time: val } },
-    }));
-
-  const handleSave = () => {
-    const schedule = {};
-    DAYS.forEach((d) => {
-      if (form.schedule[d].enabled && form.schedule[d].time) {
-        schedule[d] = [form.schedule[d].time];
-      }
-    });
-    onSave({ ...form, schedule });
-  };
+  const handleSave = () => onSave({ ...form, schedule: serializeSchedule(form.schedule) });
 
   return (
     <div className="modal-overlay">
@@ -205,38 +175,10 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
         </div>
 
         <div className="form-section">Availability</div>
-        {DAYS.map((day) => (
-          <div
-            key={day}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              marginBottom: 8,
-            }}
-          >
-            <label
-              className={`checkbox-chip${form.schedule[day].enabled ? " selected" : ""}`}
-              style={{ minWidth: 52 }}
-            >
-              <input
-                type="checkbox"
-                checked={form.schedule[day].enabled}
-                onChange={() => toggleDay(day)}
-              />
-              {day}
-            </label>
-            {form.schedule[day].enabled && (
-              <input
-                className="form-input"
-                style={{ flex: 1, fontSize: 13 }}
-                placeholder="e.g. 3PM-7PM"
-                value={form.schedule[day].time}
-                onChange={(e) => setDayTime(day, e.target.value)}
-              />
-            )}
-          </div>
-        ))}
+        <ScheduleEditor
+          schedule={form.schedule}
+          onChange={(s) => setForm((f) => ({ ...f, schedule: s }))}
+        />
 
         <div className="form-group" style={{ marginTop: 8 }}>
           <label className="form-label">Conflicts / Restrictions</label>
@@ -347,14 +289,9 @@ export default function EmployeeProfile() {
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) {
-      setPhotoError("Only JPG, PNG, or WEBP files are allowed.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setPhotoError("File must be under 2MB.");
+    const { ok, error } = validatePhotoFile(file);
+    if (!ok) {
+      if (error) setPhotoError(error);
       return;
     }
     setPhotoError("");
