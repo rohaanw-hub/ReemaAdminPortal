@@ -345,6 +345,115 @@ export function downloadSampleCSV(type) {
   URL.revokeObjectURL(url)
 }
 
+// ─── Auto-Scheduler ───────────────────────────────────────────────────────────
+/**
+ * Generates proposed sessions for a week.
+ *
+ * @param {object[]} students        - All student objects (only selected ones passed in)
+ * @param {object}   classroomTeachers - { 'Classroom 1': empId, 'Classroom 2': empId, 'Classroom 3': empId }
+ * @param {string[]} days            - Selected OPEN_DAYS subset
+ * @param {object}   weekDates       - { Mon: 'YYYY-MM-DD', ... } from getWeekDates
+ * @param {object[]} existingSessions - All existing sessions (to detect double-booking)
+ * @param {object}   weeklyConflicts  - weeklyConflicts map from AppContext
+ * @param {object[]} employees        - All employees (for availability checks)
+ * @param {boolean}  replaceAll       - If true, skip existing-session checks
+ * @returns {{ sessions: object[], conflicts: string[] }}
+ */
+export function autoAssignSessions(
+  students,
+  classroomTeachers,
+  days,
+  weekDates,
+  existingSessions,
+  weeklyConflicts,
+  employees,
+  replaceAll,
+) {
+  const SCHED_CLASSROOMS = ['Classroom 1', 'Classroom 2', 'Classroom 3']
+  const proposed = []
+  const conflicts = []
+  let nextId = Date.now()
+
+  // Distribute students across classrooms evenly (round-robin)
+  const classroomStudents = {}
+  SCHED_CLASSROOMS.forEach((c) => { classroomStudents[c] = [] })
+  students.forEach((s, i) => {
+    const classroom = SCHED_CLASSROOMS[i % SCHED_CLASSROOMS.length]
+    classroomStudents[classroom].push(s)
+  })
+
+  days.forEach((day) => {
+    const slots = getSlotsForDay(day)
+    const date = weekDates[day]
+
+    SCHED_CLASSROOMS.forEach((classroom) => {
+      const empId = classroomTeachers[classroom]
+      const emp = employees.find((e) => e.id === empId)
+      const studentsInRoom = classroomStudents[classroom]
+      if (!studentsInRoom.length) return
+
+      // Check capacity
+      if (studentsInRoom.length > 4) {
+        conflicts.push(`${classroom} on ${day}: ${studentsInRoom.length} students exceeds 4-student capacity.`)
+      }
+
+      // Pick the first available slot for this classroom on this day
+      const slot = slots[0]
+      if (!slot) return
+
+      // Teacher availability check
+      if (emp && !isTutorAvailableAt(emp, day, slot)) {
+        conflicts.push(`${emp.name} is unavailable on ${day} at ${slot} (schedule conflict).`)
+      }
+      if (emp && hasWeeklyConflict(weeklyConflicts, empId, day, slot)) {
+        conflicts.push(`${emp.name} has a weekly conflict on ${day} at ${slot}.`)
+      }
+
+      // Teacher double-booking check
+      if (!replaceAll && empId) {
+        const alreadyBooked = existingSessions.some(
+          (s) => s.employeeId === empId && s.day === day && s.time === slot && s.status !== 'cancelled',
+        )
+        if (alreadyBooked) {
+          const empName = emp ? emp.name : `Employee #${empId}`
+          conflicts.push(`${empName} is already booked on ${day} at ${slot} (double-book).`)
+        }
+      }
+
+      studentsInRoom.forEach((student) => {
+        // Student double-booking check
+        const studentConflict =
+          !replaceAll &&
+          existingSessions.some(
+            (s) =>
+              s.studentId === student.id &&
+              s.day === day &&
+              s.time === slot &&
+              s.status !== 'cancelled',
+          )
+        if (studentConflict) {
+          conflicts.push(`${student.name} already has a session on ${day} at ${slot}.`)
+        }
+
+        proposed.push({
+          id: nextId++,
+          day,
+          date,
+          time: slot,
+          duration: 60,
+          studentId: student.id,
+          employeeId: empId ?? null,
+          subject: 'Math',
+          status: 'scheduled',
+          classroom,
+        })
+      })
+    })
+  })
+
+  return { sessions: proposed, conflicts }
+}
+
 // ─── CSV Export ───────────────────────────────────────────────────────────────
 export function exportToCSV(rows, filename) {
   if (!rows.length) return
