@@ -13,6 +13,7 @@ import { useSortableTable } from "../hooks/useSortableTable";
 import ScheduleEditor from "../components/ScheduleEditor";
 import AttendanceBar from "../components/AttendanceBar";
 import Th from "../components/Th";
+import ImportModal from "../components/ImportModal";
 
 function blankForm() {
   const schedule = {};
@@ -189,6 +190,7 @@ export default function Students() {
   const [search, setSearch] = useState("");
   const [filterGrade, setFilterGrade] = useState("All");
   const [showModal, setShowModal] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const allGrades = useMemo(
     () => ["All", ...new Set(students.map((s) => s.grade))],
@@ -217,17 +219,35 @@ export default function Students() {
     setShowModal(false);
   };
 
+  const handleImport = (records) => {
+    let nextId = Math.max(0, ...students.map((s) => s.id)) + 1;
+    const newStudents = records.map((r) => ({ ...r, id: nextId++ }));
+    setStudents((prev) => [...prev, ...newStudents]);
+    newStudents.forEach((s) =>
+      sendInvite(s.parentName, s.parentEmail, "parent"),
+    );
+    setShowImport(false);
+  };
+
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">Students</h1>
         {!isTeacher && (
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            + Add Student
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              className="btn btn-outline"
+              onClick={() => setShowImport(true)}
+            >
+              ↑ Import
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowModal(true)}
+            >
+              + Add Student
+            </button>
+          </div>
         )}
       </div>
 
@@ -363,6 +383,14 @@ export default function Students() {
         <AddStudentModal
           onClose={() => setShowModal(false)}
           onSave={handleAdd}
+          isEmailTaken={isEmailTaken}
+        />
+      )}
+      {showImport && (
+        <ImportModal
+          type="student"
+          onClose={() => setShowImport(false)}
+          onImport={handleImport}
           isEmailTaken={isEmailTaken}
         />
       )}

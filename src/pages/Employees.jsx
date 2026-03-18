@@ -14,6 +14,7 @@ import {
 import { useSortableTable } from "../hooks/useSortableTable";
 import ScheduleEditor from "../components/ScheduleEditor";
 import Th from "../components/Th";
+import ImportModal from "../components/ImportModal";
 
 function blankForm() {
   const schedule = {};
@@ -177,10 +178,13 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
 }
 
 export default function Employees() {
-  const { employees, setEmployees, isEmailTaken, sendInvite } = useApp();
+  const { employees, setEmployees, currentUser, isEmailTaken, sendInvite } =
+    useApp();
+  const isAdmin = currentUser?.role === "admin";
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const filtered = useMemo(
     () =>
@@ -211,13 +215,34 @@ export default function Employees() {
     setShowModal(false);
   };
 
+  const handleImport = (records) => {
+    let nextId = Math.max(0, ...employees.map((e) => e.id)) + 1;
+    const newEmployees = records.map((r) => ({ ...r, id: nextId++ }));
+    setEmployees((prev) => [...prev, ...newEmployees]);
+    newEmployees.forEach((emp) => sendInvite(emp.name, emp.email, "teacher"));
+    setShowImport(false);
+  };
+
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">Employees</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          + Add Employee
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {isAdmin && (
+            <button
+              className="btn btn-outline"
+              onClick={() => setShowImport(true)}
+            >
+              ↑ Import
+            </button>
+          )}
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            + Add Employee
+          </button>
+        </div>
       </div>
 
       <div className="search-row">
@@ -336,6 +361,14 @@ export default function Employees() {
         <AddEmployeeModal
           onClose={() => setShowModal(false)}
           onSave={handleAdd}
+          isEmailTaken={isEmailTaken}
+        />
+      )}
+      {showImport && (
+        <ImportModal
+          type="employee"
+          onClose={() => setShowImport(false)}
+          onImport={handleImport}
           isEmailTaken={isEmailTaken}
         />
       )}

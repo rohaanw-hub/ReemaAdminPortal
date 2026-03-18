@@ -166,6 +166,129 @@ export const calculateHours = (sessions, employeeId) =>
     .filter((s) => s.employeeId === employeeId)
     .reduce((acc, s) => acc + s.duration / 60, 0)
 
+// ─── Import Utilities ─────────────────────────────────────────────────────────
+export const STUDENT_IMPORT_FIELDS = [
+  { key: 'firstName',    label: 'First Name',          required: true  },
+  { key: 'lastName',     label: 'Last Name',           required: true  },
+  { key: 'parentEmail',  label: 'Parent Email',        required: true  },
+  { key: 'grade',        label: 'Grade',               required: false },
+  { key: 'enrollDate',   label: 'Enroll Date',         required: false },
+  { key: 'attendance',   label: 'Attendance %',        required: false },
+  { key: 'mathLevel',    label: 'Math Grade Level',    required: false },
+  { key: 'readingLevel', label: 'Reading Grade Level', required: false },
+  { key: 'writingLevel', label: 'Writing Grade Level', required: false },
+  { key: 'notes',        label: 'Notes',               required: false },
+]
+
+export const EMPLOYEE_IMPORT_FIELDS = [
+  { key: 'firstName',  label: 'First Name',    required: true  },
+  { key: 'lastName',   label: 'Last Name',     required: true  },
+  { key: 'email',      label: 'Email',         required: true  },
+  { key: 'phone',      label: 'Phone',         required: false },
+  { key: 'grade',      label: 'Year in School',required: false },
+  { key: 'hireDate',   label: 'Hire Date',     required: false },
+  { key: 'hourlyRate', label: 'Hourly Rate',   required: false },
+  { key: 'notes',      label: 'Notes',         required: false },
+]
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+// Validates a single mapped row and returns { valid, errors, record }
+// rawRow:    { [fileColumnName]: value }
+// fieldMap:  { appFieldKey: fileColumnName | '__skip__' }
+// type:      'student' | 'employee'
+// isEmailTaken: (email) => boolean
+export function validateImportRow(rawRow, fieldMap, type, isEmailTaken) {
+  const val = (key) => {
+    const col = fieldMap[key]
+    if (!col || col === '__skip__') return ''
+    return String(rawRow[col] ?? '').trim()
+  }
+  const errors = []
+  const firstName = val('firstName')
+  const lastName  = val('lastName')
+  if (!firstName) errors.push('First Name is required')
+  if (!lastName)  errors.push('Last Name is required')
+  const emailKey = type === 'student' ? 'parentEmail' : 'email'
+  const email = val(emailKey)
+  if (!email) {
+    errors.push(`${type === 'student' ? 'Parent Email' : 'Email'} is required`)
+  } else if (!EMAIL_RE.test(email)) {
+    errors.push('Invalid email format')
+  } else if (isEmailTaken(email)) {
+    errors.push('Email already exists in the system')
+  }
+  const hourlyRate = val('hourlyRate')
+  if (hourlyRate && isNaN(Number(hourlyRate))) errors.push('Hourly Rate must be a number')
+  const attendance = val('attendance')
+  if (attendance && (isNaN(Number(attendance)) || Number(attendance) < 0 || Number(attendance) > 100))
+    errors.push('Attendance must be 0–100')
+  const mathLevel    = val('mathLevel')
+  const readingLevel = val('readingLevel')
+  const writingLevel = val('writingLevel')
+  if (mathLevel    && !GRADE_LEVELS.includes(mathLevel))    errors.push(`Invalid Math Grade Level: "${mathLevel}"`)
+  if (readingLevel && !GRADE_LEVELS.includes(readingLevel)) errors.push(`Invalid Reading Grade Level: "${readingLevel}"`)
+  if (writingLevel && !GRADE_LEVELS.includes(writingLevel)) errors.push(`Invalid Writing Grade Level: "${writingLevel}"`)
+  if (errors.length > 0) return { valid: false, errors, record: null }
+  const today = new Date().toISOString().split('T')[0]
+  const record =
+    type === 'student'
+      ? {
+          name: `${firstName} ${lastName}`,
+          grade: val('grade') || '3rd',
+          parentName: `${firstName} ${lastName}'s Parent`,
+          parentPhone: '',
+          parentEmail: email,
+          parentName2: '',
+          parentPhone2: '',
+          schedule: {},
+          notes: val('notes'),
+          enrollDate: val('enrollDate') || today,
+          status: 'active',
+          attendance: Number(val('attendance')) || 100,
+          sessions: 0,
+          photo: null,
+          gradeLevel: { math: mathLevel || '', reading: readingLevel || '', writing: writingLevel || '' },
+        }
+      : {
+          name: `${firstName} ${lastName}`,
+          role: 'Tutor',
+          accountRole: 'teacher',
+          email,
+          phone: val('phone'),
+          grade: val('grade') || 'College Freshman',
+          schedule: {},
+          conflicts: '',
+          hireDate: val('hireDate') || today,
+          hourlyRate: Number(val('hourlyRate')) || 15,
+          status: 'active',
+          callouts: 0,
+          totalShifts: 0,
+          clockIns: [],
+          photo: null,
+          notes: val('notes'),
+        }
+  return { valid: true, errors: [], record }
+}
+
+// Downloads a sample CSV template for the given import type
+export function downloadSampleCSV(type) {
+  const fields = type === 'student' ? STUDENT_IMPORT_FIELDS : EMPLOYEE_IMPORT_FIELDS
+  const headers = fields.map((f) => f.label)
+  const example =
+    type === 'student'
+      ? ['Jane', 'Smith', 'parent@email.com', '3rd', '2024-09-01', '95', '2nd', '3rd', '3rd', 'Needs math support']
+      : ['Jane', 'Smith', 'jane@reema.com', '(713) 555-0199', 'College Junior', '2024-09-01', '15', 'Detail-oriented tutor']
+  const csv = [headers.join(','), example.join(',')].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${type}-import-template.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 // ─── CSV Export ───────────────────────────────────────────────────────────────
 export function exportToCSV(rows, filename) {
   if (!rows.length) return
