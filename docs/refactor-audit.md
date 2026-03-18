@@ -147,4 +147,36 @@ The large `SessionDetailModal` function (lines ~184–405 of `Schedule.jsx`) is 
 
 ## Phase 2 & 3 Completion Summary
 
-*(To be filled in after Phases 2 and 3 are complete)*
+Completed 2026-03-18 on branch `refactor/full-codebase`, merged to `main`.
+
+### Phase 2 — Remove dead code, add role helpers, fix naming
+
+**Added to `helpers.js`:**
+- Constants: `MAX_STUDENTS_PER_SLOT`, `MAX_SEARCH_RESULTS`
+- User role helpers: `userIsAdmin`, `userIsTeacher`, `userIsParent` (operate on `currentUser.role`)
+- Employee role helpers: `empIsAdmin`, `empIsTeacher` (operate on `emp.accountRole`)
+- Shared functions: `formatNotificationTime` (consolidated from Layout + ParentLayout), `format24hTo12h` (consolidated from EventDetailModal)
+
+**Updated 14 files** to use the new helpers, eliminating:
+- 2 duplicated `formatNotifTime` local functions (Layout, ParentLayout)
+- 1 duplicated `formatTime` local function (EventDetailModal)
+- Magic number `CLASSROOM_CAPACITY = 4` (MoveSessionModal → `MAX_STUDENTS_PER_SLOT`)
+- Local constant `MAX_RESULTS = 8` (SearchBar → `MAX_SEARCH_RESULTS`)
+- All inline `currentUser?.role === "admin"` / `emp.accountRole === "admin"` checks replaced with helpers
+
+Files changed: `helpers.js`, `Layout.jsx`, `ParentLayout.jsx`, `EventDetailModal.jsx`, `SearchBar.jsx`, `MoveSessionModal.jsx`, `ChangeGraderModal.jsx`, `NewEventModal.jsx`, `AutoSchedulerWizard.jsx`, `Employees.jsx`, `EmployeeProfile.jsx`, `StudentProfile.jsx`, `Students.jsx`, `Schedule.jsx`
+
+### Phase 3 — Extract shared components, optimise performance
+
+**New components:**
+- `src/components/ModalShell.jsx` — shared modal wrapper (header/close/footer pattern); adopted by ChangeGraderModal, MoveSessionModal, NewEventModal — removes ~15 lines of boilerplate per modal
+- `src/components/Avatar.jsx` — shared avatar component (photo/initials fallback); adopted by SearchBar (removed local duplicate)
+
+**Performance:**
+- `Schedule.jsx`: `handleDragStart` and `handleDragEnd` wrapped in `useCallback`
+- `Layout.jsx` and `ParentLayout.jsx`: `handleLogout` wrapped in `useCallback`
+
+**Remaining tech debt (not addressed — out of scope for this pass):**
+- `SessionDetailModal` still inline in `Schedule.jsx` (~200 lines; extract to `src/components/SessionDetailModal.jsx`)
+- `useClickOutside` hook not extracted (click-outside pattern still repeated in Layout.jsx)
+- `AppContext.jsx` `ADMIN_EMAIL`/`ADMIN_PASSWORD` still not single-sourced
