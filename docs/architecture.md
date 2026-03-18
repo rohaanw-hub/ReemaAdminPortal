@@ -21,7 +21,7 @@ These were placed at root early in development and all import paths were establi
 export { AppProvider, useApp } from '../../AppContext'
 ```
 
-`src/main.jsx` imports from `'../App'` (root), not `'./App'`. There is a legacy `src/App.jsx` file — it is a duplicate and should never be edited.
+`src/main.jsx` imports from `'../App'` (root), not `'./App'`. The route source-of-truth is `App.jsx` at the project root.
 
 ### Import patterns
 
@@ -190,7 +190,7 @@ Inline `style` props are freely used alongside `className` — this is intention
 |---|---|
 | Import paths | Always relative — never use `@` alias |
 | Root files | `AppContext.jsx`, `helpers.js`, `App.jsx` live at root — never move them |
-| Routing changes | Only edit `App.jsx` at root — not `src/App.jsx` |
+| Routing changes | Only edit `App.jsx` at root |
 | New utilities | Extract to `helpers.js` (root) — not per-file utilities |
 | Duplicate code | Three similar lines is better than a premature abstraction |
 | Business logic | Never silently change business logic — flag and stop |

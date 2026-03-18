@@ -39,15 +39,20 @@ function blankForm() {
 
 function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
   const [form, setForm] = useState(blankForm());
+  const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
   const set = (field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
+    if (field === "name") setNameError("");
     if (field === "email") setEmailError("");
   };
 
   const handleSave = () => {
-    if (!form.name.trim()) return alert("Name is required");
+    if (!form.name.trim()) {
+      setNameError("Name is required");
+      return;
+    }
     if (!form.email.trim()) {
       setEmailError("Email is required to create a profile");
       return;
@@ -80,7 +85,13 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
             value={form.name}
             onChange={(e) => set("name", e.target.value)}
             placeholder="Jane Smith"
+            style={nameError ? { borderColor: "#E31837" } : {}}
           />
+          {nameError && (
+            <div style={{ color: "#E31837", fontSize: 12, marginTop: 4 }}>
+              {nameError}
+            </div>
+          )}
         </div>
 
         <div className="form-row">
