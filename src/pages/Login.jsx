@@ -22,12 +22,7 @@ export default function Login() {
         setError("Invalid email or password. Please try again.");
         return;
       }
-      const dest =
-        result.user.role === "parent"
-          ? "/parent"
-          : result.user.role === "teacher"
-            ? "/schedule"
-            : "/dashboard";
+      const dest = result.user.role === "parent" ? "/parent" : "/schedule";
       navigate(dest, {
         replace: true,
       });

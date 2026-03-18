@@ -9,10 +9,9 @@ import eyeLevelLogo from "../assets/EyeLevelLogo.png";
 const ROLE_LABEL = { admin: "Admin", teacher: "Teacher", parent: "Parent" };
 
 const ADMIN_NAV = [
-  { to: "/dashboard", label: "Dashboard" },
+  { to: "/schedule", label: "Schedule" },
   { to: "/employees", label: "Employees" },
   { to: "/students", label: "Students" },
-  { to: "/schedule", label: "Schedule" },
   { to: "/clock-in", label: "Clock In/Out" },
   { to: "/payroll", label: "Payroll" },
 ];
