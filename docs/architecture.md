@@ -48,6 +48,8 @@ AppProvider (wraps the entire app)
         ├── currentUser / login / logout
         ├── notifications / addNotification / dismissNotification / markAllRead
         ├── weeklyConflicts / addWeeklyConflict / removeWeeklyConflict / clearWeeklyConflicts
+        ├── graderSchedule / setGraderSchedule
+        ├── calendarEvents / addCalendarEvent / updateCalendarEvent / deleteCalendarEvent
         ├── isEmailTaken(email, excludeId?, excludeType?)
         └── sendInvite(name, email, accountRole)   // mock — fires a notification
 ```
@@ -100,21 +102,45 @@ const withReliability = useMemo(
 
 ### Views
 
-- **Day View** — vertical grid: time axis (left) × 4 classroom columns
-- **Week View** — 5 open days (columns) × all unique time slots (rows)
+- **Day View** — 24-hour scrollable calendar: time axis (left) × 3 classroom columns; session blocks positioned absolutely by time
+- **Week View** — 24-hour scrollable calendar: 5 open day columns; grader shown in sticky header
 - Toggle pills in the page header switch between Day and Week
+
+### 24-hour calendar layout
+
+Session blocks use absolute positioning within a `TOTAL_HEIGHT = 24 * 60px = 1440px` container:
+
+```js
+const HOUR_HEIGHT = 60  // px per hour
+function sessionTopPx(time) {
+  return (timeToMinutes(startOfRange) / 60) * HOUR_HEIGHT
+}
+function sessionHeightPx(time) {
+  return (durationMinutes / 60) * HOUR_HEIGHT
+}
+```
+
+The view auto-scrolls to the first operating time on day change.
+
+### Week navigation
+
+- `weekOffset` state (0 = current week, ±n weeks)
+- Limits: `MIN_WEEK_OFFSET = -1`, `MAX_WEEK_OFFSET = 4`
+- `weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset])` — map of `{ Mon: 'YYYY-MM-DD', ... }`
+- `activeSessions` filters by `s.date === weekDates[s.day]`
+- Sessions are stamped with a `date` field when created or moved
 
 ### Session blocks
 
 - Color coded by **classroom** (not subject) using `CLASSROOM_COLORS` from helpers.js
 - Day View blocks show teacher name and student name
-- Week View blocks are minimal (abbreviated name) with a hover tooltip for full detail
+- Week View blocks are minimal with a click to open `SessionDetailModal`
 - Clicking a block opens `SessionDetailModal`
 
 ### Role differences
 
-- **Admin**: sees Edit, Cancel Session buttons in `SessionDetailModal`; sees Auto-Schedule button
-- **Teacher**: read-only modal; no Auto-Schedule button
+- **Admin**: sees Edit, Cancel Session, Reassign buttons in `SessionDetailModal`; sees Auto-Schedule button; can drag-and-drop; can click empty slots to create events; can click grader bar to change grader
+- **Teacher**: read-only modal; no scheduling controls; can navigate weeks
 
 ### Drag-and-drop
 
@@ -130,14 +156,63 @@ const handleDragStart = (e, sessionId) => {
 }
 ```
 
-### Auto-schedule
+Drop triggers `MoveSessionModal` (admin only). `draggable` attribute is set to `false` for teachers via `draggable={!!onMove}`.
 
-`findBestTutor(sessions, employees, weeklyConflicts, day, time)`:
-1. Filter out employees where `accountRole === 'admin'`
-2. Filter by `isTutorAvailableAt(emp, day, time)` — checks employee schedule ranges
-3. Filter by `hasWeeklyConflict(weeklyConflicts, empId, day, time)` — checks conflict overrides
-4. Filter by `isDoubleBooked(sessions, empId, day, time)` — no double-booking
-5. Sort by reliability score descending — highest reliability wins
+### Auto-Scheduler Wizard
+
+4-step admin modal (`AutoSchedulerWizard.jsx`):
+1. **Week & Scope** — select days and fill-empty vs. replace-all mode
+2. **Students** — multi-select with search filter and "fully scheduled" badge
+3. **Teachers** — per-classroom dropdown with availability/conflict indicators
+4. **Review** — proposed sessions table with conflict warnings; "Apply Schedule" commits to AppContext
+
+Core logic: `autoAssignSessions()` in `helpers.js` — distributes students round-robin across classrooms, checks teacher availability and weekly conflicts, detects double-bookings.
+
+---
+
+## Components
+
+### Scheduling modals (all Admin-only)
+
+| Component | File | Trigger |
+|---|---|---|
+| `MoveSessionModal` | `src/components/MoveSessionModal.jsx` | DnD drop on a session block |
+| `NewEventModal` | `src/components/NewEventModal.jsx` | Click empty calendar slot (or edit from EventDetailModal) |
+| `EventDetailModal` | `src/components/EventDetailModal.jsx` | Click a calendar event block |
+| `ChangeGraderModal` | `src/components/ChangeGraderModal.jsx` | Click the grader bar (Day View) or grader cell (Week View) |
+| `AutoSchedulerWizard` | `src/components/AutoSchedulerWizard.jsx` | Auto-Schedule button |
+| `SessionDetailModal` | `src/components/SessionDetailModal.jsx` | Click a session block |
+
+### Reusable display components
+
+| Component | File | Purpose |
+|---|---|---|
+| `GradeLevelPill` | `src/components/GradeLevelPill.jsx` | Colored pill showing subject and grade level for a student |
+| `Pagination` | `src/components/Pagination.jsx` | Page size selector (10/25/50/100) + prev/next navigation |
+| `ImportModal` | `src/components/ImportModal.jsx` | 4-step CSV/Excel import with column mapper and validation |
+
+## Hooks
+
+| Hook | File | Purpose |
+|---|---|---|
+| `usePagination` | `src/hooks/usePagination.js` | `(data, defaultPageSize)` → `{ paginatedData, currentPage, totalPages, pageSize, setPage, setPageSize, paginationInfo }` |
+| `useSortableTable` | `src/hooks/useSortableTable.js` | `(data, defaultKey?)` → `{ sortedData, sortKey, sortDir, handleSort }` |
+
+## Key Helpers (helpers.js)
+
+| Function | Purpose |
+|---|---|
+| `getWeekDates(weekOffset)` | Returns `{ Mon, Tue, Wed, Thu, Sat }` → `'YYYY-MM-DD'` for the week at offset |
+| `getWeekMonday(weekOffset)` | Returns a `Date` for the Monday of the target week |
+| `formatShortDate(dateStr)` | `'YYYY-MM-DD'` → `'Mar 18'` |
+| `getDateForDay(day, weekOffset)` | Returns `'YYYY-MM-DD'` for a given day name and week offset |
+| `autoAssignSessions(students, classroomTeachers, days, weekDates, existingSessions, weeklyConflicts, employees, replaceAll)` | Core auto-scheduler logic |
+| `sanitiseImportValue(value)` | Strips leading CSV formula-injection characters |
+| `validateImportRow(rawRow, fieldMap, type, isEmailTaken)` | Validates a single import row; returns `{ valid, errors, record }` |
+| `exportToCSV(rows, filename)` | Downloads an array of objects as a CSV file |
+| `isTutorAvailableAt(emp, day, time)` | Checks if employee schedule covers the given slot |
+| `hasWeeklyConflict(weeklyConflicts, empId, day, time)` | Checks recurring conflict overrides |
+| `timeToMinutes(t)` | Parses time strings to minutes since midnight |
 
 ---
 

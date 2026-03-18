@@ -26,7 +26,7 @@ Each employee represents a staff member (tutor or administrator).
 | `totalShifts` | `number` | Non-negative integer | Total scheduled shifts (for reliability calc) |
 | `clockIns` | `ClockEntry[]` | See below | Clock-in/out history |
 | `photo` | `string \| null` | Base64 data URL or `null` | Profile photo |
-| `notes` | `string` | Free text | Internal notes |
+| `notes` | `string` | Free text | Internal notes — **Admin only**: never rendered for Teacher or Parent roles |
 
 **ClockEntry shape:**
 ```js
@@ -96,6 +96,7 @@ Each session is a single tutoring appointment.
 |---|---|---|---|
 | `id` | `number` | Auto-increment integer | Unique identifier |
 | `day` | `string` | See OPEN_DAYS | Day of week |
+| `date` | `string` | `YYYY-MM-DD` | Calendar date (set when session is created/moved; used for multi-week filtering) |
 | `time` | `string` | See slot constants | Time range string e.g. `'4:30-5:30'` |
 | `duration` | `number` | Minutes (typically `60`) | Session duration in minutes |
 | `studentId` | `number` | Valid student `id` | Assigned student |
@@ -117,10 +118,12 @@ SAT_SLOTS      = ['10:30-11:30', '11:30-12:30', '12:30-1:30'] // Sat
 ALL_OPEN_SLOTS = [...MON_WED_SLOTS, ...SAT_SLOTS]             // All unique slots
 ```
 
-**CLASSROOMS:**
+**CLASSROOMS** (schedule grid only — Grader is not a classroom for sessions):
 ```
-'Classroom 1', 'Classroom 2', 'Classroom 3', 'Grader'
+'Classroom 1', 'Classroom 2', 'Classroom 3'
 ```
+
+> The `Grader` room exists in `CLASSROOMS` and `CLASSROOM_COLORS` constants but is used for the grader assignment display only — sessions are never assigned to `'Grader'`.
 
 **CLASSROOM_COLORS** (for UI rendering):
 ```
@@ -129,6 +132,43 @@ Classroom 2: bg #dcfce7 / color #166534 / border #bbf7d0  (green)
 Classroom 3: bg #fef3c7 / color #92400e / border #fde68a  (amber)
 Grader:      bg #f1f5f9 / color #475569 / border #e2e8f0  (gray)
 ```
+
+---
+
+## `calendarEvents` — `CalendarEvent[]`
+
+Staff events (workshops, meetings, training) shown on the schedule grid alongside sessions. Managed via `addCalendarEvent`, `updateCalendarEvent`, `deleteCalendarEvent` from AppContext.
+
+| Field | Type | Valid Values | Description |
+|---|---|---|---|
+| `id` | `number` | Auto-increment integer | Unique identifier |
+| `title` | `string` | Free text | Event name |
+| `date` | `string` | OPEN_DAYS value (e.g. `'Mon'`) | Day of week the event occurs |
+| `startTime` | `string` | `'HH:MM'` (24h) | Start time (ignored when `allDay` is true) |
+| `endTime` | `string` | `'HH:MM'` (24h) | End time (ignored when `allDay` is true) |
+| `allDay` | `boolean` | `true \| false` | If true, event spans the full day |
+| `type` | `string` | `'Workshop' \| 'Meeting' \| 'Training' \| 'Other'` | Event category |
+| `location` | `string` | Free text | Physical or virtual location |
+| `description` | `string` | Free text | Optional details |
+| `staffIds` | `number[]` | Valid employee ids | Employees attending this event |
+
+---
+
+## `graderSchedule` — `{ [day: string]: number }`
+
+Maps each open day to the employee id of the assigned grader. Managed via `setGraderSchedule` from AppContext.
+
+```js
+{
+  Mon: 3,   // employeeId
+  Tue: 3,
+  Wed: 5,
+  Thu: 3,
+  Sat: 2,
+}
+```
+
+Valid keys: any value from OPEN_DAYS (`'Mon'`, `'Tue'`, `'Wed'`, `'Thu'`, `'Sat'`). Value is a valid `employee.id`. Displayed in the schedule header; admin can change via `ChangeGraderModal`.
 
 ---
 

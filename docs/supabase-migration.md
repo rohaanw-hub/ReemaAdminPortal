@@ -66,14 +66,53 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 |---|---|---|---|
 | `id` | `bigint` | PK, auto-increment | `session.id` |
 | `day` | `text` | CHECK ('Mon','Tue','Wed','Thu','Sat') | `session.day` |
+| `date` | `date` | NOT NULL | `session.date` — the calendar date of the session |
 | `time` | `text` | e.g. '4:30-5:30' | `session.time` |
 | `duration` | `integer` | DEFAULT 60 | `session.duration` |
 | `student_id` | `bigint` | FK → students.id | `session.studentId` |
 | `employee_id` | `bigint` | FK → employees.id, NULLABLE | `session.employeeId` |
 | `subject` | `text` | CHECK ('Reading','Writing','Math') | `session.subject` |
 | `status` | `text` | CHECK ('scheduled','attended','cancelled','pending') | `session.status` |
-| `classroom` | `text` | CHECK ('Classroom 1','Classroom 2','Classroom 3','Grader') | `session.classroom` |
+| `classroom` | `text` | CHECK ('Classroom 1','Classroom 2','Classroom 3') | `session.classroom` — Grader is not a session classroom |
 | `created_at` | `timestamptz` | DEFAULT now() | — |
+| `updated_at` | `timestamptz` | DEFAULT now() | — |
+
+### `calendar_events`
+
+Staff-facing events (workshops, meetings, training) shown on the schedule grid.
+
+| Column | Type | Constraints | Maps to |
+|---|---|---|---|
+| `id` | `bigint` | PK, auto-increment | `calendarEvent.id` |
+| `title` | `text` | NOT NULL | `calendarEvent.title` |
+| `date` | `text` | OPEN_DAYS value | `calendarEvent.date` — day of week |
+| `start_time` | `text` | | `calendarEvent.startTime` |
+| `end_time` | `text` | | `calendarEvent.endTime` |
+| `all_day` | `boolean` | DEFAULT false | `calendarEvent.allDay` |
+| `type` | `text` | CHECK ('Workshop','Meeting','Training','Other') | `calendarEvent.type` |
+| `location` | `text` | | `calendarEvent.location` |
+| `description` | `text` | | `calendarEvent.description` |
+| `created_at` | `timestamptz` | DEFAULT now() | — |
+
+### `staff_event_assignments` (junction)
+
+Links employees to calendar events.
+
+| Column | Type | Constraints |
+|---|---|---|
+| `event_id` | `bigint` | FK → calendar_events.id |
+| `employee_id` | `bigint` | FK → employees.id |
+| PRIMARY KEY | | `(event_id, employee_id)` |
+
+### `grader_schedule`
+
+One record per open day indicating the assigned grader.
+
+| Column | Type | Constraints | Maps to |
+|---|---|---|---|
+| `id` | `bigint` | PK, auto-increment | — |
+| `day` | `text` | OPEN_DAYS value, UNIQUE | `graderSchedule` key |
+| `employee_id` | `bigint` | FK → employees.id | `graderSchedule[day]` |
 | `updated_at` | `timestamptz` | DEFAULT now() | — |
 
 ### `weekly_conflicts`
@@ -143,6 +182,45 @@ CREATE POLICY "teacher_update_grade_level" ON students
     EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'teacher')
   )
   WITH CHECK (true);  -- restrict to grade_level column at application layer
+```
+
+### Calendar events and grader schedule
+
+```sql
+-- calendar_events: Admin full access
+CREATE POLICY "admin_calendar_events" ON calendar_events
+  USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- Teacher: read only
+CREATE POLICY "teacher_read_calendar_events" ON calendar_events
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin','teacher'))
+  );
+
+-- Parent: no access (no policy = deny)
+
+-- grader_schedule: Admin full access, Teacher read only
+CREATE POLICY "admin_grader_schedule" ON grader_schedule
+  USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
+
+CREATE POLICY "teacher_read_grader_schedule" ON grader_schedule
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin','teacher'))
+  );
+```
+
+### Sessions — Teacher scope
+
+```sql
+-- Teachers can only read sessions where their employee_id matches
+-- (tighter than current "read all" policy — replace in v2)
+CREATE POLICY "teacher_read_own_sessions" ON sessions
+  FOR SELECT USING (
+    employee_id = (
+      SELECT profile_id FROM user_profiles WHERE id = auth.uid() AND role = 'teacher'
+    )
+    OR EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  );
 ```
 
 ### Parent — read own child only
@@ -239,14 +317,25 @@ RLS on storage:
 
 ---
 
+## Import / Export (v2 notes)
+
+- **Bulk import** currently calls `setStudents` / `setEmployees` directly in-memory. In v2, replace with Supabase batch insert (`supabase.from('students').insert(records)`) wrapped in a transaction.
+- **CSV export** (`exportToCSV`) downloads client-side. In v2, consider a server-side export for large datasets to avoid memory limits.
+- **CSV injection prevention** (`sanitiseImportValue`) strips leading formula characters (`=`, `+`, `-`, `@`, tab, CR) from all imported values. This sanitisation must be applied even with Supabase — it protects CSV re-exports, not just the database.
+- **RLS on export**: Teachers cannot export data they cannot read. The `teacher_read_own_sessions` policy automatically limits what is returned.
+
+---
+
 ## Files to Update
 
 | File | Change |
 |---|---|
-| `AppContext.jsx` | Replace seed data + state with Supabase queries; replace `resolveLogin` with Supabase auth |
+| `AppContext.jsx` | Replace seed data + state with Supabase queries; replace `resolveLogin` with Supabase auth; add queries for `calendarEvents`, `graderSchedule` |
 | `src/pages/Login.jsx` | Call `supabase.auth.signInWithPassword` |
 | `src/pages/EmployeeProfile.jsx` | Replace `setEmployees` calls with Supabase update/insert |
 | `src/pages/StudentProfile.jsx` | Same |
-| `src/pages/Schedule.jsx` | Replace `setSessions` with Supabase mutations |
+| `src/pages/Schedule.jsx` | Replace `setSessions` with Supabase mutations; add queries for `calendar_events` and `grader_schedule` |
+| `src/pages/Employees.jsx` | Replace `setEmployees` with Supabase insert for bulk import |
+| `src/pages/Students.jsx` | Replace `setStudents` with Supabase insert for bulk import |
 | `src/pages/ClockIn.jsx` | Replace `setEmployees` clock-in update with Supabase |
 | `.env.local` | Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` |

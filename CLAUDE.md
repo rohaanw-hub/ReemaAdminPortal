@@ -46,9 +46,11 @@ hook. There is no external state library. The context exposes:
 
 - employees, setEmployees — array of employee objects
 - students, setStudents — array of student objects
-- sessions, setSessions — array of session objects (the schedule)
+- sessions, setSessions — array of session objects (the schedule); each session now has a `date` field (YYYY-MM-DD)
 - notifications, addNotification, dismissNotification
 - weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, clearWeeklyConflicts
+- graderSchedule, setGraderSchedule — { Mon, Tue, Wed, Thu, Sat: employeeId }
+- calendarEvents, addCalendarEvent, updateCalendarEvent, deleteCalendarEvent
 
 weeklyConflicts is keyed by employeeId: { [empId]: [{ id, day, startTime, endTime, reason }] }
 An All Day conflict uses startTime: 'All Day'.
@@ -67,18 +69,43 @@ There is NO /dashboard route — Dashboard.jsx was removed in FEAT-021.
 
 src/pages/Schedule.jsx is the most complex file. Key behaviors:
 
-- Two tabs: Staff View and Student View (renamed from Employee/Student Scheduler)
-- Two display modes: Day View (single day, classroom columns) and Week View (5-day grid)
-- Day View: vertical grid with time slots as rows and 4 classroom columns
+- Two display modes: Day View (single day, 3 classroom columns) and Week View (5-day grid)
+- 24-hour calendar: HOUR_HEIGHT = 60px/hr, TOTAL_HEIGHT = 1440px; session blocks are
+  absolutely positioned using sessionTopPx() and sessionHeightPx()
+- Week navigation: weekOffset state (0 = current week); limits MIN=-1, MAX=4;
+  weekDates = getWeekDates(weekOffset) maps { Mon: 'YYYY-MM-DD', ... }
+  activeSessions filters by s.date === weekDates[s.day]
+- Sessions have a `date` field (YYYY-MM-DD) stamped on creation/move
 - Drag-and-drop: Native HTML5 DnD API only (no libraries). Uses setTimeout(..., 0)
   to defer setDraggedId so the browser captures the original chip as the drag
   image before the ghost placeholder renders. DO NOT remove this defer — it is intentional.
-- Auto-assign (findBestTutor): filters by accountRole !== 'admin' →
-  isTutorAvailableAt → hasWeeklyConflict → isDoubleBooked, then sorts by
-  reliability score descending.
+  DnD is disabled for Teachers: draggable={!!onMove}, onMove only passed when isAdmin.
+- DnD drop opens MoveSessionModal (admin only) — not a direct session move
+- Calendar events: admin can click empty slots to open NewEventModal; event blocks
+  rendered alongside session blocks; EventDetailModal for view/edit/delete
+- Grader bar (Day View) and grader cells (Week View) clickable by admin to open
+  ChangeGraderModal
+- Auto-Schedule button: Admin only — opens AutoSchedulerWizard (4-step modal)
 - Toast notifications: bottom-right fixed, auto-dismiss after 3 seconds via setTimeout.
 - SessionDetailModal: Admin sees Edit/Cancel/Reassign buttons; Teacher sees read-only.
-- Auto-Schedule button: Admin only (hidden from teachers).
+
+### New components (src/components/)
+
+- AutoSchedulerWizard.jsx — 4-step scheduling wizard (admin only)
+- ChangeGraderModal.jsx   — change daily grader assignment
+- EventDetailModal.jsx    — view/edit/delete a calendar event
+- GradeLevelPill.jsx      — colored pill for student subject progress
+- ImportModal.jsx         — 4-step CSV/Excel import (employees + students)
+- MoveSessionModal.jsx    — move-session confirmation with conflict checks
+- NewEventModal.jsx       — create/edit calendar event
+- Pagination.jsx          — reusable pagination controls (10/25/50/100 per page)
+
+### New hooks (src/hooks/)
+
+- usePagination.js — (data, defaultPageSize) → { paginatedData, currentPage,
+  totalPages, pageSize, setPage, setPageSize, paginationInfo }
+  Applied to: Students.jsx, Employees.jsx
+- useSortableTable.js — (data, defaultKey?) → { sortedData, sortKey, sortDir, handleSort }
 
 ### Time slot constants (helpers.js)
 
@@ -101,7 +128,9 @@ CLASSROOM_COLORS = {
   'Classroom 3': amber tint  (bg #fef3c7, border #fde68a, text #92400e)
   'Grader':      gray tint   (bg #f1f5f9, border #e2e8f0, text #475569)
 }
-All sessions must have a classroom field.
+All sessions must have a classroom field. Sessions are NEVER assigned to 'Grader' —
+'Grader' is for the daily grader display only.
+SCHEDULE_CLASSROOMS = ['Classroom 1', 'Classroom 2', 'Classroom 3'] — the 3 schedulable rooms.
 
 ### Student grade level values (helpers.js)
 
@@ -131,9 +160,26 @@ but is NOT displayed in any UI. Use `accountRole` for permission checks.
 - Inline style props are used freely alongside class names — this is intentional,
   not a code smell.
 
+### calendarEvents (AppContext)
+
+calendarEvents shape: { id, title, date (day name), startTime, endTime, allDay,
+  type ('Workshop'|'Meeting'|'Training'|'Other'), location, description, staffIds[] }
+Actions: addCalendarEvent, updateCalendarEvent(id, changes), deleteCalendarEvent(id)
+
+### graderSchedule (AppContext)
+
+graderSchedule shape: { Mon: empId, Tue: empId, Wed: empId, Thu: empId, Sat: empId }
+Updated via setGraderSchedule. Displayed in schedule header; admin changes via ChangeGraderModal.
+
 ## Security requirements (enforce on every change)
 
 - Validate and sanitize ALL user inputs — no exceptions
+- All scheduling modals (MoveSessionModal, NewEventModal, ChangeGraderModal,
+  AutoSchedulerWizard) must only be openable via admin-gated handlers.
+  Gate at the handler level (pass undefined instead of a callback for non-admin):
+  `onMove={isAdmin ? handleMoveRequest : undefined}`
+  `draggable={!!onMove}` — disables DnD entirely for teachers
+- Notes field on employee profiles: never render for Teacher or Parent role
 - When auth is added (v2 Supabase): enforce RBAC on every route
 - Never commit secrets, API keys, or credentials — use environment variables only
 - No sensitive data in logs or error messages

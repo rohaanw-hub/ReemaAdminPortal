@@ -8,12 +8,17 @@ The Reema Admin Portal covers every day-to-day operational need of the center:
 
 | Feature | Description |
 |---|---|
-| **Schedule** | Google Calendar-style classroom view — Day/Week toggle, drag-and-drop, auto-assign |
-| **Employee Management** | Profiles, year-in-school, reliability tracking, callout logging, clock-in history |
-| **Student Management** | Profiles, academic grade-level tracking (reading, writing, math), parent contacts, attendance |
+| **Schedule** | 24-hour Google Calendar-style view — Day (classroom columns) and Week (5-day grid), drag-and-drop move with confirmation modal, month-ahead week navigation |
+| **Auto-Scheduler Wizard** | 4-step admin wizard: select week/scope → students → teacher assignments → review with conflict detection |
+| **Calendar Events** | Create workshops, meetings, and training events alongside sessions; shown on schedule grid |
+| **Session Move Modal** | Drag-and-drop triggers a confirmation modal with classroom capacity, teacher availability, and double-booking checks |
+| **Grader Assignment** | Daily grader assignment viewable in schedule; admin can change via modal |
+| **Employee Management** | Profiles, year-in-school, reliability tracking, callout logging, clock-in history; paginated list |
+| **Student Management** | Profiles, academic grade-level tracking per subject (reading, writing, math) with progress pills, parent contacts, attendance; paginated list |
 | **Clock In / Out** | Real-time clock-in system tied directly to payroll |
 | **Payroll** | Automatic hour tracking and gross pay calculation per employee |
 | **Reports** | Attendance and payroll reports with CSV export |
+| **Bulk Import** | CSV/Excel import with column mapper and validation for both employees and students |
 | **Parent Portal** | Read-only view for parents to see their child's schedule and progress |
 
 ---
@@ -22,9 +27,9 @@ The Reema Admin Portal covers every day-to-day operational need of the center:
 
 | Role | Landing Page | Can Do |
 |---|---|---|
-| **Admin** | `/schedule` | Full access — all pages, edit/cancel sessions, add/edit employees and students |
-| **Teacher** | `/schedule` | View schedule (read-only modal), view students, view own profile |
-| **Parent** | `/parent` | View own child's sessions and profile |
+| **Admin** | `/schedule` | Full access — all pages, edit/cancel/move sessions, drag-and-drop, open Auto-Scheduler wizard, create/edit/delete calendar events, change grader assignments, add/edit employees and students, import/export data, view all employee notes |
+| **Teacher** | `/schedule` | View schedule (read-only modal), navigate weeks, view students and their grade levels, edit student grade levels, view own profile — cannot access scheduling modals, notes, or admin pages |
+| **Parent** | `/parent` | View own child's sessions and profile (read-only) |
 
 ---
 
@@ -58,15 +63,25 @@ ReemaAdminPortal/
 ├── src/
 │   ├── assets/               # Images (logo, etc.)
 │   ├── components/
-│   │   ├── AttendanceBar.jsx  # Progress bar for student attendance %
-│   │   ├── Layout.jsx         # Sidebar + topbar shell (admin/teacher)
-│   │   ├── ParentLayout.jsx   # Minimal shell for parent portal
-│   │   ├── ScheduleEditor.jsx # Availability day/time picker
-│   │   ├── SearchBar.jsx      # Global search (employees + students)
-│   │   └── Th.jsx             # Sortable table header cell
+│   │   ├── AttendanceBar.jsx        # Progress bar for student attendance %
+│   │   ├── AutoSchedulerWizard.jsx  # 4-step scheduling wizard (admin only)
+│   │   ├── ChangeGraderModal.jsx    # Modal to update daily grader assignment
+│   │   ├── EventDetailModal.jsx     # View/edit/delete a calendar event
+│   │   ├── GradeLevelPill.jsx       # Colored pill for student subject progress
+│   │   ├── ImportModal.jsx          # 4-step CSV/Excel import flow
+│   │   ├── Layout.jsx               # Sidebar + topbar shell (admin/teacher)
+│   │   ├── MoveSessionModal.jsx     # Move-session confirmation with conflict checks
+│   │   ├── NewEventModal.jsx        # Create/edit calendar event form
+│   │   ├── Pagination.jsx           # Reusable pagination controls (10/25/50/100)
+│   │   ├── ParentLayout.jsx         # Minimal shell for parent portal
+│   │   ├── ScheduleEditor.jsx       # Availability day/time picker
+│   │   ├── SearchBar.jsx            # Global search (employees + students)
+│   │   ├── SessionDetailModal.jsx   # View/edit/cancel session details
+│   │   └── Th.jsx                   # Sortable table header cell
 │   ├── context/
 │   │   └── AppContext.jsx     # Re-export shim → ../../AppContext
 │   ├── hooks/
+│   │   ├── usePagination.js    # Pagination state and page-slice logic
 │   │   └── useSortableTable.js # Generic sortable table hook
 │   ├── pages/
 │   │   ├── ClockIn.jsx
@@ -171,14 +186,22 @@ Copy `.env.example` to `.env.local` and fill in values. **Never commit `.env.loc
 
 ### v1 — Prototype (current)
 
-- [x] Google Calendar-style schedule (Day/Week view, classroom columns, DnD)
-- [x] Employee profiles — reliability, callout tracking, year-in-school
-- [x] Student profiles — academic grade-level tracking (per subject), attendance
+- [x] 24-hour Google Calendar-style schedule (Day view with classroom columns, Week view with 5-day grid)
+- [x] Session drag-and-drop with move confirmation modal and conflict detection
+- [x] Month-ahead week navigation (‹ › arrows, Today button, ±1 week past / +4 weeks future)
+- [x] Auto-Scheduler Wizard — 4-step admin tool with student selection, teacher assignment, and review
+- [x] Custom calendar events (Workshop, Meeting, Training, Other) alongside sessions
+- [x] Grader daily assignment with change modal
+- [x] Student grade-level progress pills (math, reading, writing)
+- [x] Employee profiles — reliability, callout tracking, year-in-school; paginated list
+- [x] Student profiles — academic grade-level tracking (per subject), attendance; paginated list
+- [x] Bulk import for employees and students (CSV/Excel with column mapper and validation)
 - [x] Clock In / Out with hours tracking
 - [x] Payroll summary with gross pay calculation
 - [x] Attendance and payroll reports with CSV export
 - [x] Parent portal (read-only student view)
 - [x] Role-based access (Admin / Teacher / Parent)
+- [x] CSV injection prevention on all imported values
 
 ### v2 — Backend Integration
 
