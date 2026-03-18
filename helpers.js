@@ -19,20 +19,39 @@ export const calcHours = (clockIns = []) =>
   clockIns.reduce((acc, c) => acc + (c.out ? (new Date(c.out) - new Date(c.in)) / 3_600_000 : 0), 0)
 
 // ─── Time Parsing ─────────────────────────────────────────────────────────────
+// Accepts "3PM", "10AM" (legacy) and "4:30", "10:30", "4:30PM", "10:30AM"
+// (new range-slot format). For bare H:MM strings, hours 1-7 are treated as PM.
 export function timeToMinutes(t) {
-  const m = String(t).match(/^(\d+)(AM|PM)$/)
-  if (!m) return -1
-  let h = parseInt(m[1])
-  const period = m[2]
-  if (period === 'PM' && h !== 12) h += 12
-  if (period === 'AM' && h === 12) h = 0
-  return h * 60
+  const s = String(t).trim()
+  // Old format: "3PM", "10AM"
+  const oldFmt = s.match(/^(\d+)(AM|PM)$/i)
+  if (oldFmt) {
+    let h = parseInt(oldFmt[1])
+    const period = oldFmt[2].toUpperCase()
+    if (period === 'PM' && h !== 12) h += 12
+    if (period === 'AM' && h === 12) h = 0
+    return h * 60
+  }
+  // New format: "4:30", "10:30", "4:30PM", "10:30AM"
+  const newFmt = s.match(/^(\d+):(\d+)(AM|PM)?$/i)
+  if (newFmt) {
+    let h = parseInt(newFmt[1])
+    const m = parseInt(newFmt[2])
+    const period = newFmt[3]?.toUpperCase()
+    if (period === 'PM' && h !== 12) h += 12
+    else if (period === 'AM' && h === 12) h = 0
+    else if (!period && h >= 1 && h <= 7) h += 12  // bare 1-7 = PM
+    return h * 60 + m
+  }
+  return -1
 }
 
 export function isTutorAvailableAt(emp, day, time) {
   const slots = emp.schedule[day]
   if (!slots || slots.length === 0) return false
-  const t = timeToMinutes(time)
+  // time may be a range like "4:30-5:30" — use the start for comparison
+  const startStr = String(time).split('-')[0].trim()
+  const t = timeToMinutes(startStr)
   return slots.some((slot) => {
     const parts = slot.split('-')
     if (parts.length < 2) return false
@@ -43,10 +62,12 @@ export function isTutorAvailableAt(emp, day, time) {
 // ─── Weekly Conflict Check ────────────────────────────────────────────────────
 export function hasWeeklyConflict(weeklyConflicts, empId, day, time) {
   const conflicts = (weeklyConflicts || {})[empId] || []
+  // time may be a range like "4:30-5:30" — use the start for comparison
+  const startStr = String(time).split('-')[0].trim()
+  const t = timeToMinutes(startStr)
   return conflicts.some((c) => {
     if (c.day !== day) return false
     if (c.startTime === 'All Day') return true
-    const t = timeToMinutes(time)
     return t >= timeToMinutes(c.startTime) && t < timeToMinutes(c.endTime)
   })
 }
@@ -74,13 +95,25 @@ export const LEVEL_PROGRESS = {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+export const OPEN_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Sat']
 export const SUBJECTS = ['Reading', 'Writing', 'Math', 'Science', 'SAT Prep', 'Test Prep']
 export const GRADES = ['K', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th']
 export const LEVELS = ['Below Grade', 'At Grade', 'Above Grade', 'Advanced']
-export const TIME_SLOTS = ['3PM', '4PM', '5PM', '6PM', '7PM']
-export const ALL_TIME_SLOTS = ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM']
-export const WEEKDAY_SLOTS = ['3PM', '4PM', '5PM', '6PM', '7PM']
-export const SAT_SLOTS = ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM']
+// Mon, Tue, Wed: 4:30 PM — 7:30 PM
+export const MON_WED_SLOTS = ['4:30-5:30', '5:30-6:30', '6:30-7:30']
+// Thu: 4:30 PM — 6:30 PM
+export const THU_SLOTS = ['4:30-5:30', '5:30-6:30']
+// Sat: 10:30 AM — 1:30 PM
+export const SAT_SLOTS = ['10:30-11:30', '11:30-12:30', '12:30-1:30']
+// Combined unique slots used for the schedule grid rows
+export const ALL_OPEN_SLOTS = [...MON_WED_SLOTS, ...SAT_SLOTS]
+
+export function getSlotsForDay(day) {
+  if (day === 'Sat') return SAT_SLOTS
+  if (day === 'Thu') return THU_SLOTS
+  if (day === 'Mon' || day === 'Tue' || day === 'Wed') return MON_WED_SLOTS
+  return []
+}
 export const ED_LEVELS = [
   'High School', 'College Freshman', 'College Sophomore',
   'College Junior', 'College Senior', "Bachelor's", "Master's", 'Doctorate',

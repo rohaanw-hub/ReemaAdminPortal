@@ -4,9 +4,9 @@ import {
   getAvatarBg,
   getAvatarText,
   DAYS,
-  ALL_TIME_SLOTS,
-  WEEKDAY_SLOTS,
-  SAT_SLOTS,
+  OPEN_DAYS,
+  ALL_OPEN_SLOTS,
+  getSlotsForDay,
   SUBJECT_COLORS,
 } from "../../helpers";
 
@@ -257,8 +257,8 @@ export default function ParentPortal() {
                   .sort(
                     (a, b) =>
                       DAYS.indexOf(a.day) - DAYS.indexOf(b.day) ||
-                      ALL_TIME_SLOTS.indexOf(a.time) -
-                        ALL_TIME_SLOTS.indexOf(b.time),
+                      ALL_OPEN_SLOTS.indexOf(a.time) -
+                        ALL_OPEN_SLOTS.indexOf(b.time),
                   )
                   .map((s) => {
                     const tutor = employees.find((e) => e.id === s.employeeId);
@@ -318,20 +318,16 @@ export default function ParentPortal() {
             <thead>
               <tr>
                 <th>Time</th>
-                {DAYS.map((d) => (
+                {OPEN_DAYS.map((d) => (
                   <th key={d}>{d}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {ALL_TIME_SLOTS.map((time) => {
+              {ALL_OPEN_SLOTS.map((time) => {
                 // Only render rows that have at least one session for this child
-                const rowHasSessions = DAYS.some((day) => {
-                  const isSat = day === "Sat";
-                  const isUnavail =
-                    (isSat && WEEKDAY_SLOTS.includes(time)) ||
-                    (!isSat && SAT_SLOTS.includes(time));
-                  if (isUnavail) return false;
+                const rowHasSessions = OPEN_DAYS.some((day) => {
+                  if (!getSlotsForDay(day).includes(time)) return false;
                   return upcoming.some((s) => s.day === day && s.time === time);
                 });
                 if (!rowHasSessions) return null;
@@ -339,11 +335,8 @@ export default function ParentPortal() {
                 return (
                   <tr key={time}>
                     <td>{time}</td>
-                    {DAYS.map((day) => {
-                      const isSat = day === "Sat";
-                      const isUnavail =
-                        (isSat && WEEKDAY_SLOTS.includes(time)) ||
-                        (!isSat && SAT_SLOTS.includes(time));
+                    {OPEN_DAYS.map((day) => {
+                      const isUnavail = !getSlotsForDay(day).includes(time);
                       if (isUnavail)
                         return <td key={day} className="grid-cell-unavail" />;
 

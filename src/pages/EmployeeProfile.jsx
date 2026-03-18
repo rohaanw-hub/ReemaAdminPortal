@@ -12,7 +12,8 @@ import {
   DAYS,
   SUBJECTS,
   ED_LEVELS,
-  ALL_TIME_SLOTS,
+  getSlotsForDay,
+  timeToMinutes,
   serializeSchedule,
   deserializeSchedule,
   validatePhotoFile,
@@ -231,11 +232,23 @@ export default function EmployeeProfile() {
   const [showEdit, setShowEdit] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const [showAddConflict, setShowAddConflict] = useState(false);
+  function getTimePoints(day) {
+    const slots = getSlotsForDay(day);
+    if (!slots.length) return [];
+    const pts = new Set();
+    for (const slot of slots) {
+      const [s, e] = slot.split("-");
+      pts.add(s.trim());
+      pts.add(e.trim());
+    }
+    return [...pts].sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
+  }
+
   const blankConflict = {
     day: "Mon",
     allDay: false,
-    startTime: "3PM",
-    endTime: "4PM",
+    startTime: "4:30",
+    endTime: "5:30",
     reason: "",
   };
   const [conflictForm, setConflictForm] = useState(blankConflict);
@@ -703,7 +716,7 @@ export default function EmployeeProfile() {
                           setConflict("startTime", e.target.value)
                         }
                       >
-                        {ALL_TIME_SLOTS.map((t) => (
+                        {getTimePoints(conflictForm.day).map((t) => (
                           <option key={t}>{t}</option>
                         ))}
                       </select>
@@ -715,7 +728,7 @@ export default function EmployeeProfile() {
                         value={conflictForm.endTime}
                         onChange={(e) => setConflict("endTime", e.target.value)}
                       >
-                        {ALL_TIME_SLOTS.map((t) => (
+                        {getTimePoints(conflictForm.day).map((t) => (
                           <option key={t}>{t}</option>
                         ))}
                       </select>

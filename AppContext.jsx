@@ -348,31 +348,26 @@ const SEED_STUDENTS = [
 ]
 
 const SEED_SESSIONS = [
-  // Monday
-  { id: 1,  day: 'Mon', time: '3PM',  duration: 60, studentId: 5, employeeId: 2,    subject: 'Reading', status: 'scheduled' },
-  { id: 2,  day: 'Mon', time: '3PM',  duration: 60, studentId: 3, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
-  { id: 3,  day: 'Mon', time: '4PM',  duration: 60, studentId: 1, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
-  { id: 4,  day: 'Mon', time: '5PM',  duration: 60, studentId: 8, employeeId: 4,    subject: 'Reading', status: 'scheduled' },
-  // Tuesday
-  { id: 5,  day: 'Tue', time: '3PM',  duration: 60, studentId: 7, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
-  { id: 6,  day: 'Tue', time: '4PM',  duration: 60, studentId: 4, employeeId: 2,    subject: 'Writing', status: 'scheduled' },
-  { id: 7,  day: 'Tue', time: '5PM',  duration: 60, studentId: 2, employeeId: null, subject: 'Reading', status: 'scheduled' },
-  // Wednesday
-  { id: 8,  day: 'Wed', time: '3PM',  duration: 60, studentId: 3, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
-  { id: 9,  day: 'Wed', time: '3PM',  duration: 60, studentId: 5, employeeId: null, subject: 'Reading', status: 'scheduled' },
-  { id: 10, day: 'Wed', time: '4PM',  duration: 60, studentId: 1, employeeId: 4,    subject: 'Reading', status: 'scheduled' },
-  { id: 11, day: 'Wed', time: '5PM',  duration: 60, studentId: 6, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
-  // Thursday
-  { id: 12, day: 'Thu', time: '3PM',  duration: 60, studentId: 7, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
-  { id: 13, day: 'Thu', time: '4PM',  duration: 60, studentId: 4, employeeId: 2,    subject: 'Writing', status: 'scheduled' },
-  { id: 14, day: 'Thu', time: '5PM',  duration: 60, studentId: 2, employeeId: null, subject: 'Reading', status: 'scheduled' },
-  // Friday
-  { id: 15, day: 'Fri', time: '3PM',  duration: 60, studentId: 3, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
-  { id: 16, day: 'Fri', time: '5PM',  duration: 60, studentId: 6, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
-  { id: 17, day: 'Fri', time: '5PM',  duration: 60, studentId: 8, employeeId: 4,    subject: 'Reading', status: 'scheduled' },
-  // Saturday
-  { id: 18, day: 'Sat', time: '10AM', duration: 60, studentId: 2, employeeId: 6,    subject: 'Reading', status: 'scheduled' },
-  { id: 19, day: 'Sat', time: '10AM', duration: 60, studentId: 4, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
+  // Monday (4:30–7:30 PM)
+  { id: 1,  day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 5, employeeId: 2,    subject: 'Reading', status: 'scheduled' },
+  { id: 2,  day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 3, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 3,  day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 1, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 4,  day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 8, employeeId: 4,    subject: 'Reading', status: 'scheduled' },
+  // Tuesday (4:30–7:30 PM)
+  { id: 5,  day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 7, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 6,  day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 4, employeeId: 2,    subject: 'Writing', status: 'scheduled' },
+  { id: 7,  day: 'Tue', time: '6:30-7:30',   duration: 60, studentId: 2, employeeId: null, subject: 'Reading', status: 'scheduled' },
+  // Wednesday (4:30–7:30 PM)
+  { id: 8,  day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 3, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 9,  day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 5, employeeId: null, subject: 'Reading', status: 'scheduled' },
+  { id: 10, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 1, employeeId: 4,    subject: 'Reading', status: 'scheduled' },
+  { id: 11, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 6, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
+  // Thursday (4:30–6:30 PM)
+  { id: 12, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 7, employeeId: 1,    subject: 'Math',    status: 'scheduled' },
+  { id: 13, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId: 4, employeeId: 2,    subject: 'Writing', status: 'scheduled' },
+  // Saturday (10:30 AM–1:30 PM)
+  { id: 14, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 2, employeeId: 6,    subject: 'Reading', status: 'scheduled' },
+  { id: 15, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 4, employeeId: 3,    subject: 'Math',    status: 'scheduled' },
 ]
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────────

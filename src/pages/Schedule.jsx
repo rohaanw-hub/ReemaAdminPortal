@@ -2,9 +2,9 @@ import { useState, useCallback, useMemo } from "react";
 import { useApp } from "../../AppContext";
 import {
   DAYS,
-  ALL_TIME_SLOTS,
-  WEEKDAY_SLOTS,
-  SAT_SLOTS,
+  OPEN_DAYS,
+  ALL_OPEN_SLOTS,
+  getSlotsForDay,
   isTutorAvailableAt,
   hasWeeklyConflict,
   timeToMinutes,
@@ -102,17 +102,30 @@ function ConflictsPanel({
 }) {
   const [selectedEmpId, setSelectedEmpId] = useState(employees[0]?.id ?? "");
 
+  // Derive sorted time-point boundaries from slots for the given day
+  function getTimePoints(day) {
+    const slots = getSlotsForDay(day);
+    if (!slots.length) return [];
+    const pts = new Set();
+    for (const slot of slots) {
+      const [s, e] = slot.split("-");
+      pts.add(s.trim());
+      pts.add(e.trim());
+    }
+    return [...pts].sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
+  }
+
   const blankForm = {
     day: "Mon",
-    startTime: "3PM",
-    endTime: "4PM",
+    startTime: "4:30",
+    endTime: "5:30",
     reason: "",
   };
   const [form, setForm] = useState(blankForm);
 
   const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const timeOptions = form.day === "Sat" ? SAT_SLOTS : WEEKDAY_SLOTS;
+  const timeOptions = getTimePoints(form.day);
   const endOptions = timeOptions.filter(
     (t) => timeToMinutes(t) > timeToMinutes(form.startTime),
   );
@@ -259,12 +272,12 @@ function ConflictsPanel({
                 value={form.day}
                 onChange={(e) => {
                   const d = e.target.value;
-                  const opts = d === "Sat" ? SAT_SLOTS : WEEKDAY_SLOTS;
+                  const pts = getTimePoints(d);
                   setForm((f) => ({
                     ...f,
                     day: d,
-                    startTime: opts[0],
-                    endTime: opts[1] || opts[0],
+                    startTime: pts[0] || "4:30",
+                    endTime: pts[1] || pts[0] || "5:30",
                   }));
                 }}
               >
@@ -471,20 +484,17 @@ function WeekGrid({
         <thead>
           <tr>
             <th>Time</th>
-            {DAYS.map((d) => (
+            {OPEN_DAYS.map((d) => (
               <th key={d}>{d}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {ALL_TIME_SLOTS.map((time) => (
+          {ALL_OPEN_SLOTS.map((time) => (
             <tr key={time}>
               <td>{time}</td>
-              {DAYS.map((day) => {
-                const isSat = day === "Sat";
-                const isUnavail =
-                  (isSat && WEEKDAY_SLOTS.includes(time)) ||
-                  (!isSat && SAT_SLOTS.includes(time));
+              {OPEN_DAYS.map((day) => {
+                const isUnavail = !getSlotsForDay(day).includes(time);
 
                 const cellSessions = sessions.filter(
                   (s) => s.day === day && s.time === time,
@@ -968,7 +978,7 @@ function MoveModal({
       s.day === newDay &&
       s.time === newTime,
   );
-  const validTimes = newDay === "Sat" ? SAT_SLOTS : WEEKDAY_SLOTS;
+  const validTimes = getSlotsForDay(newDay);
 
   const handleMove = () => {
     if (conflict) return alert("Student already has a session at this time.");
@@ -1013,11 +1023,12 @@ function MoveModal({
             className="form-select"
             value={newDay}
             onChange={(e) => {
-              setNewDay(e.target.value);
-              setNewTime(e.target.value === "Sat" ? "10AM" : "3PM");
+              const d = e.target.value;
+              setNewDay(d);
+              setNewTime(getSlotsForDay(d)[0] ?? "");
             }}
           >
-            {DAYS.map((d) => (
+            {OPEN_DAYS.map((d) => (
               <option key={d}>{d}</option>
             ))}
           </select>
