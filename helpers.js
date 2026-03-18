@@ -103,8 +103,8 @@ export const GRADE_LEVELS = [
 ]
 
 export const ED_LEVELS = [
-  'High School', 'College Freshman', 'College Sophomore',
-  'College Junior', 'College Senior', "Bachelor's", "Master's", 'Doctorate',
+  '11th Grade', '12th Grade',
+  'College Freshman', 'College Sophomore', 'College Junior', 'College Senior',
 ]
 
 export const SUBJECT_COLORS = {

@@ -12,7 +12,7 @@ const SEED_EMPLOYEES = [
     accountRole: 'teacher',
     email: 'marcus@reema.com',
     phone: '(713) 555-0101',
-    grade: "Bachelor's",
+    grade: 'College Senior',
     schedule: {
       Mon: ['3PM-7PM'],
       Tue: ['3PM-7PM'],
@@ -37,7 +37,7 @@ const SEED_EMPLOYEES = [
     accountRole: 'teacher',
     email: 'priya@reema.com',
     phone: '(713) 555-0102',
-    grade: "Master's",
+    grade: 'College Senior',
     schedule: {
       Mon: ['2PM-5PM'],
       Tue: ['2PM-5PM'],
@@ -85,7 +85,7 @@ const SEED_EMPLOYEES = [
     accountRole: 'teacher',
     email: 'aisha@reema.com',
     phone: '(713) 555-0104',
-    grade: "Bachelor's",
+    grade: 'College Sophomore',
     schedule: {
       Mon: ['4PM-7PM'],
       Wed: ['4PM-7PM'],
@@ -108,7 +108,7 @@ const SEED_EMPLOYEES = [
     accountRole: 'teacher',
     email: 'kevin@reema.com',
     phone: '(713) 555-0105',
-    grade: "Master's",
+    grade: 'College Junior',
     schedule: {
       Mon: ['5PM-8PM'],
       Tue: ['5PM-8PM'],
@@ -155,7 +155,7 @@ const SEED_EMPLOYEES = [
     accountRole: 'admin',
     email: 'mehdi.reema@gmail.com',
     phone: '(555) 010-0001',
-    grade: "Master's",
+    grade: 'College Senior',
     schedule: {},
     conflicts: '',
     hireDate: '2024-01-01',
