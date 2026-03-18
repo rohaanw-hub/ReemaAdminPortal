@@ -1,18 +1,58 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useApp } from "../../AppContext";
 import {
   OPEN_DAYS,
-  ALL_OPEN_SLOTS,
   getSlotsForDay,
   isTutorAvailableAt,
   hasWeeklyConflict,
   CLASSROOMS,
   CLASSROOM_COLORS,
+  timeToMinutes,
 } from "../../helpers";
 import MoveSessionModal from "../components/MoveSessionModal";
 
 // Classrooms shown in the schedule grid — excludes Grader
 const SCHEDULE_CLASSROOMS = ["Classroom 1", "Classroom 2", "Classroom 3"];
+
+// 24-hour calendar constants
+const HOUR_HEIGHT = 60; // px per hour
+const CAL_HEIGHT = 480; // visible container height (scrollable)
+const TOTAL_HEIGHT = 24 * HOUR_HEIGHT; // 1440px
+
+function getCalHours() {
+  return Array.from({ length: 24 }, (_, i) => i);
+}
+
+function hourLabel(h) {
+  if (h === 0) return "12 AM";
+  if (h < 12) return `${h} AM`;
+  if (h === 12) return "12 PM";
+  return `${h - 12} PM`;
+}
+
+function sessionTopPx(time) {
+  const startStr = String(time).split("-")[0].trim();
+  const min = timeToMinutes(startStr);
+  return (min / 60) * HOUR_HEIGHT;
+}
+
+function sessionHeightPx(time) {
+  const parts = String(time).split("-");
+  if (parts.length < 2) return HOUR_HEIGHT;
+  const dur = timeToMinutes(parts[1].trim()) - timeToMinutes(parts[0].trim());
+  return Math.max((dur / 60) * HOUR_HEIGHT, 20);
+}
+
+// Minutes to scroll to on initial load
+function scrollStartMin(day) {
+  return day === "Sat" ? 600 : 930; // 10:00 AM or 3:30 PM
+}
+
+// Operating hour range in minutes for background shading
+function opRange(day) {
+  if (day === "Sat") return { start: 630, end: 810 }; // 10:30 AM – 1:30 PM
+  return { start: 990, end: 1170 }; // 4:30 PM – 7:30 PM
+}
 
 // ── Pure helpers ───────────────────────────────────────────────────────────────
 function relScore(emp) {
@@ -376,9 +416,9 @@ function SessionDetailModal({
   );
 }
 
-// ── Day View ───────────────────────────────────────────────────────────────────
+// ── Day View — 24-hour calendar ────────────────────────────────────────────────
 function DayView({
-  sessionIndex,
+  sessions,
   day,
   employeeMap,
   studentMap,
@@ -388,9 +428,17 @@ function DayView({
   const slots = getSlotsForDay(day);
   const [draggedId, setDraggedId] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
+  const scrollRef = useRef(null);
+  const { start: opStart, end: opEnd } = opRange(day);
 
-  const getCellSessions = (time, classroom) =>
-    sessionIndex[`${day}|${time}|${classroom}`] ?? [];
+  // Scroll to correct time position whenever day changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = (scrollStartMin(day) / 60) * HOUR_HEIGHT;
+    }
+  }, [day]);
+
+  const daySessions = sessions.filter((s) => s.day === day);
 
   const handleDragStart = (e, sessionId) => {
     e.dataTransfer.effectAllowed = "move";
@@ -404,373 +452,461 @@ function DayView({
     setDropTarget(null);
   };
 
-  const handleDragOver = (e, time, classroom) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    setDropTarget(`${time}|${classroom}`);
-  };
-
-  const handleDrop = (e, time, classroom) => {
-    e.preventDefault();
-    if (draggedId != null) {
-      onMove(draggedId, { time, classroom });
-    }
-    setDraggedId(null);
-    setDropTarget(null);
-  };
-
   return (
     <div style={{ overflowX: "auto" }}>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          minWidth: 560,
-        }}
-      >
-        <thead>
-          <tr>
-            <th
+      <div style={{ minWidth: 560 }}>
+        {/* Sticky classroom header */}
+        <div
+          style={{
+            display: "flex",
+            borderBottom: "2px solid #e2e8f0",
+            background: "#f8fafc",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              width: 64,
+              flexShrink: 0,
+              padding: "10px 8px",
+              fontSize: 11,
+              fontWeight: 500,
+              color: "#94a3b8",
+            }}
+          >
+            TIME
+          </div>
+          {SCHEDULE_CLASSROOMS.map((c) => {
+            const col = CLASSROOM_COLORS[c];
+            return (
+              <div
+                key={c}
+                style={{
+                  flex: 1,
+                  padding: "10px 12px",
+                  textAlign: "center",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  background: col.bg,
+                  color: col.color,
+                  borderLeft: "1px solid #e2e8f0",
+                  minWidth: 140,
+                }}
+              >
+                {c}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Scrollable 24-hour body */}
+        <div ref={scrollRef} style={{ height: CAL_HEIGHT, overflowY: "auto" }}>
+          <div
+            style={{
+              position: "relative",
+              height: TOTAL_HEIGHT,
+              display: "flex",
+            }}
+          >
+            {/* Time axis */}
+            <div
               style={{
-                width: 72,
-                padding: "10px 12px",
-                textAlign: "left",
-                color: "#94a3b8",
-                fontWeight: 500,
-                fontSize: 12,
-                borderBottom: "2px solid #e2e8f0",
+                width: 64,
+                flexShrink: 0,
+                position: "relative",
                 background: "#f8fafc",
+                borderRight: "1px solid #e2e8f0",
               }}
             >
-              TIME
-            </th>
-            {SCHEDULE_CLASSROOMS.map((c) => {
-              const col = CLASSROOM_COLORS[c];
-              return (
-                <th
-                  key={c}
+              {getCalHours().map((h) => (
+                <div
+                  key={h}
                   style={{
-                    padding: "10px 12px",
-                    textAlign: "center",
-                    fontWeight: 600,
-                    fontSize: 13,
-                    background: col.bg,
-                    color: col.color,
-                    borderBottom: "2px solid #e2e8f0",
-                    borderLeft: "1px solid #e2e8f0",
+                    position: "absolute",
+                    top: h * HOUR_HEIGHT - 7,
+                    left: 0,
+                    right: 4,
+                    textAlign: "right",
+                    fontSize: 10,
+                    color: "#94a3b8",
+                    lineHeight: 1,
+                    pointerEvents: "none",
+                    userSelect: "none",
                   }}
                 >
-                  {c}
-                </th>
+                  {hourLabel(h)}
+                </div>
+              ))}
+              {/* Hour dividers */}
+              {getCalHours().map((h) => (
+                <div
+                  key={`line-${h}`}
+                  style={{
+                    position: "absolute",
+                    top: h * HOUR_HEIGHT,
+                    left: 0,
+                    right: 0,
+                    height: 1,
+                    background: "#e2e8f0",
+                    pointerEvents: "none",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Classroom columns */}
+            {SCHEDULE_CLASSROOMS.map((classroom) => {
+              const col = CLASSROOM_COLORS[classroom];
+              const classSessions = daySessions.filter(
+                (s) => s.classroom === classroom,
               );
-            })}
-          </tr>
-        </thead>
-        <tbody>
-          {slots.length === 0 ? (
-            <tr>
-              <td
-                colSpan={4}
-                style={{ textAlign: "center", padding: 32, color: "#94a3b8" }}
-              >
-                No sessions scheduled for this day.
-              </td>
-            </tr>
-          ) : (
-            slots.map((slot) => (
-              <tr key={slot}>
-                <td
+
+              return (
+                <div
+                  key={classroom}
                   style={{
-                    padding: "12px",
-                    verticalAlign: "top",
-                    color: "#64748b",
-                    fontSize: 13,
-                    fontWeight: 500,
-                    borderBottom: "1px solid #f1f5f9",
-                    background: "#f8fafc",
-                    whiteSpace: "nowrap",
+                    flex: 1,
+                    position: "relative",
+                    borderLeft: "1px solid #e2e8f0",
+                    minWidth: 140,
                   }}
                 >
-                  {slot.split("-")[0]}
-                </td>
-                {SCHEDULE_CLASSROOMS.map((classroom) => {
-                  const cellSessions = getCellSessions(slot, classroom);
-                  const isTarget = dropTarget === `${slot}|${classroom}`;
-                  const col = CLASSROOM_COLORS[classroom];
-                  return (
-                    <td
-                      key={classroom}
-                      style={{
-                        padding: 8,
-                        verticalAlign: "top",
-                        borderBottom: "1px solid #f1f5f9",
-                        borderLeft: "1px solid #e2e8f0",
-                        background: isTarget ? `${col.bg}cc` : "transparent",
-                        transition: "background 0.1s",
-                        minWidth: 140,
-                        minHeight: 72,
-                      }}
-                      onDragOver={(e) => handleDragOver(e, slot, classroom)}
-                      onDrop={(e) => handleDrop(e, slot, classroom)}
-                      onDragLeave={() => setDropTarget(null)}
-                    >
+                  {/* Hour row backgrounds */}
+                  {getCalHours().map((h) => {
+                    const rowMin = h * 60;
+                    const isOp = rowMin >= opStart && rowMin < opEnd;
+                    return (
                       <div
+                        key={h}
                         style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 6,
-                          minHeight: 56,
+                          position: "absolute",
+                          top: h * HOUR_HEIGHT,
+                          left: 0,
+                          right: 0,
+                          height: HOUR_HEIGHT,
+                          background: isOp ? "#fff" : "#f8fafc",
+                          borderBottom: "1px solid #f1f5f9",
+                        }}
+                      />
+                    );
+                  })}
+
+                  {/* Drop zones — one per valid slot */}
+                  {onMove &&
+                    slots.map((slot) => {
+                      const top = sessionTopPx(slot);
+                      const isTarget = dropTarget === `${slot}|${classroom}`;
+                      return (
+                        <div
+                          key={slot}
+                          style={{
+                            position: "absolute",
+                            top,
+                            left: 0,
+                            right: 0,
+                            height: HOUR_HEIGHT,
+                            zIndex: 1,
+                            background: isTarget
+                              ? `${col.bg}cc`
+                              : "transparent",
+                            transition: "background 0.1s",
+                          }}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = "move";
+                            setDropTarget(`${slot}|${classroom}`);
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            if (draggedId != null) {
+                              onMove(draggedId, {
+                                time: slot,
+                                classroom,
+                              });
+                            }
+                            setDraggedId(null);
+                            setDropTarget(null);
+                          }}
+                          onDragLeave={() => setDropTarget(null)}
+                        />
+                      );
+                    })}
+
+                  {/* Session blocks */}
+                  {classSessions.map((s) => {
+                    const top = sessionTopPx(s.time);
+                    const height = sessionHeightPx(s.time) - 2;
+                    const teacher = employeeMap[s.employeeId];
+                    const student = studentMap[s.studentId];
+                    const isDragging = draggedId === s.id;
+
+                    return (
+                      <div
+                        key={s.id}
+                        draggable={!!onMove}
+                        onDragStart={(e) => handleDragStart(e, s.id)}
+                        onDragEnd={handleDragEnd}
+                        onClick={() => onSessionClick(s.id)}
+                        style={{
+                          position: "absolute",
+                          top: top + 2,
+                          left: 4,
+                          right: 4,
+                          height,
+                          zIndex: 2,
+                          background: col.bg,
+                          borderLeft: `4px solid ${col.border}`,
+                          borderRadius: 6,
+                          padding: "4px 8px",
+                          cursor: "pointer",
+                          opacity: isDragging ? 0.35 : 1,
+                          transition: "opacity 0.15s",
+                          overflow: "hidden",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
                         }}
                       >
-                        {cellSessions.map((s) => {
-                          const teacher = employeeMap[s.employeeId];
-                          const student = studentMap[s.studentId];
-                          const isDragging = draggedId === s.id;
-                          const line1 = student?.name ?? "—";
-                          const line2 =
-                            teacher?.name.split(" ")[0] ?? "Unassigned";
-                          return (
-                            <div
-                              key={s.id}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, s.id)}
-                              onDragEnd={handleDragEnd}
-                              onClick={() => onSessionClick(s.id)}
-                              style={{
-                                background: col.bg,
-                                borderLeft: `4px solid ${col.border}`,
-                                borderRadius: 6,
-                                padding: "6px 8px",
-                                cursor: "pointer",
-                                opacity: isDragging ? 0.35 : 1,
-                                transition: "opacity 0.15s",
-                                boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontWeight: 600,
-                                  fontSize: 13,
-                                  color: col.color,
-                                  lineHeight: 1.3,
-                                }}
-                              >
-                                {line1}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  color: "#64748b",
-                                  lineHeight: 1.3,
-                                }}
-                              >
-                                {line2}
-                              </div>
-                            </div>
-                          );
-                        })}
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            fontSize: 12,
+                            color: col.color,
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {student?.name ?? "—"}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "#64748b",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {teacher?.name.split(" ")[0] ?? "Unassigned"}
+                        </div>
                       </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-// ── Week View ──────────────────────────────────────────────────────────────────
+// ── Week View — 24-hour calendar ───────────────────────────────────────────────
 function WeekView({
-  sessionIndex,
+  sessions,
   employeeMap,
   studentMap,
   graderSchedule,
   onSessionClick,
 }) {
-  const isSlotOpen = (day, slot) => getSlotsForDay(day).includes(slot);
+  const scrollRef = useRef(null);
 
-  const getCellSessions = (day, slot) => sessionIndex[`${day}|${slot}`] ?? [];
+  // Scroll to 3:30 PM on initial load (weekday default; Sat sessions will require scrolling up)
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = (930 / 60) * HOUR_HEIGHT;
+    }
+  }, []);
 
   return (
     <div style={{ overflowX: "auto" }}>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          minWidth: 600,
-        }}
-      >
-        <thead>
-          <tr>
-            <th
-              style={{
-                width: 130,
-                padding: "10px 12px",
-                textAlign: "left",
-                color: "#94a3b8",
-                fontWeight: 500,
-                fontSize: 12,
-                borderBottom: "2px solid #e2e8f0",
-                background: "#f8fafc",
-              }}
-            >
-              SLOT
-            </th>
-            {OPEN_DAYS.map((d) => (
-              <th
+      <div style={{ minWidth: 640 }}>
+        {/* Sticky header: time gutter + grader + day columns */}
+        <div
+          style={{
+            display: "flex",
+            borderBottom: "2px solid #e2e8f0",
+            background: "#f8fafc",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+          }}
+        >
+          <div style={{ width: 64, flexShrink: 0 }} />
+          {OPEN_DAYS.map((d) => {
+            const empId = graderSchedule?.[d];
+            const grader = employeeMap[empId];
+            return (
+              <div
                 key={d}
                 style={{
-                  padding: "10px 12px",
+                  flex: 1,
+                  padding: "8px 12px",
                   textAlign: "center",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  color: "#1e293b",
-                  borderBottom: "2px solid #e2e8f0",
                   borderLeft: "1px solid #e2e8f0",
-                  background: "#f8fafc",
+                  minWidth: 100,
                 }}
               >
-                {d}
-              </th>
-            ))}
-          </tr>
-          <tr>
-            <td
+                <div
+                  style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}
+                >
+                  {d}
+                </div>
+                {grader && (
+                  <div style={{ fontSize: 10, color: "#0369a1", marginTop: 2 }}>
+                    Grader: {grader.name.split(" ")[0]}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Scrollable 24-hour body */}
+        <div ref={scrollRef} style={{ height: CAL_HEIGHT, overflowY: "auto" }}>
+          <div
+            style={{
+              position: "relative",
+              height: TOTAL_HEIGHT,
+              display: "flex",
+            }}
+          >
+            {/* Time axis */}
+            <div
               style={{
-                padding: "8px 12px",
-                fontSize: 12,
-                fontWeight: 600,
-                color: "#0369a1",
+                width: 64,
+                flexShrink: 0,
+                position: "relative",
                 background: "#f8fafc",
-                borderBottom: "1px solid #e2e8f0",
+                borderRight: "1px solid #e2e8f0",
               }}
             >
-              Grader
-            </td>
-            {OPEN_DAYS.map((d) => {
-              const empId = graderSchedule?.[d];
-              const grader = employeeMap[empId];
-              const firstName = grader?.name.split(" ")[0] ?? "—";
-              return (
-                <td
-                  key={d}
+              {getCalHours().map((h) => (
+                <div
+                  key={h}
                   style={{
-                    padding: "8px 12px",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: "#0369a1",
-                    background: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
-                    borderLeft: "1px solid #e2e8f0",
-                    textAlign: "center",
+                    position: "absolute",
+                    top: h * HOUR_HEIGHT - 7,
+                    left: 0,
+                    right: 4,
+                    textAlign: "right",
+                    fontSize: 10,
+                    color: "#94a3b8",
+                    lineHeight: 1,
+                    pointerEvents: "none",
+                    userSelect: "none",
                   }}
                 >
-                  {firstName}
-                </td>
+                  {hourLabel(h)}
+                </div>
+              ))}
+              {getCalHours().map((h) => (
+                <div
+                  key={`line-${h}`}
+                  style={{
+                    position: "absolute",
+                    top: h * HOUR_HEIGHT,
+                    left: 0,
+                    right: 0,
+                    height: 1,
+                    background: "#e2e8f0",
+                    pointerEvents: "none",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Day columns */}
+            {OPEN_DAYS.map((day) => {
+              const { start: opStart, end: opEnd } = opRange(day);
+              const daySessions = sessions.filter((s) => s.day === day);
+
+              return (
+                <div
+                  key={day}
+                  style={{
+                    flex: 1,
+                    position: "relative",
+                    borderLeft: "1px solid #e2e8f0",
+                    minWidth: 100,
+                  }}
+                >
+                  {/* Hour backgrounds */}
+                  {getCalHours().map((h) => {
+                    const rowMin = h * 60;
+                    const isOp = rowMin >= opStart && rowMin < opEnd;
+                    return (
+                      <div
+                        key={h}
+                        style={{
+                          position: "absolute",
+                          top: h * HOUR_HEIGHT,
+                          left: 0,
+                          right: 0,
+                          height: HOUR_HEIGHT,
+                          background: isOp ? "#fff" : "#f8fafc",
+                          borderBottom: "1px solid #f1f5f9",
+                        }}
+                      />
+                    );
+                  })}
+
+                  {/* Session blocks */}
+                  {daySessions.map((s) => {
+                    const col =
+                      CLASSROOM_COLORS[s.classroom] ??
+                      CLASSROOM_COLORS["Classroom 1"];
+                    const top = sessionTopPx(s.time);
+                    const height = sessionHeightPx(s.time) - 2;
+                    const teacher = employeeMap[s.employeeId];
+                    const student = studentMap[s.studentId];
+                    const tooltipText = [
+                      teacher?.name ?? "Unassigned",
+                      student?.name ?? "—",
+                      s.classroom,
+                      s.time,
+                    ].join(" · ");
+
+                    return (
+                      <div
+                        key={s.id}
+                        title={tooltipText}
+                        onClick={() => onSessionClick(s.id)}
+                        style={{
+                          position: "absolute",
+                          top: top + 2,
+                          left: 2,
+                          right: 2,
+                          height,
+                          zIndex: 2,
+                          background: col.bg,
+                          borderLeft: `3px solid ${col.border}`,
+                          borderRadius: 4,
+                          padding: "2px 5px",
+                          cursor: "pointer",
+                          overflow: "hidden",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: col.color,
+                            fontWeight: 600,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {student?.name ?? "—"}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               );
             })}
-          </tr>
-        </thead>
-        <tbody>
-          {ALL_OPEN_SLOTS.map((slot) => (
-            <tr key={slot}>
-              <td
-                style={{
-                  padding: "10px 12px",
-                  verticalAlign: "middle",
-                  color: "#64748b",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  borderBottom: "1px solid #f1f5f9",
-                  background: "#f8fafc",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {slot}
-              </td>
-              {OPEN_DAYS.map((day) => {
-                const open = isSlotOpen(day, slot);
-                const cellSessions = open ? getCellSessions(day, slot) : [];
-                return (
-                  <td
-                    key={day}
-                    style={{
-                      padding: 6,
-                      verticalAlign: "top",
-                      borderBottom: "1px solid #f1f5f9",
-                      borderLeft: "1px solid #e2e8f0",
-                      background: open ? "transparent" : "#f8fafc",
-                      minHeight: 48,
-                    }}
-                  >
-                    {!open ? (
-                      <div
-                        style={{
-                          color: "#cbd5e1",
-                          fontSize: 11,
-                          textAlign: "center",
-                          padding: "8px 0",
-                        }}
-                      >
-                        —
-                      </div>
-                    ) : (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 3,
-                        }}
-                      >
-                        {cellSessions.map((s) => {
-                          const col =
-                            CLASSROOM_COLORS[s.classroom] ??
-                            CLASSROOM_COLORS["Classroom 1"];
-                          const teacher = employeeMap[s.employeeId];
-                          const student = studentMap[s.studentId];
-                          const label = student?.name ?? "—";
-                          const tooltipText = [
-                            teacher?.name ?? "Unassigned",
-                            student?.name ?? "—",
-                            s.classroom,
-                            s.time,
-                          ].join(" · ");
-                          return (
-                            <div
-                              key={s.id}
-                              title={tooltipText}
-                              onClick={() => onSessionClick(s.id)}
-                              style={{
-                                background: col.bg,
-                                borderLeft: `3px solid ${col.border}`,
-                                borderRadius: 4,
-                                padding: "2px 5px",
-                                cursor: "pointer",
-                                fontSize: 11,
-                                color: col.color,
-                                fontWeight: 500,
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                maxWidth: 120,
-                              }}
-                            >
-                              {label}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -804,21 +940,6 @@ export default function Schedule() {
     () => sessions.filter((s) => s.status !== "cancelled"),
     [sessions],
   );
-
-  // O(1) lookup indexes — rebuilt only when data changes
-  const sessionIndex = useMemo(() => {
-    const idx = {};
-    activeSessions.forEach((s) => {
-      const key = `${s.day}|${s.time}|${s.classroom}`;
-      if (!idx[key]) idx[key] = [];
-      idx[key].push(s);
-      // Also index by day|time for week view
-      const slotKey = `${s.day}|${s.time}`;
-      if (!idx[slotKey]) idx[slotKey] = [];
-      idx[slotKey].push(s);
-    });
-    return idx;
-  }, [activeSessions]);
 
   const employeeMap = useMemo(
     () => Object.fromEntries(employees.map((e) => [e.id, e])),
@@ -973,7 +1094,6 @@ export default function Schedule() {
         {viewMode === "day" ? (
           <DayView
             sessions={activeSessions}
-            sessionIndex={sessionIndex}
             day={selectedDay}
             employeeMap={employeeMap}
             studentMap={studentMap}
@@ -983,7 +1103,6 @@ export default function Schedule() {
         ) : (
           <WeekView
             sessions={activeSessions}
-            sessionIndex={sessionIndex}
             employeeMap={employeeMap}
             studentMap={studentMap}
             graderSchedule={graderSchedule}
