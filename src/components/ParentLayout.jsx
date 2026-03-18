@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Bell } from "lucide-react";
 import { useApp } from "../../AppContext";
 import {
@@ -43,10 +43,10 @@ export default function ParentLayout() {
   );
   const unreadCount = myNotifs.filter((n) => !n.read).length;
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate("/login", { replace: true });
-  };
+  }, [logout, navigate]);
 
   return (
     <div

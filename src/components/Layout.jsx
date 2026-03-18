@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Bell, ChevronRight, ChevronDown } from "lucide-react";
 import { useApp } from "../../AppContext";
 import {
@@ -83,10 +83,10 @@ export default function Layout() {
   });
   const unreadCount = myNotifs.filter((n) => !n.read).length;
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate("/login", { replace: true });
-  };
+  }, [logout, navigate]);
 
   const navItems = userIsTeacher(currentUser)
     ? teacherNav(currentUser.profileId)

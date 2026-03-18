@@ -2,43 +2,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useApp } from "../../AppContext";
-import {
-  getInitials,
-  getAvatarBg,
-  getAvatarText,
-  MAX_SEARCH_RESULTS,
-} from "../../helpers";
-
-function Avatar({ name, photo, size = 32 }) {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        background: photo ? "transparent" : getAvatarBg(name),
-        color: getAvatarText(name),
-        fontSize: size * 0.38,
-        fontWeight: 700,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-        overflow: "hidden",
-      }}
-    >
-      {photo ? (
-        <img
-          src={photo}
-          alt={name}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-      ) : (
-        getInitials(name)
-      )}
-    </div>
-  );
-}
+import { MAX_SEARCH_RESULTS } from "../../helpers";
+import Avatar from "./Avatar";
 
 export default function SearchBar() {
   const { employees, students } = useApp();

@@ -436,17 +436,17 @@ function DayView({
 
   const daySessions = sessions.filter((s) => s.day === day);
 
-  const handleDragStart = (e, sessionId) => {
+  const handleDragStart = useCallback((e, sessionId) => {
     e.dataTransfer.effectAllowed = "move";
     // Defer so the browser captures the original chip as the drag image
     // before the ghost placeholder renders. DO NOT remove this defer.
     setTimeout(() => setDraggedId(sessionId), 0);
-  };
+  }, []);
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setDraggedId(null);
     setDropTarget(null);
-  };
+  }, []);
 
   return (
     <div style={{ overflowX: "auto" }}>
