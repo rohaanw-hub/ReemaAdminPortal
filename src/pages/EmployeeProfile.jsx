@@ -144,14 +144,16 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
             onChange={(e) => set("conflicts", e.target.value)}
           />
         </div>
-        <div className="form-group">
-          <label className="form-label">Notes</label>
-          <textarea
-            className="form-textarea"
-            value={form.notes}
-            onChange={(e) => set("notes", e.target.value)}
-          />
-        </div>
+        {isAdmin && (
+          <div className="form-group">
+            <label className="form-label">Notes</label>
+            <textarea
+              className="form-textarea"
+              value={form.notes}
+              onChange={(e) => set("notes", e.target.value)}
+            />
+          </div>
+        )}
 
         <div className="modal-footer">
           <button className="btn btn-outline" onClick={onClose}>
@@ -452,7 +454,7 @@ export default function EmployeeProfile() {
                 <div className="detail-value">{emp.conflicts}</div>
               </div>
             )}
-            {emp.notes && (
+            {isAdmin && emp.notes && (
               <div className="detail-row">
                 <div className="detail-label">Notes</div>
                 <div className="detail-value">{emp.notes}</div>
