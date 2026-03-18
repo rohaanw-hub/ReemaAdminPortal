@@ -60,32 +60,66 @@ Supabase integration is planned for v2.
 
 App.jsx (root, not inside src/) defines all routes. It imports pages directly
 from ./src/pages/. Routes are nested under Layout (/ path).
-Unknown routes redirect to /dashboard.
+Unknown routes and the default landing page redirect to /schedule.
+There is NO /dashboard route — Dashboard.jsx was removed in FEAT-021.
 
 ### Schedule page
 
 src/pages/Schedule.jsx is the most complex file. Key behaviors:
 
-- Two tabs: Employee Scheduler and Student Scheduler, each rendering a WeekGrid
+- Two tabs: Staff View and Student View (renamed from Employee/Student Scheduler)
+- Two display modes: Day View (single day, classroom columns) and Week View (5-day grid)
+- Day View: vertical grid with time slots as rows and 4 classroom columns
 - Drag-and-drop: Native HTML5 DnD API only (no libraries). Uses setTimeout(..., 0)
-  to defer setDraggedSession so the browser captures the original chip as the drag
+  to defer setDraggedId so the browser captures the original chip as the drag
   image before the ghost placeholder renders. DO NOT remove this defer — it is intentional.
-- Auto-assign (findBestTutor): filters candidates by subject match →
+- Auto-assign (findBestTutor): filters by accountRole !== 'admin' →
   isTutorAvailableAt → hasWeeklyConflict → isDoubleBooked, then sorts by
   reliability score descending.
 - Toast notifications: bottom-right fixed, auto-dismiss after 3 seconds via setTimeout.
-- ConflictsPanel: modal for managing weeklyConflicts state per employee.
+- SessionDetailModal: Admin sees Edit/Cancel/Reassign buttons; Teacher sees read-only.
+- Auto-Schedule button: Admin only (hidden from teachers).
 
 ### Time slot constants (helpers.js)
 
-WEEKDAY_SLOTS    = ['3PM','4PM','5PM','6PM','7PM']
-SAT_SLOTS        = ['9AM','10AM','11AM','12PM','1PM','2PM']
-ALL_TIME_SLOTS   = ['9AM','10AM','11AM','12PM','1PM','2PM','3PM','4PM','5PM','6PM','7PM']
-TIME_SLOTS       = ['3PM','4PM','5PM','6PM','7PM']  // legacy alias for WEEKDAY_SLOTS
+MON_WED_SLOTS  = ['4:30-5:30', '5:30-6:30', '6:30-7:30']   // Mon, Tue, Wed
+THU_SLOTS      = ['4:30-5:30', '5:30-6:30']                  // Thu only
+SAT_SLOTS      = ['10:30-11:30', '11:30-12:30', '12:30-1:30'] // Sat only
+ALL_OPEN_SLOTS = [...MON_WED_SLOTS, ...SAT_SLOTS]             // All 6 unique slots
 
-Time parsing uses timeToMinutes(t) which expects strings like "3PM", "10AM"
-(no colon, no minutes). Availability slots in employee/student schedule objects
-are stored as ranges: "3PM-7PM".
+Time parsing uses timeToMinutes(t) which accepts both:
+- Range strings: '4:30-5:30' (start of range is used for comparison)
+- Legacy hour strings: '3PM', '10AM'
+Availability slots in employee/student schedule objects are stored as ranges: '3PM-7PM'.
+
+### Classroom structure (helpers.js)
+
+CLASSROOMS = ['Classroom 1', 'Classroom 2', 'Classroom 3', 'Grader']
+CLASSROOM_COLORS = {
+  'Classroom 1': blue tint   (bg #dbeafe, border #bfdbfe, text #1e40af)
+  'Classroom 2': green tint  (bg #dcfce7, border #bbf7d0, text #166534)
+  'Classroom 3': amber tint  (bg #fef3c7, border #fde68a, text #92400e)
+  'Grader':      gray tint   (bg #f1f5f9, border #e2e8f0, text #475569)
+}
+All sessions must have a classroom field.
+
+### Student grade level values (helpers.js)
+
+GRADE_LEVELS = ['Pre-K', 'K', '1st', ..., '12th', 'College']
+gradeLevel shape: { math: string, reading: string, writing: string }
+Valid values for each subject: any value from GRADE_LEVELS.
+Editable by admin and teacher (canEditProgress = isAdmin || isTeacher).
+Parents see read-only.
+
+### Employee education values (helpers.js)
+
+ED_LEVELS = [
+  '11th Grade', '12th Grade',
+  'College Freshman', 'College Sophomore', 'College Junior', 'College Senior',
+]
+The `grade` field on employees = year in school (replaced legacy position/role display).
+The `role` field (e.g. 'Lead Tutor') remains in the data model for internal reference
+but is NOT displayed in any UI. Use `accountRole` for permission checks.
 
 ### Styling
 
