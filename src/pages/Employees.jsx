@@ -12,9 +12,11 @@ import {
   serializeSchedule,
 } from "../../helpers";
 import { useSortableTable } from "../hooks/useSortableTable";
+import { usePagination } from "../hooks/usePagination";
 import ScheduleEditor from "../components/ScheduleEditor";
 import Th from "../components/Th";
 import ImportModal from "../components/ImportModal";
+import Pagination from "../components/Pagination";
 
 function blankForm() {
   const schedule = {};
@@ -208,6 +210,16 @@ export default function Employees() {
   const { sortedData, sortKey, sortDir, handleSort } =
     useSortableTable(withReliability);
 
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    pageSize,
+    setPage,
+    setPageSize,
+    paginationInfo,
+  } = usePagination(sortedData, 25);
+
   const handleAdd = (formData) => {
     const newId = Math.max(0, ...employees.map((e) => e.id)) + 1;
     setEmployees((prev) => [...prev, { ...formData, id: newId }]);
@@ -287,7 +299,7 @@ export default function Employees() {
               </tr>
             </thead>
             <tbody>
-              {sortedData.map((e) => {
+              {paginatedData.map((e) => {
                 const rel = e._rel;
                 return (
                   <tr
@@ -342,7 +354,7 @@ export default function Employees() {
                   </tr>
                 );
               })}
-              {sortedData.length === 0 && (
+              {paginatedData.length === 0 && (
                 <tr>
                   <td
                     colSpan={7}
@@ -355,6 +367,15 @@ export default function Employees() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          paginationInfo={paginationInfo}
+          label="employees"
+          setPage={setPage}
+          setPageSize={setPageSize}
+        />
       </div>
 
       {showModal && (
