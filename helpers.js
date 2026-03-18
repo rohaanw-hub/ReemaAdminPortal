@@ -417,47 +417,53 @@ export function autoAssignSessions(
       const studentsInRoom = classroomStudents[classroom]
       if (!studentsInRoom.length) return
 
-      // Check capacity
-      if (studentsInRoom.length > 4) {
-        conflicts.push(`${classroom} on ${day}: ${studentsInRoom.length} students exceeds 4-student capacity.`)
+      // Check capacity — only count existing sessions for this specific week date
+      const existingInRoom = replaceAll ? [] : existingSessions.filter(
+        (s) => s.classroom === classroom && s.day === day && s.date === date && s.status !== 'cancelled',
+      )
+      if (studentsInRoom.length + existingInRoom.length > 4) {
+        conflicts.push(`${classroom} on ${day} ${formatShortDate(date)}: ${studentsInRoom.length + existingInRoom.length} students exceeds 4-student capacity.`)
       }
 
       // Pick the first available slot for this classroom on this day
       const slot = slots[0]
       if (!slot) return
 
+      const dateLabel = `${day} ${formatShortDate(date)}`
+
       // Teacher availability check
       if (emp && !isTutorAvailableAt(emp, day, slot)) {
-        conflicts.push(`${emp.name} is unavailable on ${day} at ${slot} (schedule conflict).`)
+        conflicts.push(`${emp.name} is unavailable on ${dateLabel} at ${slot} (schedule conflict).`)
       }
       if (emp && empId && hasWeeklyConflict(weeklyConflicts, empId, day, slot)) {
-        conflicts.push(`${emp.name} has a weekly conflict on ${day} at ${slot}.`)
+        conflicts.push(`${emp.name} has a weekly conflict on ${dateLabel} at ${slot}.`)
       }
 
-      // Teacher double-booking check
+      // Teacher double-booking check — only for this week's date
       if (!replaceAll && empId) {
         const alreadyBooked = existingSessions.some(
-          (s) => s.employeeId === empId && s.day === day && s.time === slot && s.status !== 'cancelled',
+          (s) => s.employeeId === empId && s.day === day && s.date === date && s.time === slot && s.status !== 'cancelled',
         )
         if (alreadyBooked) {
           const empName = emp ? emp.name : `Employee #${empId}`
-          conflicts.push(`${empName} is already booked on ${day} at ${slot} (double-book).`)
+          conflicts.push(`${empName} is already booked on ${dateLabel} at ${slot} (double-book).`)
         }
       }
 
       studentsInRoom.forEach((student) => {
-        // Student double-booking check
+        // Student double-booking check — only for this week's date
         const studentConflict =
           !replaceAll &&
           existingSessions.some(
             (s) =>
               s.studentId === student.id &&
               s.day === day &&
+              s.date === date &&
               s.time === slot &&
               s.status !== 'cancelled',
           )
         if (studentConflict) {
-          conflicts.push(`${student.name} already has a session on ${day} at ${slot}.`)
+          conflicts.push(`${student.name} already has a session on ${dateLabel} at ${slot}.`)
         }
 
         proposed.push({

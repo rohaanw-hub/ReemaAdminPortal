@@ -764,7 +764,6 @@ function DayView({
 function WeekView({
   sessions,
   employeeMap,
-  studentMap,
   graderSchedule,
   onSessionClick,
   isAdmin,
@@ -943,58 +942,82 @@ function WeekView({
                     );
                   })}
 
-                  {/* Session blocks */}
-                  {daySessions.map((s) => {
-                    const col =
-                      CLASSROOM_COLORS[s.classroom] ??
-                      CLASSROOM_COLORS["Classroom 1"];
-                    const top = sessionTopPx(s.time);
-                    const height = sessionHeightPx(s.time) - 2;
-                    const teacher = employeeMap[s.employeeId];
-                    const student = studentMap[s.studentId];
-                    const tooltipText = [
-                      teacher?.name ?? "Unassigned",
-                      student?.name ?? "—",
-                      s.classroom,
-                      s.time,
-                    ].join(" · ");
-
-                    return (
-                      <div
-                        key={s.id}
-                        title={tooltipText}
-                        onClick={() => onSessionClick(s.id)}
-                        style={{
-                          position: "absolute",
-                          top: top + 2,
-                          left: 2,
-                          right: 2,
-                          height,
-                          zIndex: 2,
-                          background: col.bg,
-                          borderLeft: `3px solid ${col.border}`,
-                          borderRadius: 4,
-                          padding: "2px 5px",
-                          cursor: "pointer",
-                          overflow: "hidden",
-                          boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
-                        }}
-                      >
+                  {/* Session blocks — grouped by classroom+time for week view */}
+                  {(() => {
+                    const groups = {};
+                    daySessions.forEach((s) => {
+                      const key = `${s.classroom}||${s.time}`;
+                      if (!groups[key]) {
+                        groups[key] = {
+                          classroom: s.classroom,
+                          time: s.time,
+                          employeeId: s.employeeId,
+                          firstId: s.id,
+                          count: 0,
+                        };
+                      }
+                      groups[key].count += 1;
+                    });
+                    return Object.values(groups).map((g) => {
+                      const col =
+                        CLASSROOM_COLORS[g.classroom] ??
+                        CLASSROOM_COLORS["Classroom 1"];
+                      const top = sessionTopPx(g.time);
+                      const height = sessionHeightPx(g.time) - 2;
+                      const teacher = employeeMap[g.employeeId];
+                      const tooltipText = [
+                        teacher?.name ?? "Unassigned",
+                        `${g.count} student${g.count !== 1 ? "s" : ""}`,
+                        g.classroom,
+                        g.time,
+                      ].join(" · ");
+                      return (
                         <div
+                          key={`${g.classroom}-${g.time}`}
+                          title={tooltipText}
+                          onClick={() => onSessionClick(g.firstId)}
                           style={{
-                            fontSize: 11,
-                            color: col.color,
-                            fontWeight: 600,
-                            whiteSpace: "nowrap",
+                            position: "absolute",
+                            top: top + 2,
+                            left: 2,
+                            right: 2,
+                            height,
+                            zIndex: 2,
+                            background: col.bg,
+                            borderLeft: `3px solid ${col.border}`,
+                            borderRadius: 4,
+                            padding: "2px 5px",
+                            cursor: "pointer",
                             overflow: "hidden",
-                            textOverflow: "ellipsis",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
                           }}
                         >
-                          {student?.name ?? "—"}
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: col.color,
+                              fontWeight: 600,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {teacher?.name ?? "Unassigned"}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 10,
+                              color: col.color,
+                              opacity: 0.8,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {g.count} student{g.count !== 1 ? "s" : ""}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
 
                   {/* Calendar event blocks */}
                   {calendarEvents
