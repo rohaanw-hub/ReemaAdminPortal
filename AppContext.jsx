@@ -186,6 +186,7 @@ const SEED_STUDENTS = [
     attendance: 92,
     sessions: 24,
     photo: null,
+    gradeLevel: { math: '5th', reading: '4th', writing: '3rd' },
   },
   {
     id: 2,
@@ -203,6 +204,7 @@ const SEED_STUDENTS = [
     attendance: 78,
     sessions: 31,
     photo: null,
+    gradeLevel: { math: '7th', reading: '5th', writing: '6th' },
   },
   {
     id: 3,
@@ -220,6 +222,7 @@ const SEED_STUDENTS = [
     attendance: 95,
     sessions: 18,
     photo: null,
+    gradeLevel: { math: '1st', reading: '2nd', writing: '2nd' },
   },
   {
     id: 4,
@@ -237,6 +240,7 @@ const SEED_STUDENTS = [
     attendance: 88,
     sessions: 22,
     photo: null,
+    gradeLevel: { math: '6th', reading: '5th', writing: '4th' },
   },
   {
     id: 5,
@@ -254,6 +258,7 @@ const SEED_STUDENTS = [
     attendance: 97,
     sessions: 15,
     photo: null,
+    gradeLevel: { math: '2nd', reading: '5th', writing: '3rd' },
   },
   {
     id: 6,
@@ -271,6 +276,7 @@ const SEED_STUDENTS = [
     attendance: 85,
     sessions: 28,
     photo: null,
+    gradeLevel: { math: '7th', reading: '9th', writing: '8th' },
   },
   {
     id: 7,
@@ -288,6 +294,7 @@ const SEED_STUDENTS = [
     attendance: 91,
     sessions: 35,
     photo: null,
+    gradeLevel: { math: '7th', reading: '7th', writing: '6th' },
   },
   {
     id: 8,
@@ -305,6 +312,7 @@ const SEED_STUDENTS = [
     attendance: 82,
     sessions: 19,
     photo: null,
+    gradeLevel: { math: '8th', reading: '6th', writing: '5th' },
   },
 ]
 
