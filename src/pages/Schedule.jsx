@@ -862,7 +862,7 @@ function EmpSessionModal({
 // ── Student Session Modal ─────────────────────────────────────────────────────
 function StuSessionModal({
   session,
-  sessions,
+  sessions: _sessions,
   employees,
   students,
   onClose,
@@ -1475,13 +1475,14 @@ export default function Schedule() {
     );
   };
 
-  const openMove = (session) => {
+  const openMove = useCallback((session) => {
     setMoveTarget(session);
     setShowMoveModal(true);
-  };
+  }, []);
 
   const unassignedCount = useMemo(
-    () => sessions.filter((s) => !s.employeeId && s.status === "scheduled").length,
+    () =>
+      sessions.filter((s) => !s.employeeId && s.status === "scheduled").length,
     [sessions],
   );
   const cancelledCount = useMemo(
@@ -1489,7 +1490,11 @@ export default function Schedule() {
     [sessions],
   );
   const totalConflicts = useMemo(
-    () => Object.values(weeklyConflicts).reduce((sum, arr) => sum + (arr?.length ?? 0), 0),
+    () =>
+      Object.values(weeklyConflicts).reduce(
+        (sum, arr) => sum + (arr?.length ?? 0),
+        0,
+      ),
     [weeklyConflicts],
   );
 
@@ -1513,10 +1518,13 @@ export default function Schedule() {
     setSelectedSession(null);
   }, []);
 
-  const onStuMove = useCallback((s) => {
-    setSelectedSession(null);
-    openMove(s);
-  }, [openMove]);
+  const onStuMove = useCallback(
+    (s) => {
+      setSelectedSession(null);
+      openMove(s);
+    },
+    [openMove],
+  );
 
   const onCloseMoveModal = useCallback(() => {
     setShowMoveModal(false);

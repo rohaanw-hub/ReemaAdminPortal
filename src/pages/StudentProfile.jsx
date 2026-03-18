@@ -47,7 +47,8 @@ function EditModal({ student, onClose, onSave }) {
         : [...form.subjects, s],
     );
 
-  const handleSave = () => onSave({ ...form, schedule: serializeSchedule(form.schedule) });
+  const handleSave = () =>
+    onSave({ ...form, schedule: serializeSchedule(form.schedule) });
 
   return (
     <div className="modal-overlay">

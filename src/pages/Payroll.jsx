@@ -4,7 +4,6 @@ import {
   getAvatarBg,
   getAvatarText,
   calcHours,
-  formatDate,
 } from "../../helpers";
 
 export default function Payroll() {

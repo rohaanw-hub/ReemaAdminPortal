@@ -47,7 +47,8 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
         : [...form.subjects, s],
     );
 
-  const handleSave = () => onSave({ ...form, schedule: serializeSchedule(form.schedule) });
+  const handleSave = () =>
+    onSave({ ...form, schedule: serializeSchedule(form.schedule) });
 
   return (
     <div className="modal-overlay">
@@ -255,6 +256,12 @@ export default function EmployeeProfile() {
   };
 
   const emp = employees.find((e) => e.id === Number(id));
+
+  const empSessions = useMemo(
+    () => (emp ? sessions.filter((s) => s.employeeId === emp.id) : []),
+    [sessions, emp],
+  );
+
   if (!emp) return <div className="card">Employee not found.</div>;
 
   // Teachers can only view their own profile
@@ -266,10 +273,6 @@ export default function EmployeeProfile() {
   const isAdminAccount = emp.email.toLowerCase() === "mehdi.reema@gmail.com";
   const rel = calcReliability(emp.callouts, emp.totalShifts);
   const hours = calcHours(emp.clockIns);
-  const empSessions = useMemo(
-    () => sessions.filter((s) => s.employeeId === emp.id),
-    [sessions, emp.id],
-  );
   const myConflicts = weeklyConflicts[emp.id] || [];
 
   const handleSaveEdit = (updated) => {
@@ -578,7 +581,7 @@ export default function EmployeeProfile() {
               }}
             >
               <div className="section-title" style={{ marginBottom: 0 }}>
-                This Week's Conflicts
+                {"This Week's Conflicts"}
                 {myConflicts.length > 0 && (
                   <span className="badge badge-red" style={{ marginLeft: 8 }}>
                     {myConflicts.length}

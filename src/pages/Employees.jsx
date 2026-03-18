@@ -76,7 +76,11 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
       setEmailError("This email is already associated with an account");
       return;
     }
-    onSave({ ...form, schedule: serializeSchedule(form.schedule), accountRole: "teacher" });
+    onSave({
+      ...form,
+      schedule: serializeSchedule(form.schedule),
+      accountRole: "teacher",
+    });
   };
 
   return (

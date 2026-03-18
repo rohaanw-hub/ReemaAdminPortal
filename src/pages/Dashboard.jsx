@@ -32,7 +32,8 @@ export default function Dashboard() {
     () =>
       students.length
         ? Math.round(
-            students.reduce((sum, s) => sum + s.attendance, 0) / students.length,
+            students.reduce((sum, s) => sum + s.attendance, 0) /
+              students.length,
           )
         : 0,
     [students],
@@ -123,7 +124,9 @@ export default function Dashboard() {
       >
         {/* Today's Schedule */}
         <div className="card">
-          <div className="section-title">Today's Schedule — Monday</div>
+          <div className="section-title">
+            {"Today's Schedule \u2014 Monday"}
+          </div>
           {todaySessions.length === 0 ? (
             <p className="text-sm">No sessions scheduled for today.</p>
           ) : (

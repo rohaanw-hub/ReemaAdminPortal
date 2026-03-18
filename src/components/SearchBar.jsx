@@ -182,7 +182,7 @@ export default function SearchBar() {
           }}
           onBlur={() => setFocused(false)}
           onKeyDown={handleKeyDown}
-          placeholder="Search students and employees..."
+          placeholder="Search"
           style={{
             flex: 1,
             border: "none",
@@ -243,7 +243,7 @@ export default function SearchBar() {
               {empResults.length > 0 && (
                 <div>
                   <div style={sectionHeaderStyle}>Employees</div>
-                  {empResults.map((r, i) => (
+                  {empResults.map((r) => (
                     <ResultRow
                       key={`emp-${r.item.id}`}
                       result={r}

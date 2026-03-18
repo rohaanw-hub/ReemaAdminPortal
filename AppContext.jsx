@@ -464,7 +464,7 @@ export function AppProvider({ children }) {
   }
 
   // Mock invite — logs to console and fires an admin notification.
-  const sendInvite = (name, email, accountRole) => {
+  const sendInvite = (name, email, _accountRole) => {
     addNotification('info', `Invite sent to ${name} (${email})`, 'admin')
   }
 
@@ -504,6 +504,7 @@ export function AppProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useApp() {
   const ctx = useContext(AppContext)
   if (!ctx) throw new Error('useApp must be used within AppProvider')
