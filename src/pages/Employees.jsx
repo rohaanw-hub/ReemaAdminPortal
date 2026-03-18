@@ -8,7 +8,6 @@ import {
   calcReliability,
   reliabilityColor,
   DAYS,
-  SUBJECTS,
   ED_LEVELS,
   serializeSchedule,
 } from "../../helpers";
@@ -27,7 +26,6 @@ function blankForm() {
     email: "",
     phone: "",
     grade: "Bachelor's",
-    subjects: [],
     hourlyRate: 15,
     schedule,
     conflicts: "",
@@ -40,15 +38,6 @@ function blankForm() {
   };
 }
 
-function CheckChip({ label, checked, onChange }) {
-  return (
-    <label className={`checkbox-chip${checked ? " selected" : ""}`}>
-      <input type="checkbox" checked={checked} onChange={onChange} />
-      {label}
-    </label>
-  );
-}
-
 function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
   const [form, setForm] = useState(blankForm());
   const [emailError, setEmailError] = useState("");
@@ -57,14 +46,6 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
     setForm((f) => ({ ...f, [field]: val }));
     if (field === "email") setEmailError("");
   };
-
-  const toggleSubject = (s) =>
-    set(
-      "subjects",
-      form.subjects.includes(s)
-        ? form.subjects.filter((x) => x !== s)
-        : [...form.subjects, s],
-    );
 
   const handleSave = () => {
     if (!form.name.trim()) return alert("Name is required");
@@ -171,20 +152,6 @@ function AddEmployeeModal({ onClose, onSave, isEmailTaken }) {
           </div>
         </div>
 
-        <div className="form-group">
-          <label className="form-label">Subjects</label>
-          <div className="checkbox-group">
-            {SUBJECTS.map((s) => (
-              <CheckChip
-                key={s}
-                label={s}
-                checked={form.subjects.includes(s)}
-                onChange={() => toggleSubject(s)}
-              />
-            ))}
-          </div>
-        </div>
-
         <div className="form-section">Availability</div>
         <ScheduleEditor
           schedule={form.schedule}
@@ -236,8 +203,7 @@ export default function Employees() {
       employees.filter((e) => {
         const matchSearch =
           e.name.toLowerCase().includes(search.toLowerCase()) ||
-          e.email.toLowerCase().includes(search.toLowerCase()) ||
-          e.subjects.join(" ").toLowerCase().includes(search.toLowerCase());
+          e.email.toLowerCase().includes(search.toLowerCase());
         const matchRole = filterRole === "All" || e.role === filterRole;
         return matchSearch && matchRole;
       }),
@@ -263,7 +229,7 @@ export default function Employees() {
       <div className="search-row">
         <input
           className="search-input"
-          placeholder="Search by name, email, or subject..."
+          placeholder="Search by name or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -288,7 +254,6 @@ export default function Employees() {
                 <th>Name</th>
                 <th>Position</th>
                 <th>Account</th>
-                <th>Subjects</th>
                 <th>Education</th>
                 <th>Rate</th>
                 <th>Reliability</th>
@@ -329,7 +294,6 @@ export default function Employees() {
                         {e.accountRole === "admin" ? "Admin" : "Teacher"}
                       </span>
                     </td>
-                    <td>{e.subjects.join(", ")}</td>
                     <td>{e.grade}</td>
                     <td>${e.hourlyRate}/hr</td>
                     <td>
@@ -355,7 +319,7 @@ export default function Employees() {
               {filtered.length === 0 && (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={7}
                     style={{ textAlign: "center", color: "#94a3b8" }}
                   >
                     No employees found.

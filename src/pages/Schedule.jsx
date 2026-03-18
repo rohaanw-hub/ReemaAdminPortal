@@ -35,13 +35,12 @@ function findBestTutor(
   weeklyConflicts,
   day,
   time,
-  subject,
+  _subject,
   excludeEmpId = null,
   excludeSessionId = null,
 ) {
   const candidates = employees.filter((emp) => {
     if (emp.id === excludeEmpId) return false;
-    if (!emp.subjects.includes(subject)) return false;
     if (!isTutorAvailableAt(emp, day, time)) return false;
     if (hasWeeklyConflict(weeklyConflicts, emp.id, day, time)) return false;
     if (isDoubleBooked(sessions, emp.id, day, time, excludeSessionId))

@@ -6,12 +6,8 @@ import {
   getAvatarBg,
   getAvatarText,
   formatDate,
-  LEVEL_BADGE_CLASS,
-  LEVEL_PROGRESS,
   DAYS,
-  SUBJECTS,
   GRADES,
-  LEVELS,
   serializeSchedule,
   deserializeSchedule,
   validatePhotoFile,
@@ -24,10 +20,6 @@ function EditModal({ student, onClose, onSave }) {
   const [form, setForm] = useState({
     name: student.name,
     grade: student.grade,
-    subjects: [...student.subjects],
-    reading: student.reading,
-    writing: student.writing,
-    math: student.math,
     schedule: deserializeSchedule(student.schedule),
     parentName: student.parentName,
     parentPhone: student.parentPhone,
@@ -38,14 +30,6 @@ function EditModal({ student, onClose, onSave }) {
   });
 
   const set = (field, val) => setForm((f) => ({ ...f, [field]: val }));
-
-  const toggleSubject = (s) =>
-    set(
-      "subjects",
-      form.subjects.includes(s)
-        ? form.subjects.filter((x) => x !== s)
-        : [...form.subjects, s],
-    );
 
   const handleSave = () =>
     onSave({ ...form, schedule: serializeSchedule(form.schedule) });
@@ -80,65 +64,6 @@ function EditModal({ student, onClose, onSave }) {
                 <option key={g}>{g}</option>
               ))}
             </select>
-          </div>
-        </div>
-
-        <div className="form-section">Academic Levels</div>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Reading</label>
-            <select
-              className="form-select"
-              value={form.reading}
-              onChange={(e) => set("reading", e.target.value)}
-            >
-              {LEVELS.map((l) => (
-                <option key={l}>{l}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Writing</label>
-            <select
-              className="form-select"
-              value={form.writing}
-              onChange={(e) => set("writing", e.target.value)}
-            >
-              {LEVELS.map((l) => (
-                <option key={l}>{l}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Math</label>
-          <select
-            className="form-select"
-            value={form.math}
-            onChange={(e) => set("math", e.target.value)}
-          >
-            {LEVELS.map((l) => (
-              <option key={l}>{l}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Subjects Needed</label>
-          <div className="checkbox-group">
-            {SUBJECTS.map((s) => (
-              <label
-                key={s}
-                className={`checkbox-chip${form.subjects.includes(s) ? " selected" : ""}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={form.subjects.includes(s)}
-                  onChange={() => toggleSubject(s)}
-                />
-                {s}
-              </label>
-            ))}
           </div>
         </div>
 
@@ -368,15 +293,13 @@ export default function StudentProfile() {
 
       {/* Tabs */}
       <div className="tabs">
-        {["overview", "academic", "schedule", "family"].map((t) => (
+        {["overview", "schedule", "family"].map((t) => (
           <button
             key={t}
             className={`tab${tab === t ? " active" : ""}`}
             onClick={() => setTab(t)}
           >
-            {t === "academic"
-              ? "Academic Progress"
-              : t.charAt(0).toUpperCase() + t.slice(1)}
+            {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
@@ -389,10 +312,6 @@ export default function StudentProfile() {
             <div className="detail-row">
               <div className="detail-label">Grade</div>
               <div className="detail-value">{student.grade}</div>
-            </div>
-            <div className="detail-row">
-              <div className="detail-label">Subjects</div>
-              <div className="detail-value">{student.subjects.join(", ")}</div>
             </div>
             <div className="detail-row">
               <div className="detail-label">Attendance</div>
@@ -455,96 +374,6 @@ export default function StudentProfile() {
                 </table>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Academic Progress Tab */}
-      {tab === "academic" && (
-        <div className="card">
-          <div className="section-title">Academic Progress</div>
-          {[
-            { label: "Reading", value: student.reading },
-            { label: "Writing", value: student.writing },
-            { label: "Math", value: student.math },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ marginBottom: 20 }}>
-              <div
-                className="flex items-center gap-2"
-                style={{ marginBottom: 8 }}
-              >
-                <span
-                  style={{
-                    width: 64,
-                    fontSize: 14,
-                    color: "#475569",
-                    fontWeight: 600,
-                  }}
-                >
-                  {label}
-                </span>
-                <span
-                  className={`badge ${LEVEL_BADGE_CLASS[value] ?? "badge-gray"}`}
-                >
-                  {value}
-                </span>
-              </div>
-              <div className="progress-bar" style={{ height: 10 }}>
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${LEVEL_PROGRESS[value] ?? 0}%`,
-                    background:
-                      value === "Advanced"
-                        ? "#E31837"
-                        : value === "Above Grade"
-                          ? "#16a34a"
-                          : value === "At Grade"
-                            ? "#d97706"
-                            : "#dc2626",
-                  }}
-                />
-              </div>
-              <div className="text-sm" style={{ marginTop: 4 }}>
-                {value === "Advanced" &&
-                  "Performing above expectations — excellent work!"}
-                {value === "Above Grade" &&
-                  "Performing above grade level — keep it up."}
-                {value === "At Grade" &&
-                  "On track with grade-level expectations."}
-                {value === "Below Grade" &&
-                  "Needs additional support to reach grade level."}
-              </div>
-            </div>
-          ))}
-
-          <div style={{ marginTop: 24 }}>
-            <div className="section-title">Attendance</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <span
-                style={{
-                  fontSize: 32,
-                  fontWeight: 700,
-                  color: attendanceColor(student.attendance),
-                }}
-              >
-                {student.attendance}%
-              </span>
-              <div style={{ flex: 1 }}>
-                <div className="progress-bar" style={{ height: 10 }}>
-                  <div
-                    className="progress-fill"
-                    style={{
-                      width: `${student.attendance}%`,
-                      background: attendanceColor(student.attendance),
-                    }}
-                  />
-                </div>
-                <div className="text-sm" style={{ marginTop: 4 }}>
-                  {student.sessions} total sessions attended
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}

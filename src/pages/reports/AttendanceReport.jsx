@@ -50,7 +50,6 @@ export default function AttendanceReport() {
       Time: s.time,
       Student: studentName(s.studentId),
       Teacher: teacherName(s.employeeId),
-      Subject: s.subject,
       Status: s.status,
       Duration: `${s.duration} min`,
     }));
@@ -240,7 +239,6 @@ export default function AttendanceReport() {
                   <th>Time</th>
                   <th>Student</th>
                   <th>Teacher</th>
-                  <th>Subject</th>
                   <th>Status</th>
                   <th>Duration</th>
                 </tr>
@@ -259,7 +257,6 @@ export default function AttendanceReport() {
                     >
                       {teacherName(s.employeeId)}
                     </td>
-                    <td>{s.subject}</td>
                     <td>
                       <span
                         className={`badge ${STATUS_BADGE[s.status] ?? "badge-gray"}`}

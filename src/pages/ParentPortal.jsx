@@ -10,49 +10,6 @@ import {
   SUBJECT_COLORS,
 } from "../../helpers";
 
-// Academic level colours — inline since LEVEL_BADGE_CLASS uses CSS class names not inline styles
-const LEVEL_COLORS = {
-  Advanced: { bg: "#dcfce7", color: "#166534" },
-  "Above Grade": { bg: "#d1fae5", color: "#065f46" },
-  "At Grade": { bg: "#f1f5f9", color: "#475569" },
-  "Below Grade": { bg: "#fef3c7", color: "#92400e" },
-};
-
-function LevelPill({ label, value }) {
-  const { bg, color } = LEVEL_COLORS[value] ?? {
-    bg: "#f1f5f9",
-    color: "#475569",
-  };
-  return (
-    <div style={{ textAlign: "center" }}>
-      <div
-        style={{
-          fontSize: 11,
-          color: "#94a3b8",
-          marginBottom: 4,
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-        }}
-      >
-        {label}
-      </div>
-      <span
-        style={{
-          display: "inline-block",
-          padding: "3px 10px",
-          borderRadius: 999,
-          fontSize: 12,
-          fontWeight: 600,
-          background: bg,
-          color,
-        }}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
 export default function ParentPortal() {
   const { currentUser, students, sessions, employees } = useApp();
 
@@ -109,11 +66,6 @@ export default function ParentPortal() {
           <div className="text-sm" style={{ marginTop: 2 }}>
             Grade {child.grade} · Enrolled {child.enrollDate}
           </div>
-        </div>
-        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-          <LevelPill label="Reading" value={child.reading} />
-          <LevelPill label="Writing" value={child.writing} />
-          <LevelPill label="Math" value={child.math} />
         </div>
       </div>
 

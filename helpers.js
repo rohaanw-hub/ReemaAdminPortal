@@ -78,27 +78,10 @@ export const calcReliability = (callouts, totalShifts) =>
 
 export const reliabilityColor = (pct) => (pct >= 90 ? '#16a34a' : pct >= 75 ? '#d97706' : '#dc2626')
 
-// ─── Academic Level Helpers ───────────────────────────────────────────────────
-export const LEVEL_BADGE_CLASS = {
-  Advanced: 'badge-blue',
-  'Above Grade': 'badge-green',
-  'At Grade': 'badge-gray',
-  'Below Grade': 'badge-amber',
-}
-
-export const LEVEL_PROGRESS = {
-  'Below Grade': 25,
-  'At Grade': 55,
-  'Above Grade': 75,
-  Advanced: 100,
-}
-
 // ─── Constants ────────────────────────────────────────────────────────────────
 export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 export const OPEN_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Sat']
-export const SUBJECTS = ['Reading', 'Writing', 'Math', 'Science', 'SAT Prep', 'Test Prep']
 export const GRADES = ['K', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th']
-export const LEVELS = ['Below Grade', 'At Grade', 'Above Grade', 'Advanced']
 // Mon, Tue, Wed: 4:30 PM — 7:30 PM
 export const MON_WED_SLOTS = ['4:30-5:30', '5:30-6:30', '6:30-7:30']
 // Thu: 4:30 PM — 6:30 PM

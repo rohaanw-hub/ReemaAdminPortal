@@ -5,11 +5,8 @@ import {
   getInitials,
   getAvatarBg,
   getAvatarText,
-  LEVEL_BADGE_CLASS,
   DAYS,
-  SUBJECTS,
   GRADES,
-  LEVELS,
   serializeSchedule,
 } from "../../helpers";
 import ScheduleEditor from "../components/ScheduleEditor";
@@ -23,10 +20,6 @@ function blankForm() {
   return {
     name: "",
     grade: "3rd",
-    subjects: [],
-    reading: "At Grade",
-    writing: "At Grade",
-    math: "At Grade",
     schedule,
     parentName: "",
     parentPhone: "",
@@ -49,14 +42,6 @@ function AddStudentModal({ onClose, onSave, isEmailTaken }) {
     setForm((f) => ({ ...f, [field]: val }));
     if (field === "parentEmail") setEmailError("");
   };
-
-  const toggleSubject = (s) =>
-    set(
-      "subjects",
-      form.subjects.includes(s)
-        ? form.subjects.filter((x) => x !== s)
-        : [...form.subjects, s],
-    );
 
   const handleSave = () => {
     if (!form.name.trim()) return alert("Name is required");
@@ -102,65 +87,6 @@ function AddStudentModal({ onClose, onSave, isEmailTaken }) {
                 <option key={g}>{g}</option>
               ))}
             </select>
-          </div>
-        </div>
-
-        <div className="form-section">Academic Levels</div>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Reading</label>
-            <select
-              className="form-select"
-              value={form.reading}
-              onChange={(e) => set("reading", e.target.value)}
-            >
-              {LEVELS.map((l) => (
-                <option key={l}>{l}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Writing</label>
-            <select
-              className="form-select"
-              value={form.writing}
-              onChange={(e) => set("writing", e.target.value)}
-            >
-              {LEVELS.map((l) => (
-                <option key={l}>{l}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Math</label>
-          <select
-            className="form-select"
-            value={form.math}
-            onChange={(e) => set("math", e.target.value)}
-          >
-            {LEVELS.map((l) => (
-              <option key={l}>{l}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Subjects Needed</label>
-          <div className="checkbox-group">
-            {SUBJECTS.map((s) => (
-              <label
-                key={s}
-                className={`checkbox-chip${form.subjects.includes(s) ? " selected" : ""}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={form.subjects.includes(s)}
-                  onChange={() => toggleSubject(s)}
-                />
-                {s}
-              </label>
-            ))}
           </div>
         </div>
 
@@ -272,8 +198,7 @@ export default function Students() {
       students.filter((s) => {
         const matchSearch =
           s.name.toLowerCase().includes(search.toLowerCase()) ||
-          s.parentName.toLowerCase().includes(search.toLowerCase()) ||
-          s.subjects.join(" ").toLowerCase().includes(search.toLowerCase());
+          s.parentName.toLowerCase().includes(search.toLowerCase());
         const matchGrade = filterGrade === "All" || s.grade === filterGrade;
         return matchSearch && matchGrade;
       }),
@@ -304,7 +229,7 @@ export default function Students() {
       <div className="search-row">
         <input
           className="search-input"
-          placeholder="Search by name, parent, or subject..."
+          placeholder="Search by name or parent..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -327,10 +252,6 @@ export default function Students() {
               <tr>
                 <th>Name</th>
                 <th>Grade</th>
-                <th>Subjects</th>
-                <th>Reading</th>
-                <th>Writing</th>
-                <th>Math</th>
                 <th>Attendance</th>
                 <th>Status</th>
               </tr>
@@ -360,28 +281,6 @@ export default function Students() {
                     </div>
                   </td>
                   <td>{s.grade}</td>
-                  <td style={{ fontSize: 12 }}>{s.subjects.join(", ")}</td>
-                  <td>
-                    <span
-                      className={`badge ${LEVEL_BADGE_CLASS[s.reading] ?? "badge-gray"}`}
-                    >
-                      {s.reading}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${LEVEL_BADGE_CLASS[s.writing] ?? "badge-gray"}`}
-                    >
-                      {s.writing}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${LEVEL_BADGE_CLASS[s.math] ?? "badge-gray"}`}
-                    >
-                      {s.math}
-                    </span>
-                  </td>
                   <td>
                     <AttendanceBar pct={s.attendance} />
                   </td>
@@ -397,7 +296,7 @@ export default function Students() {
               {filtered.length === 0 && (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={4}
                     style={{ textAlign: "center", color: "#94a3b8" }}
                   >
                     No students found.

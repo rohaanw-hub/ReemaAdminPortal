@@ -6,7 +6,6 @@ import {
   getAvatarText,
   calcReliability,
   reliabilityColor,
-  LEVEL_BADGE_CLASS,
 } from "../../helpers";
 import AttendanceBar from "../components/AttendanceBar";
 
@@ -239,9 +238,6 @@ export default function Dashboard() {
               <tr>
                 <th>Name</th>
                 <th>Grade</th>
-                <th>Reading</th>
-                <th>Writing</th>
-                <th>Math</th>
                 <th>Attendance</th>
               </tr>
             </thead>
@@ -263,27 +259,6 @@ export default function Dashboard() {
                     </div>
                   </td>
                   <td>{s.grade}</td>
-                  <td>
-                    <span
-                      className={`badge ${LEVEL_BADGE_CLASS[s.reading] ?? "badge-gray"}`}
-                    >
-                      {s.reading}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${LEVEL_BADGE_CLASS[s.writing] ?? "badge-gray"}`}
-                    >
-                      {s.writing}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${LEVEL_BADGE_CLASS[s.math] ?? "badge-gray"}`}
-                    >
-                      {s.math}
-                    </span>
-                  </td>
                   <td>
                     <AttendanceBar pct={s.attendance} />
                   </td>

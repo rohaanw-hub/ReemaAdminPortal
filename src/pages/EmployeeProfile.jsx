@@ -10,7 +10,6 @@ import {
   reliabilityColor,
   calcHours,
   DAYS,
-  SUBJECTS,
   ED_LEVELS,
   getSlotsForDay,
   timeToMinutes,
@@ -30,7 +29,6 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
     email: emp.email,
     phone: emp.phone,
     grade: emp.grade,
-    subjects: [...emp.subjects],
     hourlyRate: emp.hourlyRate,
     conflicts: emp.conflicts || "",
     notes: emp.notes || "",
@@ -39,14 +37,6 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
   });
 
   const set = (field, val) => setForm((f) => ({ ...f, [field]: val }));
-
-  const toggleSubject = (s) =>
-    set(
-      "subjects",
-      form.subjects.includes(s)
-        ? form.subjects.filter((x) => x !== s)
-        : [...form.subjects, s],
-    );
 
   const handleSave = () =>
     onSave({ ...form, schedule: serializeSchedule(form.schedule) });
@@ -154,25 +144,6 @@ function EditModal({ emp, onClose, onSave, isAdmin, isAdminAccount }) {
               value={form.hourlyRate}
               onChange={(e) => set("hourlyRate", Number(e.target.value))}
             />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Subjects</label>
-          <div className="checkbox-group">
-            {SUBJECTS.map((s) => (
-              <label
-                key={s}
-                className={`checkbox-chip${form.subjects.includes(s) ? " selected" : ""}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={form.subjects.includes(s)}
-                  onChange={() => toggleSubject(s)}
-                />
-                {s}
-              </label>
-            ))}
           </div>
         </div>
 
@@ -483,10 +454,6 @@ export default function EmployeeProfile() {
             <div className="detail-row">
               <div className="detail-label">Education</div>
               <div className="detail-value">{emp.grade}</div>
-            </div>
-            <div className="detail-row">
-              <div className="detail-label">Subjects</div>
-              <div className="detail-value">{emp.subjects.join(", ")}</div>
             </div>
             <div className="detail-row">
               <div className="detail-label">Hire Date</div>
