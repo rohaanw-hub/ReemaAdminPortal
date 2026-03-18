@@ -12,9 +12,11 @@ import {
   exportToExcel,
 } from "../../helpers";
 import { useSortableTable } from "../hooks/useSortableTable";
+import { usePagination } from "../hooks/usePagination";
 import ScheduleEditor from "../components/ScheduleEditor";
 import AttendanceBar from "../components/AttendanceBar";
 import Th from "../components/Th";
+import Pagination from "../components/Pagination";
 import ImportModal from "../components/ImportModal";
 
 function blankForm() {
@@ -216,6 +218,16 @@ export default function Students() {
   const { sortedData, sortKey, sortDir, handleSort } =
     useSortableTable(filtered);
 
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    pageSize,
+    setPage,
+    setPageSize,
+    paginationInfo,
+  } = usePagination(sortedData, 25);
+
   const handleAdd = (formData) => {
     const newId = Math.max(0, ...students.map((s) => s.id)) + 1;
     setStudents((prev) => [...prev, { ...formData, id: newId }]);
@@ -396,7 +408,7 @@ export default function Students() {
               </tr>
             </thead>
             <tbody>
-              {sortedData.map((s) => (
+              {paginatedData.map((s) => (
                 <tr
                   key={s.id}
                   style={{ cursor: "pointer" }}
@@ -458,7 +470,7 @@ export default function Students() {
                   </td>
                 </tr>
               ))}
-              {sortedData.length === 0 && (
+              {paginatedData.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
@@ -471,6 +483,15 @@ export default function Students() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          setPage={setPage}
+          setPageSize={setPageSize}
+          paginationInfo={paginationInfo}
+          label="students"
+        />
       </div>
 
       {showModal && (
