@@ -22,14 +22,24 @@ function ProtectedRoute() {
 }
 
 // Redirects authenticated users whose role is not in the allow list.
-// Parents → /parent, everyone else → /dashboard.
+// Parents → /parent, teachers → /schedule, admins → /dashboard.
 function RoleGuard({ allow }) {
   const { currentUser } = useApp()
   if (!currentUser) return <Navigate to="/login" replace />
   if (!allow.includes(currentUser.role)) {
-    return <Navigate to={currentUser.role === 'parent' ? '/parent' : '/dashboard'} replace />
+    if (currentUser.role === 'parent') return <Navigate to="/parent" replace />
+    if (currentUser.role === 'teacher') return <Navigate to="/schedule" replace />
+    return <Navigate to="/dashboard" replace />
   }
   return <Outlet />
+}
+
+// Redirects to the appropriate default page based on role.
+function DefaultRedirect() {
+  const { currentUser } = useApp()
+  if (!currentUser) return <Navigate to="/login" replace />
+  if (currentUser.role === 'teacher') return <Navigate to="/schedule" replace />
+  return <Navigate to="/dashboard" replace />
 }
 
 export default function App() {
@@ -46,18 +56,18 @@ export default function App() {
       {/* All sidebar routes — admin + teacher only */}
       <Route element={<RoleGuard allow={['admin', 'teacher']} />}>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route index element={<DefaultRedirect />} />
           <Route path="students" element={<Students />} />
           <Route path="students/:id" element={<StudentProfile />} />
           <Route path="schedule" element={<Schedule />} />
-          <Route path="clock-in" element={<ClockIn />} />
 
           {/* Admin + teacher: individual profile (teachers access their own via My Profile) */}
           <Route path="employees/:id" element={<EmployeeProfile />} />
 
           {/* Admin-only routes */}
           <Route element={<RoleGuard allow={['admin']} />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="clock-in" element={<ClockIn />} />
             <Route path="employees" element={<Employees />} />
             <Route path="payroll" element={<Payroll />} />
             <Route path="reports">
@@ -67,7 +77,7 @@ export default function App() {
             </Route>
           </Route>
 
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<DefaultRedirect />} />
         </Route>
       </Route>
     </Routes>

@@ -27,7 +27,6 @@ function teacherNav(profileId) {
     { to: "/schedule", label: "My Schedule" },
     { to: `/employees/${profileId}`, label: "My Profile" },
     { to: "/students", label: "Students" },
-    { to: "/clock-in", label: "Clock In/Out" },
   ];
 }
 
