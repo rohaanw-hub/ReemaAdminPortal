@@ -426,10 +426,6 @@ const SEED_SESSIONS = [
   { id:  10, day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 10, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  11, day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 11, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  12, day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 12, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
-  { id:  13, day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 13, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  14, day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 14, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  15, day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 15, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  16, day: 'Mon', time: '4:30-5:30',   duration: 60, studentId: 16, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
   // ── Monday 5:30–6:30 (Group B) ───────────────────────────────────────────
   { id:  17, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 17, employeeId: 1, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
   { id:  18, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 18, employeeId: 1, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
@@ -443,10 +439,6 @@ const SEED_SESSIONS = [
   { id:  26, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 26, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  27, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 27, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  28, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 28, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
-  { id:  29, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 29, employeeId: 3, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  30, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 30, employeeId: 3, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  31, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 31, employeeId: 3, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  32, day: 'Mon', time: '5:30-6:30',   duration: 60, studentId: 32, employeeId: 3, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
   // ── Monday 6:30–7:30 (Group C) ───────────────────────────────────────────
   { id:  33, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 33, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
   { id:  34, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 34, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
@@ -460,10 +452,6 @@ const SEED_SESSIONS = [
   { id:  42, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 42, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  43, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 43, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  44, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 44, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
-  { id:  45, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 45, employeeId: 3, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  46, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 46, employeeId: 3, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  47, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 47, employeeId: 3, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  48, day: 'Mon', time: '6:30-7:30',   duration: 60, studentId: 48, employeeId: 3, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
   // ── Tuesday 4:30–5:30 (Group D) ──────────────────────────────────────────
   { id:  49, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 49, employeeId: 1, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
   { id:  50, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 50, employeeId: 1, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
@@ -477,10 +465,6 @@ const SEED_SESSIONS = [
   { id:  58, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 58, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  59, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 59, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  60, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 60, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
-  { id:  61, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 61, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  62, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 62, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  63, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 63, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  64, day: 'Tue', time: '4:30-5:30',   duration: 60, studentId: 64, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
   // ── Tuesday 5:30–6:30 (Group E) ──────────────────────────────────────────
   { id:  65, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 65, employeeId: 1, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
   { id:  66, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 66, employeeId: 1, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
@@ -494,10 +478,6 @@ const SEED_SESSIONS = [
   { id:  74, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 74, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  75, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 75, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  76, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 76, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
-  { id:  77, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 77, employeeId: 6, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  78, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 78, employeeId: 6, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  79, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 79, employeeId: 6, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id:  80, day: 'Tue', time: '5:30-6:30',   duration: 60, studentId: 80, employeeId: 6, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
   // ── Tuesday 6:30–7:30 (Group A) ──────────────────────────────────────────
   { id:  81, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId:  1, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 1' },
   { id:  82, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId:  2, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 1' },
@@ -511,10 +491,6 @@ const SEED_SESSIONS = [
   { id:  90, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId: 10, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  91, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId: 11, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
   { id:  92, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId: 12, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
-  { id:  93, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId: 13, employeeId: 2, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id:  94, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId: 14, employeeId: 2, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id:  95, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId: 15, employeeId: 2, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id:  96, day: 'Tue', time: '6:30-7:30',   duration: 60, studentId: 16, employeeId: 2, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
   // ── Wednesday 4:30–5:30 (Group B) ────────────────────────────────────────
   { id:  97, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 17, employeeId: 1, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 1' },
   { id:  98, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 18, employeeId: 1, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 1' },
@@ -528,10 +504,6 @@ const SEED_SESSIONS = [
   { id: 106, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 26, employeeId: 4, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 107, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 27, employeeId: 4, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 108, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 28, employeeId: 4, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
-  { id: 109, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 29, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 110, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 30, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 111, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 31, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 112, day: 'Wed', time: '4:30-5:30',   duration: 60, studentId: 32, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
   // ── Wednesday 5:30–6:30 (Group C) ────────────────────────────────────────
   { id: 113, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 33, employeeId: 1, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 1' },
   { id: 114, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 34, employeeId: 1, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 1' },
@@ -545,10 +517,6 @@ const SEED_SESSIONS = [
   { id: 122, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 42, employeeId: 4, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 3' },
   { id: 123, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 43, employeeId: 4, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 3' },
   { id: 124, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 44, employeeId: 4, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 3' },
-  { id: 125, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 45, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 126, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 46, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 127, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 47, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 128, day: 'Wed', time: '5:30-6:30',   duration: 60, studentId: 48, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
   // ── Wednesday 6:30–7:30 (Group D) ────────────────────────────────────────
   { id: 129, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 49, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 1' },
   { id: 130, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 50, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 1' },
@@ -562,10 +530,6 @@ const SEED_SESSIONS = [
   { id: 138, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 58, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 139, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 59, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 140, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 60, employeeId: 3, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
-  { id: 141, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 61, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 142, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 62, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 143, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 63, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 144, day: 'Wed', time: '6:30-7:30',   duration: 60, studentId: 64, employeeId: 4, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
   // ── Thursday 4:30–5:30 (Group E) ─────────────────────────────────────────
   { id: 145, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 65, employeeId: 1, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
   { id: 146, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 66, employeeId: 1, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
@@ -579,10 +543,6 @@ const SEED_SESSIONS = [
   { id: 154, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 74, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 155, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 75, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 156, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 76, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
-  { id: 157, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 77, employeeId: 4, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id: 158, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 78, employeeId: 4, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id: 159, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 79, employeeId: 4, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id: 160, day: 'Thu', time: '4:30-5:30',   duration: 60, studentId: 80, employeeId: 4, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
   // ── Thursday 5:30–6:30 (Group A) ─────────────────────────────────────────
   { id: 161, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId:  1, employeeId: 1, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 1' },
   { id: 162, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId:  2, employeeId: 1, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 1' },
@@ -596,10 +556,6 @@ const SEED_SESSIONS = [
   { id: 170, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId: 10, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 3' },
   { id: 171, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId: 11, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 3' },
   { id: 172, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId: 12, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 3' },
-  { id: 173, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId: 13, employeeId: 4, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 174, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId: 14, employeeId: 4, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 175, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId: 15, employeeId: 4, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 176, day: 'Thu', time: '5:30-6:30',   duration: 60, studentId: 16, employeeId: 4, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
   // ── Saturday 10:30–11:30 (Group B) ───────────────────────────────────────
   { id: 177, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 17, employeeId: 2, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
   { id: 178, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 18, employeeId: 2, subject: 'Math',    status: 'scheduled', classroom: 'Classroom 1' },
@@ -613,10 +569,6 @@ const SEED_SESSIONS = [
   { id: 186, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 26, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 187, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 27, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 188, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 28, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
-  { id: 189, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 29, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id: 190, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 30, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id: 191, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 31, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
-  { id: 192, day: 'Sat', time: '10:30-11:30', duration: 60, studentId: 32, employeeId: 5, subject: 'Math',    status: 'scheduled', classroom: 'Grader' },
   // ── Saturday 11:30–12:30 (Group C) ───────────────────────────────────────
   { id: 193, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 33, employeeId: 6, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 1' },
   { id: 194, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 34, employeeId: 6, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 1' },
@@ -630,10 +582,6 @@ const SEED_SESSIONS = [
   { id: 202, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 42, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 203, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 43, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 204, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 44, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 3' },
-  { id: 205, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 45, employeeId: 5, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 206, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 46, employeeId: 5, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 207, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 47, employeeId: 5, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
-  { id: 208, day: 'Sat', time: '11:30-12:30', duration: 60, studentId: 48, employeeId: 5, subject: 'Reading', status: 'scheduled', classroom: 'Grader' },
   // ── Saturday 12:30–1:30 (Group D) ────────────────────────────────────────
   { id: 209, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 49, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 1' },
   { id: 210, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 50, employeeId: 3, subject: 'Writing', status: 'scheduled', classroom: 'Classroom 1' },
@@ -647,11 +595,16 @@ const SEED_SESSIONS = [
   { id: 218, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 58, employeeId: 2, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 219, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 59, employeeId: 2, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
   { id: 220, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 60, employeeId: 2, subject: 'Reading', status: 'scheduled', classroom: 'Classroom 3' },
-  { id: 221, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 61, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 222, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 62, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 223, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 63, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
-  { id: 224, day: 'Sat', time: '12:30-1:30',  duration: 60, studentId: 64, employeeId: 5, subject: 'Writing', status: 'scheduled', classroom: 'Grader' },
 ]
+
+// employeeId=3 (Diego Rivera) grades Mon/Tue/Wed; employeeId=6 (Brianna Scott) grades Thu/Sat
+const SEED_GRADER_SCHEDULE = {
+  Mon: 3,
+  Tue: 3,
+  Wed: 3,
+  Thu: 6,
+  Sat: 6,
+}
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────────
 function resolveLogin(email, password, employees, students) {
@@ -679,6 +632,7 @@ export function AppProvider({ children }) {
   const [employees, setEmployees] = useState(SEED_EMPLOYEES)
   const [students, setStudents] = useState(SEED_STUDENTS)
   const [sessions, setSessions] = useState(SEED_SESSIONS)
+  const [graderSchedule, setGraderSchedule] = useState(SEED_GRADER_SCHEDULE)
   const [currentUser, setCurrentUser] = useState(null)
   // Notification shape: { id, type, msg, scope, timestamp, read }
   // scope: 'admin' | 'teacher:{empId}' | 'parent:{studentId}'
@@ -773,6 +727,7 @@ export function AppProvider({ children }) {
         employees, setEmployees,
         students, setStudents,
         sessions, setSessions,
+        graderSchedule, setGraderSchedule,
         currentUser, login, logout,
         notifications, addNotification, dismissNotification, markAllRead,
         weeklyConflicts, addWeeklyConflict, removeWeeklyConflict, clearWeeklyConflicts,

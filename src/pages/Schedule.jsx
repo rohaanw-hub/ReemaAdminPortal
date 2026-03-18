@@ -10,6 +10,9 @@ import {
   CLASSROOM_COLORS,
 } from "../../helpers";
 
+// Classrooms shown in the schedule grid — excludes Grader
+const SCHEDULE_CLASSROOMS = ["Classroom 1", "Classroom 2", "Classroom 3"];
+
 // ── Pure helpers ───────────────────────────────────────────────────────────────
 function relScore(emp) {
   return emp.totalShifts === 0
@@ -97,7 +100,7 @@ function ClassroomLegend() {
     <div
       style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 16 }}
     >
-      {CLASSROOMS.map((c) => {
+      {SCHEDULE_CLASSROOMS.map((c) => {
         const col = CLASSROOM_COLORS[c];
         return (
           <div
@@ -117,6 +120,33 @@ function ClassroomLegend() {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ── Grader Bar (Day View) ──────────────────────────────────────────────────────
+function GraderBar({ graderSchedule, employeeMap, day }) {
+  const empId = graderSchedule?.[day];
+  const grader = employeeMap[empId];
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        background: "#f0f9ff",
+        border: "1px solid #e0f2fe",
+        borderRadius: 6,
+        padding: "8px 16px",
+        fontSize: 13,
+        color: "#0369a1",
+        marginBottom: 12,
+      }}
+    >
+      <span>📋 Grader:</span>
+      <span style={{ fontWeight: 500 }}>
+        {grader ? grader.name : "No grader assigned"}
+      </span>
     </div>
   );
 }
@@ -351,7 +381,6 @@ function DayView({
   day,
   employeeMap,
   studentMap,
-  tab,
   onSessionClick,
   onMove,
 }) {
@@ -414,7 +443,7 @@ function DayView({
             >
               TIME
             </th>
-            {CLASSROOMS.map((c) => {
+            {SCHEDULE_CLASSROOMS.map((c) => {
               const col = CLASSROOM_COLORS[c];
               return (
                 <th
@@ -440,7 +469,7 @@ function DayView({
           {slots.length === 0 ? (
             <tr>
               <td
-                colSpan={5}
+                colSpan={4}
                 style={{ textAlign: "center", padding: 32, color: "#94a3b8" }}
               >
                 No sessions scheduled for this day.
@@ -463,7 +492,7 @@ function DayView({
                 >
                   {slot.split("-")[0]}
                 </td>
-                {CLASSROOMS.map((classroom) => {
+                {SCHEDULE_CLASSROOMS.map((classroom) => {
                   const cellSessions = getCellSessions(slot, classroom);
                   const isTarget = dropTarget === `${slot}|${classroom}`;
                   const col = CLASSROOM_COLORS[classroom];
@@ -496,14 +525,9 @@ function DayView({
                           const teacher = employeeMap[s.employeeId];
                           const student = studentMap[s.studentId];
                           const isDragging = draggedId === s.id;
-                          const line1 =
-                            tab === "student"
-                              ? (student?.name ?? "—")
-                              : (teacher?.name.split(" ")[0] ?? "Unassigned");
+                          const line1 = student?.name ?? "—";
                           const line2 =
-                            tab === "student"
-                              ? (teacher?.name.split(" ")[0] ?? "Unassigned")
-                              : (student?.name ?? "—");
+                            teacher?.name.split(" ")[0] ?? "Unassigned";
                           return (
                             <div
                               key={s.id}
@@ -562,7 +586,7 @@ function WeekView({
   sessionIndex,
   employeeMap,
   studentMap,
-  tab,
+  graderSchedule,
   onSessionClick,
 }) {
   const isSlotOpen = (day, slot) => getSlotsForDay(day).includes(slot);
@@ -611,6 +635,42 @@ function WeekView({
                 {d}
               </th>
             ))}
+          </tr>
+          <tr>
+            <td
+              style={{
+                padding: "8px 12px",
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#0369a1",
+                background: "#f8fafc",
+                borderBottom: "1px solid #e2e8f0",
+              }}
+            >
+              Grader
+            </td>
+            {OPEN_DAYS.map((d) => {
+              const empId = graderSchedule?.[d];
+              const grader = employeeMap[empId];
+              const firstName = grader?.name.split(" ")[0] ?? "—";
+              return (
+                <td
+                  key={d}
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: "#0369a1",
+                    background: "#f8fafc",
+                    borderBottom: "1px solid #e2e8f0",
+                    borderLeft: "1px solid #e2e8f0",
+                    textAlign: "center",
+                  }}
+                >
+                  {firstName}
+                </td>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
@@ -670,15 +730,7 @@ function WeekView({
                             CLASSROOM_COLORS["Classroom 1"];
                           const teacher = employeeMap[s.employeeId];
                           const student = studentMap[s.studentId];
-                          const nameParts = teacher?.name.split(" ") ?? [];
-                          const shortTeacher =
-                            nameParts.length >= 2
-                              ? `${nameParts[0][0]}. ${nameParts.slice(1).join(" ")}`
-                              : (teacher?.name ?? "Unassigned");
-                          const label =
-                            tab === "student"
-                              ? (student?.name ?? "—")
-                              : shortTeacher;
+                          const label = student?.name ?? "—";
                           const tooltipText = [
                             teacher?.name ?? "Unassigned",
                             student?.name ?? "—",
@@ -731,10 +783,10 @@ export default function Schedule() {
     students,
     weeklyConflicts,
     currentUser,
+    graderSchedule,
   } = useApp();
   const isAdmin = currentUser?.role === "admin";
 
-  const [tab, setTab] = useState("staff");
   const [viewMode, setViewMode] = useState("day");
   const [selectedDay, setSelectedDay] = useState(getDefaultDay);
   const [detailId, setDetailId] = useState(null);
@@ -866,21 +918,6 @@ export default function Schedule() {
         </div>
       </div>
 
-      <div className="tabs" style={{ marginBottom: 16 }}>
-        <button
-          className={`tab${tab === "staff" ? " tab-active" : ""}`}
-          onClick={() => setTab("staff")}
-        >
-          Staff View
-        </button>
-        <button
-          className={`tab${tab === "student" ? " tab-active" : ""}`}
-          onClick={() => setTab("student")}
-        >
-          Student View
-        </button>
-      </div>
-
       <ClassroomLegend />
 
       {viewMode === "day" && (
@@ -907,6 +944,14 @@ export default function Schedule() {
         </div>
       )}
 
+      {viewMode === "day" && (
+        <GraderBar
+          graderSchedule={graderSchedule}
+          employeeMap={employeeMap}
+          day={selectedDay}
+        />
+      )}
+
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
         {viewMode === "day" ? (
           <DayView
@@ -915,7 +960,6 @@ export default function Schedule() {
             day={selectedDay}
             employeeMap={employeeMap}
             studentMap={studentMap}
-            tab={tab}
             onSessionClick={setDetailId}
             onMove={handleMove}
           />
@@ -925,7 +969,7 @@ export default function Schedule() {
             sessionIndex={sessionIndex}
             employeeMap={employeeMap}
             studentMap={studentMap}
-            tab={tab}
+            graderSchedule={graderSchedule}
             onSessionClick={setDetailId}
           />
         )}
