@@ -1,20 +1,14 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Bell } from "lucide-react";
 import { useApp } from "../../AppContext";
-import { getInitials, getAvatarBg, getAvatarText } from "../../helpers";
+import {
+  getInitials,
+  getAvatarBg,
+  getAvatarText,
+  formatNotificationTime,
+} from "../../helpers";
 import eyeLevelLogo from "../assets/EyeLevelLogo.png";
-
-function formatNotifTime(ts) {
-  const d = new Date(ts);
-  const today = new Date();
-  const isToday = d.toDateString() === today.toDateString();
-  return isToday
-    ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : d.toLocaleDateString([], { month: "short", day: "numeric" }) +
-        " · " +
-        d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
 
 export default function ParentLayout() {
   const { currentUser, logout, notifications, markAllRead } = useApp();
@@ -49,10 +43,10 @@ export default function ParentLayout() {
   );
   const unreadCount = myNotifs.filter((n) => !n.read).length;
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     navigate("/login", { replace: true });
-  };
+  }, [logout, navigate]);
 
   return (
     <div
@@ -277,7 +271,7 @@ export default function ParentLayout() {
                               marginTop: 3,
                             }}
                           >
-                            {formatNotifTime(n.timestamp)}
+                            {formatNotificationTime(n.timestamp)}
                           </div>
                         </div>
                       </div>

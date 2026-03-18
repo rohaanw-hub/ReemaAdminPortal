@@ -16,6 +16,8 @@ import {
   serializeSchedule,
   deserializeSchedule,
   validatePhotoFile,
+  userIsAdmin,
+  userIsTeacher,
 } from "../../helpers";
 import ScheduleEditor from "../components/ScheduleEditor";
 import { ChevronLeft } from "lucide-react";
@@ -182,8 +184,8 @@ export default function EmployeeProfile() {
     addNotification,
   } = useApp();
   const navigate = useNavigate();
-  const isAdmin = currentUser?.role === "admin";
-  const isTeacher = currentUser?.role === "teacher";
+  const isAdmin = userIsAdmin(currentUser);
+  const isTeacher = userIsTeacher(currentUser);
   const [tab, setTab] = useState("overview");
   const [showEdit, setShowEdit] = useState(false);
   const [photoError, setPhotoError] = useState("");

@@ -13,6 +13,8 @@ import {
   deserializeSchedule,
   validatePhotoFile,
   attendanceColor,
+  userIsAdmin,
+  userIsTeacher,
 } from "../../helpers";
 import ScheduleEditor from "../components/ScheduleEditor";
 import GradeLevelPill from "../components/GradeLevelPill";
@@ -154,14 +156,14 @@ function EditModal({ student, onClose, onSave }) {
 export default function StudentProfile() {
   const { id } = useParams();
   const { students, setStudents, sessions, employees, currentUser } = useApp();
-  const isTeacher = currentUser?.role === "teacher";
+  const isTeacher = userIsTeacher(currentUser);
   const navigate = useNavigate();
   const [tab, setTab] = useState("overview");
   const [showEdit, setShowEdit] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const [editingSubject, setEditingSubject] = useState(null);
   const [editingValue, setEditingValue] = useState("");
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin = userIsAdmin(currentUser);
   const canEditProgress = isAdmin || isTeacher;
 
   const student = students.find((s) => s.id === Number(id));

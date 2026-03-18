@@ -2,40 +2,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useApp } from "../../AppContext";
-import { getInitials, getAvatarBg, getAvatarText } from "../../helpers";
-
-const MAX_RESULTS = 8;
-
-function Avatar({ name, photo, size = 32 }) {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        background: photo ? "transparent" : getAvatarBg(name),
-        color: getAvatarText(name),
-        fontSize: size * 0.38,
-        fontWeight: 700,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-        overflow: "hidden",
-      }}
-    >
-      {photo ? (
-        <img
-          src={photo}
-          alt={name}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-      ) : (
-        getInitials(name)
-      )}
-    </div>
-  );
-}
+import { MAX_SEARCH_RESULTS } from "../../helpers";
+import Avatar from "./Avatar";
 
 export default function SearchBar() {
   const { employees, students } = useApp();
@@ -61,7 +29,7 @@ export default function SearchBar() {
       ...matchedEmps.map((e) => ({ type: "employee", item: e })),
       ...matchedStus.map((s) => ({ type: "student", item: s })),
     ];
-    return combined.slice(0, MAX_RESULTS);
+    return combined.slice(0, MAX_SEARCH_RESULTS);
   })();
 
   const totalMatches = (() => {
@@ -263,7 +231,7 @@ export default function SearchBar() {
                   ))}
                 </div>
               )}
-              {totalMatches > MAX_RESULTS && (
+              {totalMatches > MAX_SEARCH_RESULTS && (
                 <div
                   style={{
                     padding: "8px 14px",
@@ -272,8 +240,8 @@ export default function SearchBar() {
                     borderTop: "1px solid #f1f5f9",
                   }}
                 >
-                  Showing top {MAX_RESULTS} results — refine your search to
-                  narrow down
+                  Showing top {MAX_SEARCH_RESULTS} results — refine your search
+                  to narrow down
                 </div>
               )}
             </>
