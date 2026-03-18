@@ -349,19 +349,19 @@ export function downloadSampleCSV(type) {
 /**
  * Generates proposed sessions for a week.
  *
- * @param {object[]} students        - All student objects (only selected ones passed in)
- * @param {object}   classroomTeachers - { 'Classroom 1': empId, 'Classroom 2': empId, 'Classroom 3': empId }
- * @param {string[]} days            - Selected OPEN_DAYS subset
- * @param {object}   weekDates       - { Mon: 'YYYY-MM-DD', ... } from getWeekDates
+ * @param {object[]} students      - Selected student objects
+ * @param {object}   teacherDays   - { [empId]: numDays } — how many days each teacher works this week (0 = not working)
+ * @param {string[]} days          - Selected OPEN_DAYS subset
+ * @param {object}   weekDates     - { Mon: 'YYYY-MM-DD', ... } from getWeekDates
  * @param {object[]} existingSessions - All existing sessions (to detect double-booking)
  * @param {object}   weeklyConflicts  - weeklyConflicts map from AppContext
- * @param {object[]} employees        - All employees (for availability checks)
- * @param {boolean}  replaceAll       - If true, skip existing-session checks
+ * @param {object[]} employees     - All employees (for availability checks)
+ * @param {boolean}  replaceAll    - If true, skip existing-session checks
  * @returns {{ sessions: object[], conflicts: string[] }}
  */
 export function autoAssignSessions(
   students,
-  classroomTeachers,
+  teacherDays,
   days,
   weekDates,
   existingSessions,
@@ -378,17 +378,42 @@ export function autoAssignSessions(
   const classroomStudents = {}
   SCHED_CLASSROOMS.forEach((c) => { classroomStudents[c] = [] })
   students.forEach((s, i) => {
-    const classroom = SCHED_CLASSROOMS[i % SCHED_CLASSROOMS.length]
-    classroomStudents[classroom].push(s)
+    classroomStudents[SCHED_CLASSROOMS[i % SCHED_CLASSROOMS.length]].push(s)
+  })
+
+  // Build per-day teacher assignments from teacherDays.
+  // Each active teacher's numDays are spread evenly across the selected days.
+  // Teachers are sorted most-days-first so they get classroom priority consistently.
+  const dayTeachers = {}
+  days.forEach((d) => { dayTeachers[d] = [] })
+
+  const activeTeachers = Object.entries(teacherDays)
+    .filter(([, nd]) => nd > 0)
+    .map(([empId, numDays]) => ({ empId: Number(empId), numDays: Math.min(numDays, days.length) }))
+    .sort((a, b) => b.numDays - a.numDays)
+
+  activeTeachers.forEach(({ empId, numDays }) => {
+    // Evenly spread numDays across the selected days array
+    const assignedDays = []
+    for (let i = 0; i < numDays; i++) {
+      const idx = Math.floor((i * days.length) / numDays)
+      assignedDays.push(days[idx])
+    }
+    assignedDays.forEach((day) => {
+      if (dayTeachers[day].length < SCHED_CLASSROOMS.length) {
+        dayTeachers[day].push(empId)
+      }
+    })
   })
 
   days.forEach((day) => {
     const slots = getSlotsForDay(day)
     const date = weekDates[day]
+    const teachersThisDay = dayTeachers[day]
 
-    SCHED_CLASSROOMS.forEach((classroom) => {
-      const empId = classroomTeachers[classroom]
-      const emp = employees.find((e) => e.id === empId)
+    SCHED_CLASSROOMS.forEach((classroom, ci) => {
+      const empId = teachersThisDay[ci] ?? null
+      const emp = empId ? employees.find((e) => e.id === empId) : null
       const studentsInRoom = classroomStudents[classroom]
       if (!studentsInRoom.length) return
 
@@ -405,7 +430,7 @@ export function autoAssignSessions(
       if (emp && !isTutorAvailableAt(emp, day, slot)) {
         conflicts.push(`${emp.name} is unavailable on ${day} at ${slot} (schedule conflict).`)
       }
-      if (emp && hasWeeklyConflict(weeklyConflicts, empId, day, slot)) {
+      if (emp && empId && hasWeeklyConflict(weeklyConflicts, empId, day, slot)) {
         conflicts.push(`${emp.name} has a weekly conflict on ${day} at ${slot}.`)
       }
 
@@ -442,7 +467,7 @@ export function autoAssignSessions(
           time: slot,
           duration: 60,
           studentId: student.id,
-          employeeId: empId ?? null,
+          employeeId: empId,
           subject: 'Math',
           status: 'scheduled',
           classroom,

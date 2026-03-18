@@ -8,8 +8,6 @@ import {
   autoAssignSessions,
 } from "../../helpers";
 
-const SCHED_CLASSROOMS = ["Classroom 1", "Classroom 2", "Classroom 3"];
-
 // ─── Step Indicator ──────────────────────────────────────────────────────────
 function StepIndicator({ current, total }) {
   return (
@@ -360,94 +358,142 @@ function Step2({
   );
 }
 
-// ─── Step 3: Teachers & Graders ───────────────────────────────────────────────
+// ─── Step 3: Select Teachers ──────────────────────────────────────────────────
 function Step3({
   employees,
-  classroomTeachers,
-  setClassroomTeachers,
+  teacherDays,
+  setTeacherDays,
   selectedDays,
   weeklyConflicts,
 }) {
   const teachers = employees.filter((e) => e.accountRole !== "admin");
+  const maxDays = selectedDays.length;
 
-  const setTeacher = (classroom, empId) =>
-    setClassroomTeachers((prev) => ({
-      ...prev,
-      [classroom]: empId ? Number(empId) : null,
-    }));
+  const setDays = (empId, numDays) =>
+    setTeacherDays((prev) => ({ ...prev, [empId]: numDays }));
 
-  const getConflicts = (empId) => {
-    if (!empId) return [];
-    const emp = employees.find((e) => e.id === Number(empId));
-    if (!emp) return [];
-    return selectedDays.reduce((acc, day) => {
+  const hasConflict = (emp) =>
+    selectedDays.some((day) => {
       const slot = getSlotsForDay(day)[0];
-      if (!slot) return acc;
-      if (!isTutorAvailableAt(emp, day, slot)) {
-        acc.push(`${day}: unavailable (schedule)`);
-      } else if (hasWeeklyConflict(weeklyConflicts, emp.id, day, slot)) {
-        acc.push(`${day}: weekly conflict`);
-      }
-      return acc;
-    }, []);
-  };
+      if (!slot) return false;
+      return (
+        !isTutorAvailableAt(emp, day, slot) ||
+        hasWeeklyConflict(weeklyConflicts, emp.id, day, slot)
+      );
+    });
+
+  const dayOptions = [
+    { value: 0, label: "Not working" },
+    ...Array.from({ length: maxDays }, (_, i) => ({
+      value: i + 1,
+      label: `${i + 1} day${i + 1 > 1 ? "s" : ""}`,
+    })),
+  ];
 
   return (
     <div>
       <p style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>
-        Assign a teacher to each classroom for {selectedDays.join(", ")}.
+        Choose which teachers are working this week and how many days each will
+        work.
       </p>
-      {SCHED_CLASSROOMS.map((classroom) => {
-        const selected = classroomTeachers[classroom];
-        const conflicts = getConflicts(selected);
-        return (
-          <div className="form-group" key={classroom}>
-            <label className="form-label">{classroom}</label>
-            <select
-              className="form-select"
-              value={selected ?? ""}
-              onChange={(e) => setTeacher(classroom, e.target.value)}
+      <div
+        style={{
+          border: "1px solid #e2e8f0",
+          borderRadius: 6,
+          overflow: "hidden",
+        }}
+      >
+        {teachers.map((t, i) => {
+          const days = teacherDays[t.id] ?? 0;
+          const active = days > 0;
+          const conflict = hasConflict(t);
+          return (
+            <div
+              key={t.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "10px 14px",
+                borderBottom:
+                  i < teachers.length - 1 ? "1px solid #f1f5f9" : "none",
+                background: active ? "#FFF0F2" : "transparent",
+                borderLeft: active
+                  ? "3px solid #E31837"
+                  : "3px solid transparent",
+                transition: "background 0.15s",
+              }}
             >
-              <option value="">— Unassigned —</option>
-              {teachers.map((t) => {
-                const tConflicts = selectedDays.reduce((acc, day) => {
-                  const slot = getSlotsForDay(day)[0];
-                  if (!slot) return acc;
-                  if (!isTutorAvailableAt(t, day, slot))
-                    acc.push(`unavailable ${day}`);
-                  else if (hasWeeklyConflict(weeklyConflicts, t.id, day, slot))
-                    acc.push(`conflict ${day}`);
-                  return acc;
-                }, []);
-                const label =
-                  tConflicts.length > 0
-                    ? `${t.name} — ⚠ ${tConflicts.join(", ")}`
-                    : t.name;
-                return (
-                  <option key={t.id} value={t.id}>
-                    {label}
-                  </option>
-                );
-              })}
-            </select>
-            {conflicts.length > 0 && (
-              <div
+              {/* Name */}
+              <span
                 style={{
-                  marginTop: 4,
-                  fontSize: 12,
-                  color: "#92400e",
-                  background: "#fef3c7",
-                  padding: "4px 8px",
-                  borderRadius: 4,
-                  border: "1px solid #fde68a",
+                  flex: 1,
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 400,
+                  color: "#1e293b",
                 }}
               >
-                ⚠ {conflicts.join(" · ")}
-              </div>
-            )}
+                {t.name}
+              </span>
+
+              {/* Role badge */}
+              <span
+                style={{
+                  fontSize: 11,
+                  padding: "2px 7px",
+                  borderRadius: 4,
+                  background: "#f1f5f9",
+                  color: "#475569",
+                  fontWeight: 500,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {t.accountRole === "admin" ? "Admin" : "Teacher"}
+              </span>
+
+              {/* Conflict warning */}
+              {conflict && (
+                <span
+                  title="Has conflicts this week — review before applying"
+                  style={{ fontSize: 15, cursor: "help", flexShrink: 0 }}
+                >
+                  ⚠️
+                </span>
+              )}
+
+              {/* Days dropdown */}
+              <select
+                className="form-select"
+                value={days}
+                onChange={(e) => setDays(t.id, Number(e.target.value))}
+                style={{ width: 130, fontSize: 13 }}
+              >
+                {dayOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        })}
+        {teachers.length === 0 && (
+          <div
+            style={{
+              padding: 16,
+              textAlign: "center",
+              color: "#94a3b8",
+              fontSize: 13,
+            }}
+          >
+            No teachers found.
           </div>
-        );
-      })}
+        )}
+      </div>
+      <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+        {teachers.filter((t) => (teacherDays[t.id] ?? 0) > 0).length} teacher(s)
+        working this week.
+      </div>
     </div>
   );
 }
@@ -574,12 +620,14 @@ export default function AutoSchedulerWizard({
     students.map((s) => s.id),
   );
 
-  // Step 3 state
-  const [classroomTeachers, setClassroomTeachers] = useState(() => {
+  // Step 3 state — { [empId]: numDays }, 0 = not working
+  const [teacherDays, setTeacherDays] = useState(() => {
     const init = {};
-    SCHED_CLASSROOMS.forEach((c) => {
-      init[c] = null;
-    });
+    employees
+      .filter((e) => e.accountRole !== "admin")
+      .forEach((e) => {
+        init[e.id] = 0;
+      });
     return init;
   });
 
@@ -603,7 +651,7 @@ export default function AutoSchedulerWizard({
     if (step < 4) return { sessions: [], conflicts: [] };
     return autoAssignSessions(
       selectedStudents,
-      classroomTeachers,
+      teacherDays,
       selectedDays,
       weekDates,
       existingSessions,
@@ -614,7 +662,7 @@ export default function AutoSchedulerWizard({
   }, [
     step,
     selectedStudents,
-    classroomTeachers,
+    teacherDays,
     selectedDays,
     weekDates,
     existingSessions,
@@ -678,8 +726,8 @@ export default function AutoSchedulerWizard({
         {step === 3 && (
           <Step3
             employees={employees}
-            classroomTeachers={classroomTeachers}
-            setClassroomTeachers={setClassroomTeachers}
+            teacherDays={teacherDays}
+            setTeacherDays={setTeacherDays}
             selectedDays={selectedDays}
             weeklyConflicts={weeklyConflicts}
           />
