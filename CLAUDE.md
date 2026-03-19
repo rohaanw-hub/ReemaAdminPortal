@@ -7,9 +7,10 @@ This file provides guidance to Claude Code when working in this repository.
 npm run dev          # Start dev server at http://localhost:3000
 npm run build        # Production build (output to /dist)
 npm run preview      # Preview the production build locally
+npm run check        # Lint + build sanity check
 npm run lint         # ESLint with --max-warnings 0 (zero tolerance)
 npm run lint:fix     # Auto-fix ESLint issues
-npm run format       # Prettier across src/**/*.{js,jsx,css}
+npm run format       # Prettier across src and root source files
 
 There are no tests. There is no test runner configured.
 
@@ -35,9 +36,8 @@ All pages import from these root-level files using relative paths from src/pages
 Never use the @ alias (@/AppContext, @/helpers) — it works in Vite config but
 breaks the established import pattern used across every page.
 
-main.jsx in src/ imports from '../App' (root) — NOT from './App'. There is also
-a src/App.jsx file but it is a legacy duplicate. Always write routing changes to
-App.jsx at the project root only.
+main.jsx in src/ imports from '../App' (root) — NOT from './App'. Routing
+changes should always be made in App.jsx at the project root.
 
 ### State management
 

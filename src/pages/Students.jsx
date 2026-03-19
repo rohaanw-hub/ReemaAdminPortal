@@ -46,15 +46,20 @@ function blankForm() {
 
 function AddStudentModal({ onClose, onSave, isEmailTaken }) {
   const [form, setForm] = useState(blankForm());
+  const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
 
   const set = (field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
+    if (field === "name") setNameError("");
     if (field === "parentEmail") setEmailError("");
   };
 
   const handleSave = () => {
-    if (!form.name.trim()) return alert("Name is required");
+    if (!form.name.trim()) {
+      setNameError("Name is required");
+      return;
+    }
     if (!form.parentEmail.trim()) {
       setEmailError("Email is required to create a profile");
       return;
@@ -79,13 +84,19 @@ function AddStudentModal({ onClose, onSave, isEmailTaken }) {
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">Student Name *</label>
-            <input
-              className="form-input"
-              value={form.name}
-              onChange={(e) => set("name", e.target.value)}
-              placeholder="First Last"
-            />
-          </div>
+          <input
+            className="form-input"
+            value={form.name}
+            onChange={(e) => set("name", e.target.value)}
+            placeholder="First Last"
+            style={nameError ? { borderColor: "#E31837" } : {}}
+          />
+          {nameError && (
+            <div style={{ color: "#E31837", fontSize: 12, marginTop: 4 }}>
+              {nameError}
+            </div>
+          )}
+        </div>
           <div className="form-group">
             <label className="form-label">Grade</label>
             <select

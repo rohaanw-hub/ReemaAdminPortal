@@ -152,9 +152,10 @@ The app opens at **http://localhost:3000**
 | `npm run dev` | Start local dev server at localhost:3000 |
 | `npm run build` | Build for production (output to `/dist`) |
 | `npm run preview` | Preview the production build locally |
+| `npm run check` | Run lint + build together (recommended pre-commit sanity check) |
 | `npm run lint` | Run ESLint — zero warnings allowed |
 | `npm run lint:fix` | Auto-fix ESLint issues |
-| `npm run format` | Format all `src/**/*.{js,jsx,css}` with Prettier |
+| `npm run format` | Format `src` plus root source-of-truth files (`App.jsx`, `AppContext.jsx`, `helpers.js`) |
 
 ---
 
